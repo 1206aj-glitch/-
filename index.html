@@ -5,7 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>하늘스크린교회 말씀 아카이브</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+<style>
+/* Font Awesome 대체 인라인 SVG 아이콘 시스템 */
+.fa-icon { display:inline-block; width:1em; height:1em; vertical-align:-0.125em; fill:currentColor; }
+</style>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
 <style>
   body { font-family:'Noto Sans KR',sans-serif; background:#f8fafc; }
@@ -67,7 +70,7 @@
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
     <div class="flex items-center space-x-4">
       <div class="bg-indigo-950 text-amber-400 p-2.5 rounded-xl shadow-md">
-        <i class="fa-solid fa-church text-2xl"></i>
+        <span class="text-2xl"><svg class="fa-icon" viewBox="0 0 640 512"><path d="M528 96c0-17.7-14.3-32-32-32s-32 14.3-32 32v16H448V96c0-17.7-14.3-32-32-32s-32 14.3-32 32v16H320V80c0-8.8-7.2-16-16-16H272V48h16c8.8 0 16-7.2 16-16V16c0-8.8-7.2-16-16-16H208c-8.8 0-16 7.2-16 16v16c0 8.8 7.2 16 16 16h16v16H176c-8.8 0-16 7.2-16 16v32H64C28.7 160 0 188.7 0 224V448c0 17.7 14.3 32 32 32H608c17.7 0 32-14.3 32-32V224c0-35.3-28.7-64-64-64H528V96zM256 320a64 64 0 1 1 128 0 64 64 0 1 1 -128 0zM512 288h32c17.7 0 32 14.3 32 32v32c0 17.7-14.3 32-32 32H512c-17.7 0-32-14.3-32-32V320c0-17.7 14.3-32 32-32zM80 320c0-17.7 14.3-32 32-32h32c17.7 0 32 14.3 32 32v32c0 17.7-14.3 32-32 32H112c-17.7 0-32-14.3-32-32V320z"/></svg></span>
       </div>
       <div>
         <h1 class="text-xl font-bold text-slate-900 tracking-wide serif">하늘스크린교회</h1>
@@ -76,7 +79,7 @@
     </div>
     <div class="flex items-center space-x-2">
       <button onclick="openAdminLogin()" class="text-xs bg-slate-700 hover:bg-slate-600 text-white font-bold px-4 py-2.5 rounded-xl transition shadow-md flex items-center gap-1.5">
-        <i class="fa-solid fa-shield-halved"></i><span>관리자</span>
+        <svg class="fa-icon" viewBox="0 0 512 512"><path d="M256 0c4.6 0 9.2 1 13.4 2.9L457.7 82.8c22 9.3 38.4 31 38.3 57.2c-.5 99.2-41.3 280.7-213.6 363.2c-16.7 8-36.1 8-52.8 0C57.3 420.7 16.5 239.2 16 140c-.1-26.2 16.3-47.9 38.3-57.2L242.7 2.9C246.8 1 251.4 0 256 0z"/></svg><span>관리자</span>
       </button>
     </div>
   </div>
@@ -86,7 +89,7 @@
 
   <!-- 배너 -->
   <div class="bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 rounded-3xl p-8 text-white mb-10 shadow-xl border border-indigo-900/40 relative overflow-hidden">
-    <div class="absolute right-0 bottom-0 opacity-5 text-[14rem] translate-x-12 translate-y-16 pointer-events-none"><i class="fa-solid fa-quote-right"></i></div>
+    <div class="absolute right-0 bottom-0 opacity-5 text-[14rem] translate-x-12 translate-y-16 pointer-events-none"><svg class="fa-icon" viewBox="0 0 448 512"><path d="M448 296c0 66.3-53.7 120-120 120h-8c-17.7 0-32-14.3-32-32s14.3-32 32-32h8c30.9 0 56-25.1 56-56v-8H320c-35.3 0-64-28.7-64-64V160c0-35.3 28.7-64 64-64h64c35.3 0 64 28.7 64 64v32 32 72zm-256 0c0 66.3-53.7 120-120 120H64c-17.7 0-32-14.3-32-32s14.3-32 32-32h8c30.9 0 56-25.1 56-56v-8H64c-35.3 0-64-28.7-64-64V160c0-35.3 28.7-64 64-64h64c35.3 0 64 28.7 64 64v32 32 72z"/></svg></div>
     <span class="bg-amber-400/20 text-amber-300 text-xs font-bold px-3 py-1 rounded-full border border-amber-400/30">2026 영적 은혜 가동 전선</span>
     <h2 class="text-xl sm:text-2xl font-bold mt-4 mb-2 serif text-amber-100">"내 형편에 맞는 생명의 만나와 영적 전술 노트를 펼쳐라"</h2>
     <p class="text-slate-300 text-sm max-w-4xl font-light leading-relaxed">말씀 카드를 클릭하면 영상이 재생됩니다. 타임라인 항목을 누르면 해당 시간대로 즉시 이동합니다.</p>
@@ -96,24 +99,24 @@
   <!-- 필터 -->
   <div class="bg-white rounded-3xl p-6 shadow-md border border-slate-200 mb-10 space-y-5">
     <div class="relative">
-      <i class="fa-solid fa-magnifying-glass absolute left-4 top-4 text-slate-400"></i>
+      <span class="absolute left-4 top-4 text-slate-400"><svg class="fa-icon" viewBox="0 0 512 512"><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352a144 144 0 1 0 0-288 144 144 0 1 0 0 288z"/></svg></span>
       <input type="text" id="searchInput" oninput="filterCards()" placeholder="키워드, 성경 구절, 찬양 곡명으로 검색..."
         class="w-full bg-slate-50 border border-slate-300 rounded-xl pl-12 pr-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:bg-white transition">
     </div>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-5 border-t border-slate-100 pt-4">
       <div>
-        <label class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2"><i class="fa-solid fa-clock-rotate-left mr-1 text-indigo-600"></i>연도</label>
+        <label class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2"><span class="mr-1 text-indigo-600"><svg class="fa-icon" viewBox="0 0 512 512"><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></span>연도</label>
         <select id="yearFilter" onchange="filterCards()" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-600">
           <option value="all">전체</option><option value="2026">2026년</option>
         </select>
       </div>
       <div class="md:col-span-2">
-        <label class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2"><i class="fa-regular fa-calendar-days mr-1 text-indigo-600"></i>월별</label>
+        <label class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2"><span class="mr-1 text-indigo-600"><svg class="fa-icon" viewBox="0 0 448 512"><path d="M152 24c0-13.3-10.7-24-24-24s-24 10.7-24 24V64H64C28.7 64 0 92.7 0 128v16 48V448c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V192 144 128c0-35.3-28.7-64-64-64H344V24c0-13.3-10.7-24-24-24s-24 10.7-24 24V64H152V24zM48 192H400V448c0 8.8-7.2 16-16 16H64c-8.8 0-16-7.2-16-16V192zm176 40c-13.3 0-24 10.7-24 24v48H152c-13.3 0-24 10.7-24 24s10.7 24 24 24h48v48c0 13.3 10.7 24 24 24s24-10.7 24-24V352h48c13.3 0 24-10.7 24-24s-10.7-24-24-24H248V256c0-13.3-10.7-24-24-24z"/></svg></span>월별</label>
         <div class="flex flex-wrap gap-1.5" id="monthTabs"></div>
       </div>
     </div>
     <div class="border-t border-slate-100 pt-4">
-      <label class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2"><i class="fa-solid fa-heart-pulse mr-1 text-indigo-600"></i>마음 상황별 처방</label>
+      <label class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2"><span class="mr-1 text-indigo-600"><svg class="fa-icon" viewBox="0 0 512 512"><path d="M228.3 469.1L47.6 300.4c-4.2-3.9-8.2-8.1-11.9-12.4l87 0 38.2 79.5c6.3 13.2 23.9 15.5 33.4 4.5L254.5 268.1l47.1 99.6c6.3 13.2 23.9 15.5 33.4 4.5l59.2-67.8 52.1 67.8c4.2 5.5 10.5 8.8 17.2 9.1s13.3-2.6 17.9-7.6l79.4-87.2c3.7 4.3 7.7 8.5 11.9 12.4L469.7 469.1c-98.2 91-239.7 91-241.4 0zM498.8 186.7c3.3 3.4 6.4 6.9 9.3 10.5-14.5-17.3-40.8-30.7-68.4-22.3c-33.5-41.7-96.5-41-137.6 2.7C280.6 143 232 128 183.3 134.1c-31.5 4-62.5 18.3-85.7 46.1-13.9-10.9-31.4-16.9-49.5-15.4c-26.9 2.2-49.1 16.3-63.3 36.2c3-3.7 6.1-7.3 9.4-10.7C67.5 100.3 190.4 40 256 40c52.7 0 134.5 33.3 199.2 100.3c14.9 15.5 31.5 29.9 43.6 46.4zM192 128c-35.3 0-64-28.7-64-64s28.7-64 64-64 64 28.7 64 64-28.7 64-64 64zm128 0c35.3 0 64-28.7 64-64s-28.7-64-64-64-64 28.7-64 64 28.7 64 64 64z"/></svg></span>마음 상황별 처방</label>
       <div class="flex flex-wrap gap-2" id="sitTabs">
         <button onclick="setSit('all')" data-sit="all" class="tab-sit active-btn px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 transition">모든 형편</button>
         <button onclick="setSit('상처치유')" data-sit="상처치유" class="tab-sit px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">🩹 상처·자존감 치유</button>
@@ -126,7 +129,7 @@
         <button onclick="setSit('나눔전도')" data-sit="나눔전도" class="tab-sit px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">🌱 나눔과 전도</button>
       </div>
     </div>
-    <p class="text-xs text-slate-400 font-bold border-t border-slate-100 pt-3" id="counter"><i class="fa-solid fa-database mr-2 text-indigo-500"></i>로딩 중...</p>
+    <p class="text-xs text-slate-400 font-bold border-t border-slate-100 pt-3" id="counter"><span class="mr-2 text-indigo-500"><svg class="fa-icon" viewBox="0 0 448 512"><path d="M448 80v48c0 44.2-100.3 80-224 80S0 172.2 0 128V80C0 35.8 100.3 0 224 0S448 35.8 448 80zM393.2 214.7c20.8-7.4 39.9-16.9 54.8-28.6V288c0 44.2-100.3 80-224 80S0 332.2 0 288V186.1c14.9 11.8 34 21.2 54.8 28.6C99.7 230.7 159.5 240 224 240s124.3-9.3 169.2-25.3zM0 346.1c14.9 11.8 34 21.2 54.8 28.6C99.7 390.7 159.5 400 224 400s124.3-9.3 169.2-25.3c20.8-7.4 39.9-16.9 54.8-28.6V432c0 44.2-100.3 80-224 80S0 476.2 0 432V346.1z"/></svg></span>로딩 중...</p>
   </div>
 
   <!-- 카드 그리드 -->
@@ -145,7 +148,7 @@
         <p id="mMeta" class="text-xs text-slate-500 mt-1.5 font-medium"></p>
       </div>
       <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 p-2.5 rounded-full hover:bg-slate-200 transition flex-shrink-0">
-        <i class="fa-solid fa-xmark text-2xl"></i>
+        <span class="text-2xl"><svg class="fa-icon" viewBox="0 0 384 512"><path d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"/></svg></span>
       </button>
     </div>
 
@@ -163,19 +166,19 @@
         <!-- 유튜브 바로가기 -->
         <a id="ytLink" href="#" target="_blank"
            class="flex items-center justify-center gap-2 bg-slate-900 hover:bg-red-700 text-white text-xs font-bold py-2.5 rounded-xl transition">
-          <i class="fa-brands fa-youtube text-red-500 text-base"></i>
+          <span class="text-red-500 text-base"><svg class="fa-icon" viewBox="0 0 576 512"><path d="M549.655 124.083c-6.281-23.65-24.787-42.276-48.284-48.597C458.781 64 288 64 288 64S117.22 64 74.629 75.486c-23.497 6.322-42.003 24.947-48.284 48.597-11.412 42.867-11.412 132.305-11.412 132.305s0 89.438 11.412 132.305c6.281 23.65 24.787 41.5 48.284 47.821C117.22 448 288 448 288 448s170.78 0 213.371-11.486c23.497-6.321 42.003-24.171 48.284-47.821 11.412-42.867 11.412-132.305 11.412-132.305s0-89.438-11.412-132.305zm-317.51 213.508V175.185l142.739 81.205-142.739 81.201z"/></svg></span>
           <span id="ytLinkText">유튜브에서 보기</span>
-          <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+          <span class="text-[10px]"><svg class="fa-icon" viewBox="0 0 512 512"><path d="M320 0c-17.7 0-32 14.3-32 32s14.3 32 32 32h82.7L201.4 265.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L448 109.3V192c0 17.7 14.3 32 32 32s32-14.3 32-32V32c0-17.7-14.3-32-32-32H320zM80 32C35.8 32 0 67.8 0 112V432c0 44.2 35.8 80 80 80H400c44.2 0 80-35.8 80-80V320c0-17.7-14.3-32-32-32s-32 14.3-32 32V432c0 8.8-7.2 16-16 16H80c-8.8 0-16-7.2-16-16V112c0-8.8 7.2-16 16-16H192c17.7 0 32-14.3 32-32s-14.3-32-32-32H80z"/></svg></span>
         </a>
 
         <!-- 요약 / 노트 (데스크톱) -->
         <div class="hidden lg:flex flex-col gap-4">
           <div>
-            <p class="text-xs font-bold text-indigo-700 uppercase tracking-widest mb-1.5"><i class="fa-solid fa-quote-left mr-2"></i>영적 본질 요약</p>
+            <p class="text-xs font-bold text-indigo-700 uppercase tracking-widest mb-1.5"><span class="mr-2"><svg class="fa-icon" viewBox="0 0 448 512"><path d="M0 216C0 149.7 53.7 96 120 96h8c17.7 0 32 14.3 32 32s-14.3 32-32 32h-8c-30.9 0-56 25.1-56 56v8h64c35.3 0 64 28.7 64 64v64c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V216zm256 0c0-66.3 53.7-120 120-120h8c17.7 0 32 14.3 32 32s-14.3 32-32 32h-8c-30.9 0-56 25.1-56 56v8h64c35.3 0 64 28.7 64 64v64c0 35.3-28.7 64-64 64H320c-35.3 0-64-28.7-64-64V216z"/></svg></span>영적 본질 요약</p>
             <p id="mSummary" class="text-sm text-slate-600 leading-relaxed bg-slate-50 p-4 rounded-xl border border-slate-200 font-light"></p>
           </div>
           <div>
-            <p class="text-xs font-bold text-indigo-700 uppercase tracking-widest mb-1.5"><i class="fa-solid fa-scroll mr-2"></i>인사이트 &amp; 전술 노트</p>
+            <p class="text-xs font-bold text-indigo-700 uppercase tracking-widest mb-1.5"><span class="mr-2"><svg class="fa-icon" viewBox="0 0 576 512"><path d="M0 80v48c0 17.7 14.3 32 32 32H48 96V80c0-26.5-21.5-48-48-48S0 53.5 0 80zM112 32c10 13.4 16 30 16 48V384c0 35.3 28.7 64 64 64s64-28.7 64-64v-5.3c0-32.4 26.3-58.7 58.7-58.7H480V128c0-53-43-96-96-96H112zM464 480c61.9 0 112-50.1 112-112c0-8.8-7.2-16-16-16H314.7c-14.7 0-26.7 11.9-26.7 26.7V384c0 53-43 96-96 96H368h96z"/></svg></span>인사이트 &amp; 전술 노트</p>
             <div id="mNotes" class="text-sm text-indigo-950 font-medium leading-relaxed bg-indigo-50/40 p-4 rounded-xl border border-indigo-100 whitespace-pre-line serif"></div>
           </div>
         </div>
@@ -184,7 +187,7 @@
       <!-- 우: 타임라인 -->
       <div class="lg:col-span-5 flex flex-col gap-3">
         <div class="flex items-center justify-between">
-          <p class="text-xs font-bold text-indigo-700 uppercase tracking-widest"><i class="fa-solid fa-list-ol mr-1.5"></i>타임라인 인덱스</p>
+          <p class="text-xs font-bold text-indigo-700 uppercase tracking-widest"><span class="mr-1.5"><svg class="fa-icon" viewBox="0 0 512 512"><path d="M24 56c0-13.3 10.7-24 24-24H80c13.3 0 24 10.7 24 24V176h16c13.3 0 24 10.7 24 24s-10.7 24-24 24H40c-13.3 0-24-10.7-24-24s10.7-24 24-24H56V80H48C34.7 80 24 69.3 24 56zM86.7 341.2c-6.5-7.4-18.3-6.9-24 1.2L51.5 357.9c-7.7 10.8-22.7 13.3-33.5 5.6s-13.3-22.7-5.6-33.5l11.1-15.6c23.7-33.2 72.3-35.6 99.2-4.9c21.3 24.4 20.8 60.9-1.1 84.7L86.8 432H120c13.3 0 24 10.7 24 24s-10.7 24-24 24H32c-9.5 0-18.2-5.6-22-14.4s-2.1-18.9 4.3-25.9l72-78.3c5.3-5.8 5.4-14.6 .3-20.2zM224 80c-17.7 0-32-14.3-32-32s14.3-32 32-32H480c17.7 0 32 14.3 32 32s-14.3 32-32 32H224zm0 160c-17.7 0-32-14.3-32-32s14.3-32 32-32H480c17.7 0 32 14.3 32 32s-14.3 32-32 32H224zm0 160c-17.7 0-32-14.3-32-32s14.3-32 32-32H480c17.7 0 32 14.3 32 32s-14.3 32-32 32H224z"/></svg></span>타임라인 인덱스</p>
           <span class="text-[10px] text-slate-400 bg-slate-100 px-2 py-1 rounded-full">클릭 → 해당 시간으로 이동</span>
         </div>
 
@@ -202,11 +205,11 @@
         <!-- 요약 / 노트 (모바일) -->
         <div class="lg:hidden flex flex-col gap-4 border-t border-slate-100 pt-4 mt-2">
           <div>
-            <p class="text-xs font-bold text-indigo-700 uppercase tracking-widest mb-1.5"><i class="fa-solid fa-quote-left mr-2"></i>영적 본질 요약</p>
+            <p class="text-xs font-bold text-indigo-700 uppercase tracking-widest mb-1.5"><span class="mr-2"><svg class="fa-icon" viewBox="0 0 448 512"><path d="M0 216C0 149.7 53.7 96 120 96h8c17.7 0 32 14.3 32 32s-14.3 32-32 32h-8c-30.9 0-56 25.1-56 56v8h64c35.3 0 64 28.7 64 64v64c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V216zm256 0c0-66.3 53.7-120 120-120h8c17.7 0 32 14.3 32 32s-14.3 32-32 32h-8c-30.9 0-56 25.1-56 56v8h64c35.3 0 64 28.7 64 64v64c0 35.3-28.7 64-64 64H320c-35.3 0-64-28.7-64-64V216z"/></svg></span>영적 본질 요약</p>
             <p id="mSummaryM" class="text-sm text-slate-600 leading-relaxed bg-slate-50 p-4 rounded-xl border border-slate-200 font-light"></p>
           </div>
           <div>
-            <p class="text-xs font-bold text-indigo-700 uppercase tracking-widest mb-1.5"><i class="fa-solid fa-scroll mr-2"></i>인사이트 &amp; 전술 노트</p>
+            <p class="text-xs font-bold text-indigo-700 uppercase tracking-widest mb-1.5"><span class="mr-2"><svg class="fa-icon" viewBox="0 0 576 512"><path d="M0 80v48c0 17.7 14.3 32 32 32H48 96V80c0-26.5-21.5-48-48-48S0 53.5 0 80zM112 32c10 13.4 16 30 16 48V384c0 35.3 28.7 64 64 64s64-28.7 64-64v-5.3c0-32.4 26.3-58.7 58.7-58.7H480V128c0-53-43-96-96-96H112zM464 480c61.9 0 112-50.1 112-112c0-8.8-7.2-16-16-16H314.7c-14.7 0-26.7 11.9-26.7 26.7V384c0 53-43 96-96 96H368h96z"/></svg></span>인사이트 &amp; 전술 노트</p>
             <div id="mNotesM" class="text-sm text-indigo-950 font-medium leading-relaxed bg-indigo-50/40 p-4 rounded-xl border border-indigo-100 whitespace-pre-line serif"></div>
           </div>
         </div>
@@ -222,7 +225,7 @@
 <div id="adminLoginModal" class="fixed inset-0 z-[60] hidden bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
   <div class="bg-white rounded-2xl w-full max-w-sm p-8 shadow-2xl border border-slate-200 text-center space-y-5">
     <div class="w-14 h-14 bg-slate-900 rounded-2xl flex items-center justify-center mx-auto shadow-lg">
-      <i class="fa-solid fa-shield-halved text-amber-400 text-2xl"></i>
+      <span class="text-amber-400 text-2xl"><svg class="fa-icon" viewBox="0 0 512 512"><path d="M256 0c4.6 0 9.2 1 13.4 2.9L457.7 82.8c22 9.3 38.4 31 38.3 57.2c-.5 99.2-41.3 280.7-213.6 363.2c-16.7 8-36.1 8-52.8 0C57.3 420.7 16.5 239.2 16 140c-.1-26.2 16.3-47.9 38.3-57.2L242.7 2.9C246.8 1 251.4 0 256 0z"/></svg></span>
     </div>
     <div>
       <h3 class="text-lg font-bold text-slate-900 serif">관리자 인증</h3>
@@ -236,7 +239,7 @@
         class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-sm py-2.5 rounded-xl transition">취소</button>
       <button onclick="checkAdminLogin()"
         class="flex-1 bg-slate-900 hover:bg-slate-700 text-white font-bold text-sm py-2.5 rounded-xl transition shadow-md">
-        <i class="fa-solid fa-right-to-bracket mr-1"></i>입장
+        <span class="mr-1"><svg class="fa-icon" viewBox="0 0 512 512"><path d="M352 96l64 0c17.7 0 32 14.3 32 32l0 256c0 17.7-14.3 32-32 32l-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32l64 0c53 0 96-43 96-96l0-256c0-53-43-96-96-96l-64 0c-17.7 0-32 14.3-32 32s14.3 32 32 32zm-9.4 182.6c12.5-12.5 12.5-32.8 0-45.3l-128-128c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L242.7 224 32 224c-17.7 0-32 14.3-32 32s14.3 32 32 32l210.7 0-73.4 73.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0l128-128z"/></svg></span>입장
       </button>
     </div>
     <p id="adminLoginErr" class="text-xs text-red-500 font-bold hidden">비밀번호가 올바르지 않습니다</p>
@@ -252,7 +255,7 @@
   <div class="flex items-center justify-between px-6 py-4 border-b border-slate-700 flex-shrink-0" style="background:#1e293b">
     <div class="flex items-center gap-3">
       <div class="w-9 h-9 bg-amber-400 rounded-xl flex items-center justify-center shadow">
-        <i class="fa-solid fa-shield-halved text-slate-900 text-base"></i>
+        <span class="text-slate-900 text-base"><svg class="fa-icon" viewBox="0 0 512 512"><path d="M256 0c4.6 0 9.2 1 13.4 2.9L457.7 82.8c22 9.3 38.4 31 38.3 57.2c-.5 99.2-41.3 280.7-213.6 363.2c-16.7 8-36.1 8-52.8 0C57.3 420.7 16.5 239.2 16 140c-.1-26.2 16.3-47.9 38.3-57.2L242.7 2.9C246.8 1 251.4 0 256 0z"/></svg></span>
       </div>
       <div>
         <p class="text-white font-bold text-sm">하늘스크린교회 관리자</p>
@@ -261,17 +264,17 @@
     </div>
     <div class="flex items-center gap-2 flex-wrap">
       <button onclick="openAddSermon()" class="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold px-4 py-2 rounded-xl transition shadow-md">
-        <i class="fa-solid fa-plus"></i> 새 말씀 등록
+        <svg class="fa-icon" viewBox="0 0 448 512"><path d="M256 80c0-17.7-14.3-32-32-32s-32 14.3-32 32V224H48c-17.7 0-32 14.3-32 32s14.3 32 32 32H192V432c0 17.7 14.3 32 32 32s32-14.3 32-32V288H400c17.7 0 32-14.3 32-32s-14.3-32-32-32H256V80z"/></svg> 새 말씀 등록
       </button>
       <label class="flex items-center gap-1.5 bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-bold px-4 py-2 rounded-xl transition shadow-md cursor-pointer">
-        <i class="fa-solid fa-file-arrow-up"></i> 파일로 일괄 등록
+        <svg class="fa-icon" viewBox="0 0 384 512"><path d="M64 0C28.7 0 0 28.7 0 64V448c0 35.3 28.7 64 64 64H320c35.3 0 64-28.7 64-64V160H256c-17.7 0-32-14.3-32-32V0H64zM256 0V128h128L256 0zM216 232V376c0 13.3-10.7 24-24 24s-24-10.7-24-24V232l-31 31c-9.4 9.4-24.6 9.4-33.9 0s-9.4-24.6 0-33.9l72-72c9.4-9.4 24.6-9.4 33.9 0l72 72c9.4 9.4 9.4 24.6 0 33.9s-24.6 9.4-33.9 0l-31-31z"/></svg> 파일로 일괄 등록
         <input type="file" id="txtFileInput" accept=".txt" class="hidden" onchange="handleTxtUpload(event)">
       </label>
       <button onclick="adminResetDB()" class="flex items-center gap-1.5 bg-slate-700 hover:bg-slate-600 text-slate-300 text-xs font-semibold px-3 py-2 rounded-xl transition">
-        <i class="fa-solid fa-arrow-rotate-left"></i> DB 초기화
+        <svg class="fa-icon" viewBox="0 0 512 512"><path d="M125.7 160H176c17.7 0 32 14.3 32 32s-14.3 32-32 32H48c-17.7 0-32-14.3-32-32V64c0-17.7 14.3-32 32-32s32 14.3 32 32v51.2L97.6 97.6c87.5-87.5 229.3-87.5 316.8 0s87.5 229.3 0 316.8s-229.3 87.5-316.8 0c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0c62.5 62.5 163.8 62.5 226.3 0s62.5-163.8 0-226.3s-163.8-62.5-226.3 0L125.7 160z"/></svg> DB 초기화
       </button>
       <button onclick="closeAdmin()" class="flex items-center gap-1.5 bg-red-900/60 hover:bg-red-800 text-red-300 text-xs font-bold px-4 py-2 rounded-xl transition">
-        <i class="fa-solid fa-xmark"></i> 닫기
+        <svg class="fa-icon" viewBox="0 0 384 512"><path d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"/></svg> 닫기
       </button>
     </div>
   </div>
@@ -279,7 +282,7 @@
   <!-- 관리자 검색 -->
   <div class="px-6 py-3 border-b border-slate-700 flex-shrink-0" style="background:#1e293b">
     <div class="relative max-w-lg">
-      <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-500 text-sm"></i>
+      <span class="absolute left-3 top-3 text-slate-500 text-sm"><svg class="fa-icon" viewBox="0 0 512 512"><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352a144 144 0 1 0 0-288 144 144 0 1 0 0 288z"/></svg></span>
       <input type="text" id="adminSearch" oninput="renderAdminList()" placeholder="제목, 날짜, 키워드로 검색..."
         class="w-full bg-slate-800 border border-slate-600 text-white text-xs rounded-xl pl-9 pr-4 py-2.5 outline-none focus:ring-2 focus:ring-indigo-500 placeholder-slate-500">
     </div>
@@ -302,20 +305,20 @@
     <div class="p-5 border-b border-slate-200 bg-slate-50 rounded-t-3xl flex items-center justify-between flex-shrink-0">
       <div>
         <h3 class="text-base font-bold text-slate-900 serif flex items-center gap-2">
-          <i class="fa-solid fa-file-arrow-up text-emerald-600"></i> 텍스트 파일 일괄 등록
+          <span class="text-emerald-600"><svg class="fa-icon" viewBox="0 0 384 512"><path d="M64 0C28.7 0 0 28.7 0 64V448c0 35.3 28.7 64 64 64H320c35.3 0 64-28.7 64-64V160H256c-17.7 0-32-14.3-32-32V0H64zM256 0V128h128L256 0zM216 232V376c0 13.3-10.7 24-24 24s-24-10.7-24-24V232l-31 31c-9.4 9.4-24.6 9.4-33.9 0s-9.4-24.6 0-33.9l72-72c9.4-9.4 24.6-9.4 33.9 0l72 72c9.4 9.4 9.4 24.6 0 33.9s-24.6 9.4-33.9 0l-31-31z"/></svg></span> 텍스트 파일 일괄 등록
         </h3>
         <p class="text-xs text-slate-500 mt-0.5">파싱된 결과를 확인 후 등록하세요. 체크 해제한 항목은 제외됩니다.</p>
       </div>
       <button onclick="closeImportModal()" class="text-slate-400 hover:text-slate-600 p-2 rounded-full hover:bg-slate-200 transition">
-        <i class="fa-solid fa-xmark text-xl"></i>
+        <span class="text-xl"><svg class="fa-icon" viewBox="0 0 384 512"><path d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"/></svg></span>
       </button>
     </div>
 
     <!-- 통계 바 -->
     <div class="px-5 py-3 border-b border-slate-100 flex items-center gap-4 flex-shrink-0 bg-white">
-      <span class="text-xs font-bold text-slate-600"><i class="fa-solid fa-list-ol mr-1 text-indigo-500"></i>파싱됨: <b id="importTotal" class="text-indigo-700">0</b>편</span>
-      <span class="text-xs font-bold text-slate-600"><i class="fa-solid fa-circle-check mr-1 text-emerald-500"></i>신규: <b id="importNew" class="text-emerald-700">0</b>편</span>
-      <span class="text-xs font-bold text-slate-600"><i class="fa-solid fa-arrow-rotate-left mr-1 text-amber-500"></i>중복: <b id="importDup" class="text-amber-700">0</b>편</span>
+      <span class="text-xs font-bold text-slate-600"><span class="mr-1 text-indigo-500"><svg class="fa-icon" viewBox="0 0 512 512"><path d="M24 56c0-13.3 10.7-24 24-24H80c13.3 0 24 10.7 24 24V176h16c13.3 0 24 10.7 24 24s-10.7 24-24 24H40c-13.3 0-24-10.7-24-24s10.7-24 24-24H56V80H48C34.7 80 24 69.3 24 56zM86.7 341.2c-6.5-7.4-18.3-6.9-24 1.2L51.5 357.9c-7.7 10.8-22.7 13.3-33.5 5.6s-13.3-22.7-5.6-33.5l11.1-15.6c23.7-33.2 72.3-35.6 99.2-4.9c21.3 24.4 20.8 60.9-1.1 84.7L86.8 432H120c13.3 0 24 10.7 24 24s-10.7 24-24 24H32c-9.5 0-18.2-5.6-22-14.4s-2.1-18.9 4.3-25.9l72-78.3c5.3-5.8 5.4-14.6 .3-20.2zM224 80c-17.7 0-32-14.3-32-32s14.3-32 32-32H480c17.7 0 32 14.3 32 32s-14.3 32-32 32H224zm0 160c-17.7 0-32-14.3-32-32s14.3-32 32-32H480c17.7 0 32 14.3 32 32s-14.3 32-32 32H224zm0 160c-17.7 0-32-14.3-32-32s14.3-32 32-32H480c17.7 0 32 14.3 32 32s-14.3 32-32 32H224z"/></svg></span>파싱됨: <b id="importTotal" class="text-indigo-700">0</b>편</span>
+      <span class="text-xs font-bold text-slate-600"><span class="mr-1 text-emerald-500"><svg class="fa-icon" viewBox="0 0 512 512"><path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zM369 209L241 337c-9.4 9.4-24.6 9.4-33.9 0l-64-64c-9.4-9.4-9.4-24.6 0-33.9s24.6-9.4 33.9 0l47 47L335 175c9.4-9.4 24.6-9.4 33.9 0s9.4 24.6 0 33.9z"/></svg></span>신규: <b id="importNew" class="text-emerald-700">0</b>편</span>
+      <span class="text-xs font-bold text-slate-600"><span class="mr-1 text-amber-500"><svg class="fa-icon" viewBox="0 0 512 512"><path d="M125.7 160H176c17.7 0 32 14.3 32 32s-14.3 32-32 32H48c-17.7 0-32-14.3-32-32V64c0-17.7 14.3-32 32-32s32 14.3 32 32v51.2L97.6 97.6c87.5-87.5 229.3-87.5 316.8 0s87.5 229.3 0 316.8s-229.3 87.5-316.8 0c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0c62.5 62.5 163.8 62.5 226.3 0s62.5-163.8 0-226.3s-163.8-62.5-226.3 0L125.7 160z"/></svg></span>중복: <b id="importDup" class="text-amber-700">0</b>편</span>
       <label class="ml-auto flex items-center gap-1.5 text-xs text-slate-500 font-semibold cursor-pointer select-none">
         <input type="checkbox" id="importSelectAll" checked onchange="toggleImportAll(this.checked)" class="w-3.5 h-3.5 accent-indigo-600">
         전체 선택
@@ -331,7 +334,7 @@
       <div class="flex gap-2">
         <button onclick="closeImportModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-sm px-5 py-2.5 rounded-xl transition">취소</button>
         <button onclick="confirmImport()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm px-6 py-2.5 rounded-xl transition shadow-md">
-          <i class="fa-solid fa-cloud-arrow-up mr-1"></i> 선택 항목 등록
+          <span class="mr-1"><svg class="fa-icon" viewBox="0 0 640 512"><path d="M144 480C64.5 480 0 415.5 0 336c0-62.8 40.2-116.2 96.2-135.9c-.1-2.7-.2-5.4-.2-8.1c0-88.4 71.6-160 160-160c59.3 0 111 32.2 138.7 80.2C409.9 102 428.3 96 448 96c53 0 96 43 96 96c0 12.2-2.3 23.8-6.4 34.6C596 238.4 640 290.1 640 352c0 70.7-57.3 128-128 128H144zm79-217c-9.4 9.4-9.4 24.6 0 33.9s24.6 9.4 33.9 0l39-39V392c0 13.3 10.7 24 24 24s24-10.7 24-24V257.9l39 39c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-80-80c-9.4-9.4-24.6-9.4-33.9 0l-80 80z"/></svg></span> 선택 항목 등록
         </button>
       </div>
     </div>
@@ -347,10 +350,10 @@
     <!-- 편집 헤더 -->
     <div class="p-5 border-b border-slate-200 bg-slate-50 rounded-t-3xl flex items-center justify-between flex-shrink-0">
       <h3 id="editModalTitle" class="text-base font-bold text-slate-900 serif flex items-center gap-2">
-        <i class="fa-solid fa-pen-to-square text-indigo-600"></i> 말씀 편집
+        <span class="text-indigo-600"><svg class="fa-icon" viewBox="0 0 512 512"><path d="M362.7 19.3L314.3 67.7 444.3 197.7l48.4-48.4c25-25 25-65.5 0-90.5L453.3 19.3c-25-25-65.5-25-90.5 0zm-71 71L58.6 323.5c-10.4 10.4-18 23.3-22.2 37.4L1 481.2C-1.5 489.7 .8 498.8 7 505s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L421.7 220.3 291.7 90.3z"/></svg></span> 말씀 편집
       </h3>
       <button onclick="closeEditModal()" class="text-slate-400 hover:text-slate-600 p-2 rounded-full hover:bg-slate-200 transition">
-        <i class="fa-solid fa-xmark text-xl"></i>
+        <span class="text-xl"><svg class="fa-icon" viewBox="0 0 384 512"><path d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"/></svg></span>
       </button>
     </div>
 
@@ -406,7 +409,7 @@
         <div class="flex items-center justify-between mb-2">
           <label class="text-xs font-bold text-slate-600">타임라인 <span class="text-slate-400 font-normal">(형식: [HH:MM:SS] 제목)</span></label>
           <button onclick="addTlRow()" class="text-xs bg-indigo-100 hover:bg-indigo-200 text-indigo-700 font-bold px-3 py-1 rounded-lg transition flex items-center gap-1">
-            <i class="fa-solid fa-plus text-[10px]"></i> 항목 추가
+            <span class="text-[10px]"><svg class="fa-icon" viewBox="0 0 448 512"><path d="M256 80c0-17.7-14.3-32-32-32s-32 14.3-32 32V224H48c-17.7 0-32 14.3-32 32s14.3 32 32 32H192V432c0 17.7 14.3 32 32 32s32-14.3 32-32V288H400c17.7 0 32-14.3 32-32s-14.3-32-32-32H256V80z"/></svg></span> 항목 추가
           </button>
         </div>
         <div id="tlEditor" class="space-y-2 max-h-64 overflow-y-auto pr-1"></div>
@@ -415,12 +418,12 @@
       <!-- 저장 버튼 -->
       <div class="flex justify-between items-center pt-2 border-t border-slate-100">
         <button id="eDeleteBtn" onclick="deleteSermon()" class="text-xs text-red-500 hover:text-red-700 font-bold flex items-center gap-1.5 transition hidden">
-          <i class="fa-solid fa-trash"></i> 이 말씀 삭제
+          <svg class="fa-icon" viewBox="0 0 448 512"><path d="M135.2 17.7L128 32H32C14.3 32 0 46.3 0 64S14.3 96 32 96H416c17.7 0 32-14.3 32-32s-14.3-32-32-32H320l-7.2-14.3C307.4 6.8 296.3 0 284.2 0H163.8c-12.1 0-23.2 6.8-28.6 17.7zM416 128H32L53.2 467c1.6 25.3 22.6 45 47.9 45H346.9c25.3 0 46.3-19.7 47.9-45L416 128z"/></svg> 이 말씀 삭제
         </button>
         <div class="flex gap-2 ml-auto">
           <button onclick="closeEditModal()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-sm px-5 py-2.5 rounded-xl transition">취소</button>
           <button onclick="saveEdit()" class="bg-indigo-950 hover:bg-indigo-800 text-white font-bold text-sm px-6 py-2.5 rounded-xl transition shadow-md">
-            <i class="fa-solid fa-floppy-disk mr-1"></i> 저장
+            <span class="mr-1"><svg class="fa-icon" viewBox="0 0 448 512"><path d="M64 32C28.7 32 0 60.7 0 96V416c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V173.3c0-17-6.7-33.3-18.7-45.3L352 50.7C340 38.7 323.7 32 306.7 32H64zm0 96c0-17.7 14.3-32 32-32H288c17.7 0 32 14.3 32 32v64c0 17.7-14.3 32-32 32H96c-17.7 0-32-14.3-32-32V128zM224 288a64 64 0 1 1 0 128 64 64 0 1 1 0-128z"/></svg></span> 저장
           </button>
         </div>
       </div>
@@ -588,7 +591,7 @@ function openModal(idx) {
 
   document.getElementById('mCat').textContent   = item.categoryKo;
   document.getElementById('mTitle').textContent  = item.title;
-  document.getElementById('mMeta').innerHTML     = '<i class="fa-regular fa-calendar mr-1"></i>' + item.date + ' &nbsp;|&nbsp; <span class="text-indigo-700 font-bold">' + item.month + ' 대예배</span>';
+  document.getElementById('mMeta').innerHTML     = '<span class="mr-1"><svg class="fa-icon" viewBox="0 0 448 512"><path d="M152 24c0-13.3-10.7-24-24-24s-24 10.7-24 24V64H64C28.7 64 0 92.7 0 128v16 48V448c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V192 144 128c0-35.3-28.7-64-64-64H344V24c0-13.3-10.7-24-24-24s-24 10.7-24 24V64H152V24zM48 192H400V448c0 8.8-7.2 16-16 16H64c-8.8 0-16-7.2-16-16V192z"/></svg></span>' + item.date + ' &nbsp;|&nbsp; <span class="text-indigo-700 font-bold">' + item.month + ' 대예배</span>';
   document.getElementById('mSummary').textContent  = item.summary;
   document.getElementById('mNotes').textContent    = item.notes;
   document.getElementById('mSummaryM').textContent = item.summary;
@@ -609,7 +612,7 @@ function openModal(idx) {
     };
     btn.innerHTML =
       '<span class="flex items-center gap-2 min-w-0 flex-1 text-slate-700 font-medium group-hover:text-indigo-900">' +
-        '<i class="fa-solid fa-play text-indigo-400 text-[10px] flex-shrink-0"></i>' +
+        '<span class="text-indigo-400 text-[10px] flex-shrink-0"><svg class="fa-icon" viewBox="0 0 384 512"><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg></span>' +
         '<span class="truncate leading-snug">' + node.title + '</span>' +
       '</span>' +
       '<span class="tl-badge text-indigo-600 font-bold bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100 text-[11px] font-mono flex-shrink-0 ml-1">' + node.time + '</span>';
@@ -660,12 +663,12 @@ function renderCards(data) {
         '<p class="text-xs text-slate-500 font-light leading-relaxed line-clamp-3">' + item.summary + '</p>' +
       '</div>' +
       '<div class="px-6 py-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-xs">' +
-        '<span class="text-indigo-600 font-bold flex items-center gap-1.5"><i class="fa-brands fa-youtube text-red-500"></i>영상 재생</span>' +
+        '<span class="text-indigo-600 font-bold flex items-center gap-1.5"><span class="text-red-500"><svg class="fa-icon" viewBox="0 0 576 512"><path d="M549.655 124.083c-6.281-23.65-24.787-42.276-48.284-48.597C458.781 64 288 64 288 64S117.22 64 74.629 75.486c-23.497 6.322-42.003 24.947-48.284 48.597-11.412 42.867-11.412 132.305-11.412 132.305s0 89.438 11.412 132.305c6.281 23.65 24.787 41.5 48.284 47.821C117.22 448 288 448 288 448s170.78 0 213.371-11.486c23.497-6.321 42.003-24.171 48.284-47.821 11.412-42.867 11.412-132.305 11.412-132.305s0-89.438-11.412-132.305zm-317.51 213.508V175.185l142.739 81.205-142.739 81.201z"/></svg></span>영상 재생</span>' +
         '<span class="text-slate-400">' + item.timeline.length + '개 타임라인</span>' +
       '</div>';
     grid.appendChild(div);
   });
-  document.getElementById('counter').innerHTML = '<i class="fa-solid fa-database mr-2 text-indigo-500"></i>검색 결과: <b>' + data.length + '개</b>';
+  document.getElementById('counter').innerHTML = '<span class="mr-2 text-indigo-500"><svg class="fa-icon" viewBox="0 0 448 512"><path d="M448 80v48c0 44.2-100.3 80-224 80S0 172.2 0 128V80C0 35.8 100.3 0 224 0S448 35.8 448 80zM393.2 214.7c20.8-7.4 39.9-16.9 54.8-28.6V288c0 44.2-100.3 80-224 80S0 332.2 0 288V186.1c14.9 11.8 34 21.2 54.8 28.6C99.7 230.7 159.5 240 224 240s124.3-9.3 169.2-25.3zM0 346.1c14.9 11.8 34 21.2 54.8 28.6C99.7 390.7 159.5 400 224 400s124.3-9.3 169.2-25.3c20.8-7.4 39.9-16.9 54.8-28.6V432c0 44.2-100.3 80-224 80S0 476.2 0 432V346.1z"/></svg></span>검색 결과: <b>' + data.length + '개</b>';
 }
 
 function filterCards() {
@@ -785,7 +788,7 @@ function renderAdminList() {
       '<div class="flex items-center gap-2 flex-shrink-0">' +
         '<span class="text-[10px] text-slate-600 bg-slate-800 px-2 py-1 rounded-lg">' + (item.timeline ? item.timeline.length : 0) + '개 타임라인</span>' +
         '<button onclick="event.stopPropagation();openEditModal(' + item.index + ')" class="text-slate-500 hover:text-indigo-400 p-1.5 rounded-lg hover:bg-slate-700 transition">' +
-          '<i class="fa-solid fa-pen text-xs"></i>' +
+          '<span class="text-xs"><svg class="fa-icon" viewBox="0 0 512 512"><path d="M362.7 19.3L314.3 67.7 444.3 197.7l48.4-48.4c25-25 25-65.5 0-90.5L453.3 19.3c-25-25-65.5-25-90.5 0zm-71 71L58.6 323.5c-10.4 10.4-18 23.3-22.2 37.4L1 481.2C-1.5 489.7 .8 498.8 7 505s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L421.7 220.3 291.7 90.3z"/></svg></span>' +
         '</button>' +
       '</div>' +
     '</div>';
@@ -798,7 +801,7 @@ function openEditModal(idx) {
   if (!item) return;
   editingIndex = idx;
 
-  document.getElementById('editModalTitle').innerHTML = '<i class="fa-solid fa-pen-to-square text-indigo-600"></i> 말씀 수정';
+  document.getElementById('editModalTitle').innerHTML = '<span class="text-indigo-600"><svg class="fa-icon" viewBox="0 0 512 512"><path d="M362.7 19.3L314.3 67.7 444.3 197.7l48.4-48.4c25-25 25-65.5 0-90.5L453.3 19.3c-25-25-65.5-25-90.5 0zm-71 71L58.6 323.5c-10.4 10.4-18 23.3-22.2 37.4L1 481.2C-1.5 489.7 .8 498.8 7 505s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L421.7 220.3 291.7 90.3z"/></svg></span> 말씀 수정';
   document.getElementById('eTitle').value    = item.title || '';
   document.getElementById('eUrl').value      = item.id || '';
   document.getElementById('eDate').value     = item.date || '';
@@ -824,7 +827,7 @@ function openEditModal(idx) {
 // ── 편집 모달 열기 (신규 등록) ──
 function openAddSermon() {
   editingIndex = null;
-  document.getElementById('editModalTitle').innerHTML = '<i class="fa-solid fa-plus text-indigo-600"></i> 새 말씀 등록';
+  document.getElementById('editModalTitle').innerHTML = '<span class="text-indigo-600"><svg class="fa-icon" viewBox="0 0 448 512"><path d="M256 80c0-17.7-14.3-32-32-32s-32 14.3-32 32V224H48c-17.7 0-32 14.3-32 32s14.3 32 32 32H192V432c0 17.7 14.3 32 32 32s32-14.3 32-32V288H400c17.7 0 32-14.3 32-32s-14.3-32-32-32H256V80z"/></svg></span> 새 말씀 등록';
   document.getElementById('eTitle').value = '';
   document.getElementById('eUrl').value = '';
   document.getElementById('eDate').value = new Date().toISOString().slice(0,10);
@@ -857,7 +860,7 @@ function makeTlRow(time, title, secs, idx) {
     '<input type="text" value="' + time.replace(/"/g,"'") + '" placeholder="[00:05:12]" ' +       'class="tl-time w-28 flex-shrink-0 bg-slate-50 border border-slate-300 rounded-lg px-2 py-2 text-xs font-mono outline-none focus:ring-2 focus:ring-indigo-400">' +     '<input type="text" value="' + title.replace(/"/g,"'") + '" placeholder="타임라인 제목" ' +
       'class="tl-title flex-1 bg-slate-50 border border-slate-300 rounded-lg px-2 py-2 text-xs outline-none focus:ring-2 focus:ring-indigo-400">' +
     '<button onclick="this.closest(\'.tl-row\').remove()" class="text-slate-400 hover:text-red-500 p-1.5 rounded-lg hover:bg-red-50 transition flex-shrink-0">' +
-      '<i class="fa-solid fa-xmark text-xs"></i>' +
+      '<span class="text-xs"><svg class="fa-icon" viewBox="0 0 384 512"><path d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"/></svg></span>' +
     '</button>';
   return row;
 }
@@ -1108,10 +1111,10 @@ function openImportModal() {
     var isDup = !!existingIds[item.id];
     var cc = catColors[item.categoryKo] || 'bg-slate-100 text-slate-700';
     var dupBadge = isDup
-      ? '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700"><i class="fa-solid fa-arrow-rotate-left mr-0.5"></i>\uAE30\uC874 \uB36E\uC5B4\uC4F0\uAE30</span>'
-      : '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700"><i class="fa-solid fa-plus mr-0.5"></i>\uC2E0\uADDC</span>';
+      ? '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700"><span class="mr-0.5"><svg class="fa-icon" viewBox="0 0 512 512"><path d="M125.7 160H176c17.7 0 32 14.3 32 32s-14.3 32-32 32H48c-17.7 0-32-14.3-32-32V64c0-17.7 14.3-32 32-32s32 14.3 32 32v51.2L97.6 97.6c87.5-87.5 229.3-87.5 316.8 0s87.5 229.3 0 316.8s-229.3 87.5-316.8 0c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0c62.5 62.5 163.8 62.5 226.3 0s62.5-163.8 0-226.3s-163.8-62.5-226.3 0L125.7 160z"/></svg></span>\uAE30\uC874 \uB36E\uC5B4\uC4F0\uAE30</span>'
+      : '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700"><span class="mr-0.5"><svg class="fa-icon" viewBox="0 0 448 512"><path d="M256 80c0-17.7-14.3-32-32-32s-32 14.3-32 32V224H48c-17.7 0-32 14.3-32 32s14.3 32 32 32H192V432c0 17.7 14.3 32 32 32s32-14.3 32-32V288H400c17.7 0 32-14.3 32-32s-14.3-32-32-32H256V80z"/></svg></span>\uC2E0\uADDC</span>';
     var scrPart = item.scripture
-      ? '<i class="fa-solid fa-scroll mr-1 text-indigo-400"></i>' + item.scripture + ' &nbsp;|&nbsp; '
+      ? '<span class="mr-1 text-indigo-400"><svg class="fa-icon" viewBox="0 0 576 512"><path d="M0 80v48c0 17.7 14.3 32 32 32H48 96V80c0-26.5-21.5-48-48-48S0 53.5 0 80zM112 32c10 13.4 16 30 16 48V384c0 35.3 28.7 64 64 64s64-28.7 64-64v-5.3c0-32.4 26.3-58.7 58.7-58.7H480V128c0-53-43-96-96-96H112zM464 480c61.9 0 112-50.1 112-112c0-8.8-7.2-16-16-16H314.7c-14.7 0-26.7 11.9-26.7 26.7V384c0 53-43 96-96 96H368h96z"/></svg></span>' + item.scripture + ' &nbsp;|&nbsp; '
       : '';
     var sumPart = item.summary
       ? '<p class="text-xs text-slate-400 mt-1 line-clamp-2 leading-relaxed">' + item.summary.slice(0, 120) + (item.summary.length > 120 ? '\u2026' : '') + '</p>'
@@ -1127,8 +1130,8 @@ function openImportModal() {
         + '<p class="text-sm font-bold text-slate-900 truncate">' + item.title + '</p>'
         + '<p class="text-xs text-slate-500 truncate mt-0.5">'
           + scrPart
-          + '<i class="fa-brands fa-youtube mr-1 text-red-500"></i>' + item.id + ' &nbsp;|&nbsp; '
-          + '<i class="fa-solid fa-list-ol mr-1 text-slate-400"></i>' + item.timeline.length + '\uAC1C \uD0C0\uC784\uB77C\uC778'
+          + '<span class="mr-1 text-red-500"><svg class="fa-icon" viewBox="0 0 576 512"><path d="M549.655 124.083c-6.281-23.65-24.787-42.276-48.284-48.597C458.781 64 288 64 288 64S117.22 64 74.629 75.486c-23.497 6.322-42.003 24.947-48.284 48.597-11.412 42.867-11.412 132.305-11.412 132.305s0 89.438 11.412 132.305c6.281 23.65 24.787 41.5 48.284 47.821C117.22 448 288 448 288 448s170.78 0 213.371-11.486c23.497-6.321 42.003-24.171 48.284-47.821 11.412-42.867 11.412-132.305 11.412-132.305s0-89.438-11.412-132.305zm-317.51 213.508V175.185l142.739 81.205-142.739 81.201z"/></svg></span>' + item.id + ' &nbsp;|&nbsp; '
+          + '<span class="mr-1 text-slate-400"><svg class="fa-icon" viewBox="0 0 512 512"><path d="M24 56c0-13.3 10.7-24 24-24H80c13.3 0 24 10.7 24 24V176h16c13.3 0 24 10.7 24 24s-10.7 24-24 24H40c-13.3 0-24-10.7-24-24s10.7-24 24-24H56V80H48C34.7 80 24 69.3 24 56zM86.7 341.2c-6.5-7.4-18.3-6.9-24 1.2L51.5 357.9c-7.7 10.8-22.7 13.3-33.5 5.6s-13.3-22.7-5.6-33.5l11.1-15.6c23.7-33.2 72.3-35.6 99.2-4.9c21.3 24.4 20.8 60.9-1.1 84.7L86.8 432H120c13.3 0 24 10.7 24 24s-10.7 24-24 24H32c-9.5 0-18.2-5.6-22-14.4s-2.1-18.9 4.3-25.9l72-78.3c5.3-5.8 5.4-14.6 .3-20.2zM224 80c-17.7 0-32-14.3-32-32s14.3-32 32-32H480c17.7 0 32 14.3 32 32s-14.3 32-32 32H224zm0 160c-17.7 0-32-14.3-32-32s14.3-32 32-32H480c17.7 0 32 14.3 32 32s-14.3 32-32 32H224zm0 160c-17.7 0-32-14.3-32-32s14.3-32 32-32H480c17.7 0 32 14.3 32 32s-14.3 32-32 32H224z"/></svg></span>' + item.timeline.length + '\uAC1C \uD0C0\uC784\uB77C\uC778'
         + '</p>'
         + sumPart
       + '</div>'
@@ -1194,13 +1197,24 @@ function resetDB() { adminResetDB(); }
 // 알림
 // ────────────────────────────────────────────────
 function showAlert(msg, type) {
-  const icon=document.getElementById('alertIcon');
-  document.getElementById('alertTitle').textContent = type==='error'?'오류':type==='success'?'성공':'알림';
+  var icon=document.getElementById('alertIcon');
+  var iconMap = { error:'❌', success:'✅', info:'ℹ️' };
+  var bgMap   = { error:'bg-red-100 text-red-700', success:'bg-green-100 text-green-700', info:'bg-indigo-100 text-indigo-900' };
+  var titleMap= { error:'오류', success:'성공', info:'알림' };
+  document.getElementById('alertTitle').textContent = titleMap[type]||'알림';
   document.getElementById('alertMsg').textContent = msg;
-  icon.className='w-12 h-12 rounded-full flex items-center justify-center mx-auto text-xl '+(type==='error'?'bg-red-100 text-red-700':type==='success'?'bg-green-100 text-green-700':'bg-indigo-100 text-indigo-900');
-  icon.innerHTML='<i class="fa-solid '+(type==='error'?'fa-circle-xmark':type==='success'?'fa-circle-check':'fa-circle-info')+'"></i>';
+  icon.className='w-12 h-12 rounded-full flex items-center justify-center mx-auto text-2xl '+(bgMap[type]||bgMap.info);
+  icon.textContent = iconMap[type]||iconMap.info;
   document.getElementById('alertModal').classList.remove('hidden');
 }
+
+// ────────────────────────────────────────────────
+// localStorage 래퍼 (file:// 환경 차단 대비)
+// ────────────────────────────────────────────────
+var _memStore = {};
+function lsGet(k) { try { var v = localStorage.getItem(k); return v; } catch(e) { return _memStore[k]||null; } }
+function lsSet(k,v) { try { localStorage.setItem(k,v); } catch(e) { _memStore[k]=v; } }
+function lsDel(k) { try { localStorage.removeItem(k); } catch(e) { delete _memStore[k]; } }
 
 // ────────────────────────────────────────────────
 // 초기화
