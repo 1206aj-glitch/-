@@ -514,56 +514,59 @@ function showThumb(videoId) {
 
 // youtube.com/embed 는 로컬(file://) 환경에서 항상 오류 153 발생
 // → embed 완전 제거, 유튜브 새 탭으로 직접 열기
-// ── 모바일/PC 감지 ──
+// ── 기기 감지 ──
 function isMobile() {
-  return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+  return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+}
+function isAndroid() {
+  return /Android/i.test(navigator.userAgent);
+}
+function isIOS() {
+  return /iPhone|iPad|iPod/i.test(navigator.userAgent);
 }
 
-// ── 유튜브 열기 (모바일: 앱 딥링크 / PC: 새 탭) ──
+// ── 유튜브 열기 ──
+// iOS  : youtu.be 유니버설 링크 → 유튜브 앱 자동 실행 (시스템이 처리)
+// Android : intent:// 로 Chrome이 앱으로 직접 연결
+// PC   : 새 탭으로 열기
 function openInYouTube(startSec) {
   if (!activeItem) return;
   var vid = activeItem.id;
-  var sec = startSec || 0;
+  var sec = parseInt(startSec) || 0;
 
-  if (isMobile()) {
-    // ── 모바일: 유튜브 앱 딥링크 ──
-    // youtube:// 스킴으로 앱을 먼저 시도하고, 앱이 없으면 웹으로 폴백
-    var appUrl  = 'youtube://watch?v=' + vid + (sec > 0 ? '&t=' + sec : '');
-    var webUrl  = 'https://www.youtube.com/watch?v=' + vid + (sec > 0 ? '&t=' + sec + 's' : '');
-
-    // 앱 실행 시도: iframe 트릭으로 딥링크 → 300ms 후 앱 미설치면 웹으로 폴백
-    var iframe = document.createElement('iframe');
-    iframe.style.display = 'none';
-    document.body.appendChild(iframe);
-    iframe.src = appUrl;
-
-    var fallbackTimer = setTimeout(function() {
-      document.body.removeChild(iframe);
-      window.location.href = webUrl;  // 앱 없으면 브라우저에서 열기
-    }, 1500);
-
-    // 페이지가 숨겨지면(앱으로 전환됨) 타이머 취소
-    var handleVisibility = function() {
-      if (document.hidden) {
-        clearTimeout(fallbackTimer);
-        if (document.body.contains(iframe)) document.body.removeChild(iframe);
-        document.removeEventListener('visibilitychange', handleVisibility);
-      }
-    };
-    document.addEventListener('visibilitychange', handleVisibility);
-
+  // ── URL 결정 ──
+  var url;
+  if (isIOS()) {
+    // youtu.be 유니버설 링크: iOS는 이 형식이 앱으로 가장 확실하게 열림
+    url = 'https://youtu.be/' + vid + (sec > 0 ? '?t=' + sec : '');
+  } else if (isAndroid()) {
+    // Android Chrome intent URL: 유튜브 앱 직접 실행, 없으면 스토어로
+    url = 'intent://www.youtube.com/watch?v=' + vid
+        + (sec > 0 ? '&t=' + sec + 's' : '')
+        + '#Intent;package=com.google.android.youtube;scheme=https;end';
   } else {
-    // ── PC: 새 탭으로 열기 ──
-    var url = 'https://www.youtube.com/watch?v=' + vid + (sec > 0 ? '&t=' + sec + 's' : '');
-    window.open(url, '_blank');
+    // PC: 새 탭
+    url = 'https://www.youtube.com/watch?v=' + vid + (sec > 0 ? '&t=' + sec + 's' : '');
   }
 
-  // 썸네일 → "재생 중" 안내 화면 전환
+  // ── 실제 이동: 숨겨진 <a> 태그 클릭 (팝업 차단 우회, 앱 연동 보장) ──
+  var a = document.createElement('a');
+  a.href = url;
+  if (!isMobile()) a.target = '_blank';  // PC만 새 탭
+  a.rel = 'noopener';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+
+  // ── 썸네일 → "재생 중" 안내 화면 ──
   var box = document.getElementById('playerBox');
   var thumbUrl = 'https://i.ytimg.com/vi/' + vid + '/hqdefault.jpg';
-  var mobileMsg = isMobile()
-    ? '유튜브 앱이 실행됩니다<br><span style="font-size:10px;opacity:.7">(앱 미설치 시 브라우저로 열림)</span>'
-    : '새 탭에서 영상을 시청하세요.<br>타임라인을 클릭하면 해당 시간부터 재생됩니다.';
+  var msg = isMobile()
+    ? '유튜브 앱이 열립니다'
+    : '새 탭에서 영상을 시청하세요';
+  var subMsg = isMobile()
+    ? '타임라인을 클릭하면 해당 시간부터 재생됩니다'
+    : '타임라인을 클릭하면 해당 시간부터 재생됩니다';
 
   box.innerHTML =
     '<img class="thumb-bg" src="' + thumbUrl + '" style="filter:brightness(0.3)">' +
@@ -571,11 +574,9 @@ function openInYouTube(startSec) {
       '<div style="background:#ff0000;border-radius:50%;width:64px;height:64px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(255,0,0,.5)">' +
         '<svg width="26" height="26" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>' +
       '</div>' +
-      '<p style="color:#fff;font-size:14px;font-weight:700;text-shadow:0 2px 6px rgba(0,0,0,.9)">유튜브에서 재생 중</p>' +
-      '<p style="color:#94a3b8;font-size:12px;line-height:1.8;max-width:240px">' + mobileMsg + '</p>' +
-      '<button onclick="openInYouTube(' + sec + ')" style="background:#ff0000;color:#fff;border:none;border-radius:10px;padding:10px 24px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 2px 12px rgba(255,0,0,.4);">' +
-        (isMobile() ? '📱 유튜브 앱으로 다시 열기' : '↗ 다시 열기') +
-      '</button>' +
+      '<p style="color:#fff;font-size:14px;font-weight:700;text-shadow:0 2px 6px rgba(0,0,0,.9)">' + msg + '</p>' +
+      '<p style="color:#94a3b8;font-size:11px;line-height:1.8;max-width:260px">' + subMsg + '</p>' +
+      '<button onclick="openInYouTube(' + sec + ')" style="background:#ff0000;color:#fff;border:none;border-radius:10px;padding:10px 24px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 2px 12px rgba(255,0,0,.4)">다시 열기 ↗</button>' +
     '</div>';
 
   playStartWall = Date.now();
