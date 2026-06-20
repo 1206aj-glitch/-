@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+    <title>하늘스크린교회 지능형 말씀 아카이브 센터</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
+    <!-- YouTube IFrame API -->
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <style>
+        body { font-family: 'Noto Sans KR', sans-serif; background-color: #f8fafc; }
+        .serif { font-family: 'Noto Serif KR', serif; }
+        .sermon-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .sermon-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(15, 23, 42, 0.08); }
+        .active-btn { background-color: #1e1b4b !important; color: #ffffff !important; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* 유튜브 플레이어 래퍼 */
+        #ytPlayerWrapper {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%; /* 16:9 비율 */
+            background: #000;
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        #ytPlayerWrapper iframe,
+        #ytPlayerWrapper #ytPlayer {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            border: none;
+            border-radius: 16px;
+        }
+
+        /* 타임라인 활성화 버튼 */
+        .tl-btn-active {
+            background-color: #eef2ff !important;
+            border-color: #4f46e5 !important;
+            color: #1e1b4b !important;
+        }
+        .tl-btn-active .tl-time-badge {
+            background-color: #4f46e5 !important;
+            color: #fff !important;
+        }
+
+        /* 플레이어 상태 표시 */
+        #playerStatusBar {
+            transition: all 0.3s ease;
+        }
+
+        /* 임베드 차단 감지 오버레이 */
+        #embedBlockedOverlay {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, #0f172a, #1e1b4b);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            border-radius: 16px;
+            z-index: 10;
+            padding: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body class="text-slate-800 antialiased">
+
+    <header class="bg-white/90 backdrop-blur-md border-b border-slate-200 sticky top-0 z-40 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <div class="bg-indigo-950 text-amber-400 p-2.5 rounded-xl shadow-md">
+                    <i class="fa-solid fa-church text-2xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold text-slate-900 tracking-wide serif">하늘스크린교회</h1>
+                    <p class="text-xs text-indigo-600 font-bold tracking-tight">AI 상황별 말씀 매칭 &amp; 초정밀 타임 싱크로 아카이브</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-2">
+                <button onclick="toggleUploadForm()" class="text-xs bg-indigo-950 hover:bg-indigo-900 text-white font-bold px-4 py-2.5 rounded-xl transition shadow-md flex items-center space-x-1.5">
+                    <i class="fa-solid fa-square-plus"></i>
+                    <span>새 말씀 등록 (비밀번호: 1234)</span>
+                </button>
+                <button onclick="resetSystemData()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-500 font-semibold px-3 py-2.5 rounded-xl transition">
+                    <i class="fa-solid fa-arrow-rotate-left"></i> DB 리셋
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+
+        <!-- 상단 묵상 대시 배너 -->
+        <div class="bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 rounded-3xl p-8 text-white mb-10 shadow-xl border border-indigo-900/40 relative overflow-hidden">
+            <div class="absolute right-0 bottom-0 opacity-5 text-[15rem] transform translate-x-12 translate-y-16 pointer-events-none">
+                <i class="fa-solid fa-quote-right"></i>
+            </div>
+            <span class="bg-amber-400/20 text-amber-300 text-xs font-bold px-3 py-1 rounded-full border border-amber-400/30">2026 영적 은혜 가동 전선</span>
+            <h2 class="text-xl sm:text-2xl font-bold mt-4 mb-2 serif text-amber-100">"내 형편에 맞는 생명의 만나와 영적 전술 노트를 펼쳐라"</h2>
+            <p class="text-slate-300 text-sm max-w-4xl font-light leading-relaxed">
+                말씀을 클릭하면 유튜브 영상이 바로 재생됩니다. 타임라인을 클릭하시면 해당 지점으로 즉시 이동하여 감상하실 수 있습니다. 환경에 따라 재생이 어려울 경우 유튜브 바로가기 버튼을 이용해 주세요.
+            </p>
+        </div>
+
+        <!-- [관리자 전용 새 말씀 등록 폼] -->
+        <div id="uploadSection" class="bg-white rounded-3xl p-6 shadow-lg border border-slate-200 mb-10 hidden space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 class="text-base font-bold text-slate-900 flex items-center"><i class="fa-solid fa-code text-indigo-600 mr-2"></i> 말씀 유튜브 임베드 소스 주입기</h3>
+                <span class="text-xs text-amber-600 font-bold bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200"><i class="fa-solid fa-key"></i> 마스터 인증 모드</span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                <div class="space-y-3">
+                    <div>
+                        <label class="block font-bold text-slate-600 mb-1">성회 대제목 <span class="text-red-500">*</span></label>
+                        <input type="text" id="formTitle" placeholder="예: 2026년 7월 5일 통합설교 — 말씀 제목" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 outline-none text-slate-900">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-600 mb-1">유튜브 공유 주소 또는 퍼가기 소스(iframe) <span class="text-red-500">*</span></label>
+                        <textarea id="formUrl" rows="2" placeholder="유튜브 주소나 퍼가기 HTML 소스 전체를 복사해서 붙여넣어 주십시오." class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 outline-none text-indigo-950 font-mono"></textarea>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block font-bold text-slate-600 mb-1">선포 일자 <span class="text-red-500">*</span></label>
+                            <input type="date" id="formDate" value="2026-06-20" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 outline-none text-slate-900">
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-600 mb-1">성회 분류 <span class="text-red-500">*</span></label>
+                            <select id="formCategory" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 outline-none font-bold text-slate-900">
+                                <option value="통합설교">통합설교</option>
+                                <option value="음악설교">음악설교</option>
+                                <option value="주일예배">주일예배</option>
+                                <option value="비전설교">비전설교</option>
+                                <option value="영화설교">영화설교</option>
+                                <option value="문학설교">문학설교</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-600 mb-1">관리자 인증 비밀번호 <span class="text-red-500">*</span></label>
+                        <input type="password" id="formPassword" placeholder="비밀번호 '1234'를 입력해야 정상 가동됩니다" class="w-full bg-amber-50/60 border border-amber-300 rounded-lg p-2.5 font-bold outline-none text-slate-900">
+                    </div>
+                </div>
+                <div class="space-y-3">
+                    <div>
+                        <label class="block font-bold text-slate-600 mb-1">영적 본질 요약문 <span class="text-red-500">*</span></label>
+                        <textarea id="formSummary" rows="2" placeholder="성회의 핵심 메시지와 영적 본질 내용을 간략히 기입하세요..." class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 outline-none text-slate-900 font-light"></textarea>
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-600 mb-1">성령 전술 노트 및 해시태그</label>
+                        <textarea id="formNotes" rows="2" placeholder="인사이트 요약이나 주요 해시태그를 입력하세요..." class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 outline-none text-slate-900 font-light"></textarea>
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-600 mb-1">정밀 타임라인 코드 명세 <span class="text-red-500">*</span></label>
+                        <textarea id="formTimeline" rows="2" placeholder="[00:05:12] 파트 대주제 명칭&#10;[00:23:45] 🎵 기획 찬양 특송 제목" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 outline-none tracking-wide text-indigo-950 font-medium font-mono"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="flex justify-end space-x-2 pt-2 border-t border-slate-100">
+                <button onclick="toggleUploadForm()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs px-4 py-2.5 rounded-lg transition">닫기</button>
+                <button onclick="processSystemInsertion()" class="bg-indigo-950 hover:bg-indigo-900 text-white font-bold text-xs px-6 py-2.5 rounded-lg transition shadow-md"><i class="fa-solid fa-cloud-arrow-up"></i> 말씀 영구 데이터 자산 등록</button>
+            </div>
+        </div>
+
+        <!-- 지능형 복합 입체 필터링 판넬 -->
+        <div class="bg-white rounded-3xl p-6 shadow-md border border-slate-200 mb-10 space-y-6">
+            <div class="relative">
+                <i class="fa-solid fa-magnifying-glass absolute left-4 top-4 text-slate-400 text-lg"></i>
+                <input type="text" id="searchInput" oninput="executeDynamicFilter()" placeholder="키워드(#라와, #마샤흐, #킨츠기, #에제르, #아피에미), 성경 구절, 찬양 곡명으로 정밀 색인..." class="w-full bg-slate-50 border border-slate-300 rounded-xl pl-12 pr-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:bg-white transition text-slate-900 font-medium">
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 border-t border-slate-100 pt-4">
+                <div>
+                    <label class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2"><i class="fa-solid fa-clock-rotate-left mr-1.5 text-indigo-600"></i> 선포 연도 분류</label>
+                    <select id="yearFilter" onchange="executeDynamicFilter()" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-600 text-slate-700">
+                        <option value="all">전체 연도보기</option>
+                        <option value="2026">2026년 말씀 성회</option>
+                    </select>
+                </div>
+                <div class="md:col-span-2">
+                    <label class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2"><i class="fa-regular fa-calendar-days mr-1.5 text-indigo-600"></i> 선포 월별 분류 필터</label>
+                    <div class="flex flex-wrap gap-1.5" id="monthTabsWrapper">
+                        <button onclick="setMonthFilter('all')" data-month="all" class="tab-btn active-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">전체보기</button>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-slate-100 pt-4">
+                <label class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2"><i class="fa-solid fa-heart-pulse mr-1.5 text-indigo-600"></i> 성도의 현재 영적 마음 상황별 맞춤 처방 필터</label>
+                <div class="flex flex-wrap gap-2" id="situationTabsWrapper">
+                    <button onclick="setSituationFilter('all')" data-sit="all" class="tab-btn active-btn px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">모든 마음 형편</button>
+                    <button onclick="setSituationFilter('상처치유')" data-sit="상처치유" class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">🩹 상처와 낮은 자존감 치유</button>
+                    <button onclick="setSituationFilter('우울불안')" data-sit="우울불안" class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">💭 우울감·불안·고독 해방</button>
+                    <button onclick="setSituationFilter('고난시련')" data-sit="고난시련" class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">🔥 이해할 수 없는 연단과 시련</button>
+                    <button onclick="setSituationFilter('실패결핍')" data-sit="실패결핍" class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">📉 파선, 경제적 결핍, 진로 실패</button>
+                    <button onclick="setSituationFilter('분노용서')" data-sit="분노용서" class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">⚓ 미움, 분노, 용서의 한계</button>
+                    <button onclick="setSituationFilter('가정가족')" data-sit="가정가족" class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">🏠 부부 관계, 자녀 양육, 위기 가정</button>
+                    <button onclick="setSituationFilter('조급인내')" data-sit="조급인내" class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">⏳ 기도 응답이 느려 조급할 때</button>
+                </div>
+            </div>
+            <div class="text-xs text-slate-400 font-bold border-t border-slate-100 pt-4 flex items-center" id="counterTracker">
+                <i class="fa-solid fa-database mr-2 text-indigo-500"></i> 마스터 복음 데이터 동기화 완료
+            </div>
+        </div>
+
+        <!-- 말씀 아카이브 카드 그리드 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="cardsGridSection"></div>
+    </main>
+
+    <!-- ===== 말씀 재생 모달 (유튜브 플레이어 + 타임라인 이동) ===== -->
+    <div id="playbackModal" class="fixed inset-0 z-50 overflow-y-auto hidden bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-6xl w-full max-h-[92vh] overflow-y-auto shadow-2xl border border-slate-200 flex flex-col">
+
+            <!-- 모달 상부 -->
+            <div class="p-5 border-b border-slate-200 bg-slate-50 rounded-t-3xl flex items-center justify-between flex-shrink-0">
+                <div class="flex-1 min-w-0 mr-4">
+                    <span id="mCategoryLabel" class="bg-indigo-100 text-indigo-950 text-xs font-bold px-3 py-1 rounded-full border border-indigo-200">분류</span>
+                    <h3 id="mTitleLabel" class="text-lg font-bold mt-2 text-slate-900 serif leading-snug line-clamp-2">성회 주제명</h3>
+                    <p id="mMetaLabel" class="text-xs text-slate-500 mt-1.5 font-medium flex items-center gap-2"></p>
+                </div>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 p-2.5 rounded-full hover:bg-slate-200 transition-all flex-shrink-0">
+                    <i class="fa-solid fa-xmark text-2xl"></i>
+                </button>
+            </div>
+
+            <!-- 메인 콘텐츠 (좌: 플레이어, 우: 노트+타임라인) -->
+            <div class="p-5 grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1">
+
+                <!-- ===== 좌측: 유튜브 플레이어 영역 ===== -->
+                <div class="lg:col-span-7 flex flex-col space-y-4">
+
+                    <!-- 유튜브 플레이어 -->
+                    <div id="ytPlayerWrapper">
+                        <!-- YouTube IFrame API가 여기에 플레이어를 주입함 -->
+                        <div id="ytPlayer"></div>
+                        <!-- 임베드 차단 시 표시되는 오버레이 (기본 숨김) -->
+                        <div id="embedBlockedOverlay" class="hidden">
+                            <div class="bg-red-600/20 border border-red-500/40 p-3 rounded-xl">
+                                <i class="fa-brands fa-youtube text-red-400 text-3xl"></i>
+                            </div>
+                            <p class="text-white font-bold text-sm">이 영상은 외부 재생이 제한되어 있습니다</p>
+                            <p class="text-slate-300 text-xs leading-relaxed">유튜브 채널 설정에 따라 웹사이트 임베드가 차단되었습니다.<br>아래 버튼으로 유튜브에서 바로 시청하세요.</p>
+                            <a id="blockedDirectLink" href="#" target="_blank" class="bg-red-600 hover:bg-red-700 text-white font-bold text-xs px-5 py-2.5 rounded-xl flex items-center gap-2 transition">
+                                <i class="fa-brands fa-youtube"></i> 유튜브에서 직접 시청하기
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- 플레이어 상태 표시 바 -->
+                    <div id="playerStatusBar" class="bg-slate-900 rounded-xl px-4 py-2.5 flex items-center justify-between text-xs">
+                        <div class="flex items-center gap-2">
+                            <div id="playerStatusDot" class="w-2 h-2 rounded-full bg-slate-500"></div>
+                            <span id="playerStatusText" class="text-slate-400 font-medium">영상 로딩 중...</span>
+                        </div>
+                        <a id="ytDirectLink" href="#" target="_blank" class="text-slate-400 hover:text-white flex items-center gap-1.5 transition font-bold">
+                            <i class="fa-brands fa-youtube text-red-500"></i>
+                            <span>유튜브에서 보기</span>
+                            <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+                        </a>
+                    </div>
+
+                    <!-- 요약 및 노트 (모바일에서는 타임라인 아래로 내려감) -->
+                    <div class="hidden lg:block space-y-4">
+                        <div>
+                            <h4 class="text-xs font-bold text-indigo-700 uppercase tracking-widest mb-1.5"><i class="fa-solid fa-quote-left mr-2"></i>성회 영적 본질 요약</h4>
+                            <p id="mSummaryLabel" class="text-sm text-slate-600 leading-relaxed bg-slate-50 p-4 rounded-xl border border-slate-200 font-light"></p>
+                        </div>
+                        <div>
+                            <h4 class="text-xs font-bold text-indigo-700 uppercase tracking-widest mb-1.5"><i class="fa-solid fa-scroll mr-2"></i>인사이트 &amp; 성령 전술 노트</h4>
+                            <div id="mNotesLabel" class="text-sm text-indigo-950 font-medium leading-relaxed bg-indigo-50/40 p-4 rounded-xl border border-indigo-100 whitespace-pre-line serif shadow-inner"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ===== 우측: 타임라인 인덱스 ===== -->
+                <div class="lg:col-span-5 flex flex-col space-y-4">
+
+                    <!-- 타임라인 헤더 -->
+                    <div class="flex items-center justify-between">
+                        <h4 class="text-xs font-bold text-indigo-700 uppercase tracking-widest flex items-center gap-1.5">
+                            <i class="fa-solid fa-list-ol"></i>
+                            타임라인 인덱스
+                        </h4>
+                        <span class="text-[10px] text-slate-400 font-medium bg-slate-100 px-2 py-1 rounded-full">클릭 시 해당 지점으로 이동</span>
+                    </div>
+
+                    <!-- 타임라인 목록 -->
+                    <div id="mTimelineContainer" class="flex flex-col space-y-2 overflow-y-auto" style="max-height: 420px; padding-right: 4px;">
+                        <!-- JS 동적 바인딩 -->
+                    </div>
+
+                    <!-- 현재 재생 중인 섹션 표시 -->
+                    <div id="nowPlayingSection" class="hidden bg-indigo-950 rounded-xl p-3 text-white text-xs">
+                        <div class="flex items-center gap-2 mb-1">
+                            <div class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
+                            <span class="font-bold text-amber-300 uppercase tracking-wide">지금 재생 중</span>
+                        </div>
+                        <p id="nowPlayingText" class="font-medium text-slate-200 leading-snug"></p>
+                    </div>
+
+                    <!-- 모바일용: 요약 및 노트 -->
+                    <div class="lg:hidden space-y-4 border-t border-slate-100 pt-4">
+                        <div>
+                            <h4 class="text-xs font-bold text-indigo-700 uppercase tracking-widest mb-1.5"><i class="fa-solid fa-quote-left mr-2"></i>성회 영적 본질 요약</h4>
+                            <p id="mSummaryLabelMobile" class="text-sm text-slate-600 leading-relaxed bg-slate-50 p-4 rounded-xl border border-slate-200 font-light"></p>
+                        </div>
+                        <div>
+                            <h4 class="text-xs font-bold text-indigo-700 uppercase tracking-widest mb-1.5"><i class="fa-solid fa-scroll mr-2"></i>인사이트 &amp; 성령 전술 노트</h4>
+                            <div id="mNotesLabelMobile" class="text-sm text-indigo-950 font-medium leading-relaxed bg-indigo-50/40 p-4 rounded-xl border border-indigo-100 whitespace-pre-line serif shadow-inner"></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- 커스텀 알림 모달 -->
+    <div id="customAlertModal" class="fixed inset-0 z-50 overflow-y-auto hidden bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-xl border border-slate-200 text-center space-y-4">
+            <div id="customAlertIcon" class="w-12 h-12 rounded-full flex items-center justify-center mx-auto text-xl bg-indigo-100 text-indigo-900">
+                <i class="fa-solid fa-info"></i>
+            </div>
+            <h4 id="customAlertTitle" class="text-base font-bold text-slate-900 serif">알림</h4>
+            <p id="customAlertMessage" class="text-xs text-slate-500 leading-relaxed font-light"></p>
+            <div class="flex justify-center pt-2">
+                <button onclick="closeCustomAlert()" class="bg-indigo-950 hover:bg-indigo-900 text-white font-bold text-xs px-6 py-2.5 rounded-lg transition shadow-md">확인</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 커스텀 확인 모달 -->
+    <div id="customConfirmModal" class="fixed inset-0 z-50 overflow-y-auto hidden bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-xl border border-slate-200 text-center space-y-4">
+            <div class="w-12 h-12 rounded-full flex items-center justify-center mx-auto text-xl bg-amber-100 text-amber-800">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <h4 class="text-base font-bold text-slate-900 serif">실행 확인</h4>
+            <p id="customConfirmMessage" class="text-xs text-slate-500 leading-relaxed font-light"></p>
+            <div class="flex justify-center space-x-2 pt-2">
+                <button onclick="closeCustomConfirm()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs px-4 py-2.5 rounded-lg transition">취소</button>
+                <button onclick="executeCustomConfirm()" class="bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs px-6 py-2.5 rounded-lg transition shadow-md">확인</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ===== 데이터 & 로직 스크립트 ===== -->
+    <script>
+    // ================================================
+    // 데이터베이스
+    // ================================================
+    const masterInitialDatabase = [
+        {
+            index: 1, year: "2026", id: "sCSSvc_ADks", title: "2026년 1월 4일 통합설교 (신년감사) — 거룩한 역설", date: "2026-01-04", month: "1월",
+            categoryKo: "통합설교", scripture: "잠언 11장 24~25절",
+            summary: "2026년 새해를 여는 첫 시간에 선포된 영적 경제 법칙입니다. 세상은 움켜쥐고 빼앗아야 부유해진다고 가르치지만, 하나님 나라의 법은 내 것을 흩어 뿌리고(파자르) 목마른 이에게 충분한 물을 제공할 때(라와) 오히려 상상치 못한 차원의 '역설적 부유'를 품속(에이스톤 콜)에 고봉으로 넘치도록 안겨주십니다.",
+            notes: "💡 주요 키워드: #신년감사 #역설적부유 #라와 #파자르 #고봉인심\n💡 영화 예화: 영화 〈아름다운 세상을 위하여〉 속 소년 트래버의 사랑의 도식화 제안\n💡 2026년 하늘스크린교회 표어 선포: '전도는 사랑입니다, 최고의 사랑은 전도입니다'",
+            timeline: [
+                { time: "[00:00:23]", secs: 23, title: "신년 감사 찬양: 《아무런 자격도 없는 나를 위해》" },
+                { time: "[00:05:11]", secs: 311, title: "성경 봉독 (잠언 11장 24~25절)" },
+                { time: "[00:07:57]", secs: 477, title: "영화 예화: 영화 〈아름다운 세상을 위하여〉 속 소년 트래버의 사랑의 도식화 제안" },
+                { time: "[00:10:40]", secs: 640, title: "2026년 하늘스크린교회 표어 선포: '전도는 사랑입니다, 최고의 사랑은 전도입니다'" },
+                { time: "[00:13:55]", secs: 835, title: "히브리어 '라와(Rawayah)'의 영적 정의: 충분히 마시게 하여 만족을 주는 통로 of 축복" },
+                { time: "[00:18:41]", secs: 1121, title: "씨앗을 흩뿌리는 '파자르(Pazar)'의 생산적 영적 투자와 자족의 비결" },
+                { time: "[00:20:30]", secs: 1230, title: "흔들어 넘치도록 품속(에이스톤 콜)에 안겨주시는 하나님의 단호한 복의 보상" },
+                { time: "[00:24:06]", secs: 1446, title: "📝 오늘의 시 낭송: 《역설적 부유 — 김형종》" }
+            ]
+        },
+        {
+            index: 2, year: "2026", id: "XtEDSWPyHx4", title: "2026년 1월 11일 통합설교 (음악설교) — 기름부으신 이유", date: "2026-01-11", month: "1월",
+            categoryKo: "음악설교", scripture: "이사야 61장 1절",
+            summary: "하나님께서 성도에게 성령의 기름을 부으신(마샤흐) 목적은 세상적 특권을 누리게 함이 아닙니다. 철저히 세상과 구별되어 마음이 찢어지고 상한 자(니슈베레 레부)의 설거지통을 닦아주고, 우울과 불안의 감옥에 갇힌 영혼들의 눈을 열어(페카코아흐) 궁극의 희망이신 예수 그리스도를 보게 하는 빛의 통로로 쓰임 받기 위함입니다.",
+            notes: "💡 주요 키워드: #음악설교 #기름부음 #마샤흐 #상한마음치유 #페카코아흐\n💡 🎵 신년 첫 음악설교 특송: 《기름부으심》 (신상호 작사/작곡 — 장용진 장로 찬양)\n💡 부모님께 효도하고 가족 공동체 안에서 숨쉴 구멍을 만들어주는 사랑의 전화 통화 권면",
+            timeline: [
+                { time: "[00:00:07]", secs: 7, title: "성경 봉독 (이사야 61장 1절)" },
+                { time: "[00:06:38]", secs: 398, title: "🎵 음악설교 특송: 《기름부으심》 (장용진 장로 찬양)" },
+                { time: "[00:18:23]", secs: 1103, title: "깨지고 파쇄된 속마음 '니슈베레 레부'의 상태와 일상에서 상처를 주는 잘못된 언어 직시" },
+                { time: "[00:27:51]", secs: 1671, title: "어둠 속 갇힌 문을 여는 영적 열림 '페카코아흐'의 구출 역사 (베드로의 출옥 사건)" },
+                { time: "[00:35:49]", secs: 2149, title: "📝 오늘의 시 낭송: 《그를 사랑하게 하소서 — 김형종》" }
+            ]
+        },
+        {
+            index: 3, year: "2026", id: "9ryamgmm7cU", title: "2026년 1월 18일 통합설교 (비전설교) — 상처-면류관이 되다", date: "2026-01-18", month: "1월",
+            categoryKo: "비전설교", scripture: "시편 147편 3절",
+            summary: "거친 세상에서 산산조각 난 우리의 정신과 깨진 마음(샤바르레부)은 숨겨야 할 수치가 아닙니다. 영적 장인이신 하나님 앞에 아픔의 파편들을 그대로 내어놓을 때, 주님은 숙련된 손길로 붕대를 감으시고(하바쉬) 고난의 상처 틈새마다 별과 같은 은혜의 금가루를 메워 세상에 단 하나뿐인 찬란한 '명품 인생(킨츠기)'이자 승리의 면류관으로 재탄생시키십니다.",
+            notes: "💡 주요 키워드: #비전주일 #킨츠기공법 #샤바르레부 #하바쉬 #자존감회복\n💡 스마트폰 양방향 소통: 슬라이도(Slido) 앱을 통한 성도들의 익명 '깨진 조각 고백' 실시간 진행\n💡 사도 바울의 육체적 가시와 약한 데서 도달하는 완전한 완성 '텔레이오타이'의 신비 (고후 12:9)",
+            timeline: [
+                { time: "[00:07:52]", secs: 472, title: "성경 봉독 (시편 147편 3절)" },
+                { time: "[00:08:12]", secs: 492, title: "설교 도입 시 낭송: 《흉터 — 김형종》" },
+                { time: "[00:11:52]", secs: 712, title: "깨진 찻잔을 옻칠과 금가루로 복원하는 일본의 '킨츠기' 공법 예화" },
+                { time: "[00:26:31]", secs: 1591, title: "슬라이도(Slido) 앱을 통한 성도들의 익명 '깨진 조각 고백' 실시간 진행 및 연민의 위로" },
+                { time: "[00:53:42]", secs: 3222, title: "의사처럼 감싸주시는 하나님의 '하바쉬(Chabash)' 붕대 치유와 무결점의 회복" }
+            ]
+        },
+        {
+            index: 4, year: "2026", id: "cS-0PY11oPw", title: "2026년 1월 25일 통합설교 (영화설교) — 거룩한 자람 Rise", date: "2026-01-25", month: "1월",
+            categoryKo: "영화설교", scripture: "마가복음 4장 30~32절",
+            summary: "미래에 대한 희망마저 사치였던 인생의 가장 비천하고 미미한 순간(미크로테론)은 저주가 아니라 하나님의 시간 속에 깊이 '심겨진 상태'입니다. 흑암의 땅속에 묻혀 인내의 스케줄을 견뎌낼 때, 주님은 우리의 약점을 가장 독창적인 무기로 삼으시어 세상의 판도를 바꾸는 게임 체인저로 위를 향해 폭발적으로 치솟아 자라게(아나바이노) 하십니다.",
+            notes: "💡 주요 키워드: #영화설교 #라이즈 #야니스아데토쿤보 #미크로테론 #아나바이노\n💡 영화 주요 장면 시청: 영양실조의 약점을 딛고 벤치 후보의 고독을 이겨내는 야니스의 훈련 과정\n💡 고독한 벤치의 시간 속에서 '나만의 영적 전술 노트(성경말씀)'를 달달 외우는 실천 지침",
+            timeline: [
+                { time: "[00:05:37]", secs: 337, title: "성경 봉독 (마가복음 4장 30~32절)" },
+                { time: "[00:16:02]", secs: 962, title: "보이지 않을 만큼 미미하고 비천한 자 '미크로테론'을 주목하시는 하나님의 뜨거운 눈길" },
+                { time: "[00:23:23]", secs: 1403, title: "땅속의 인내를 지나 하늘을 향해 수직으로 치솟아 오르는 성장의 능력 '아나바이노'의 기적" },
+                { time: "[00:37:37]", secs: 2257, title: "📝 오늘의 시 낭송: 《작은 것들의 바람 — 김형종》" }
+            ]
+        },
+        {
+            index: 5, year: "2026", id: "Y376GJbU9SY", title: "2026년 2월 1일 통합설교 (나눔주일) — 내 인생의 감독- 파라클레토스", date: "2026-02-01", month: "2월",
+            categoryKo: "주일예배", scripture: "요한복음 14장 16~17절",
+            summary: "영적 영양실조와 전술적 한계에 부딪혀 인생의 코트 밖으로 미뤄질 때, 우리 곁에는 영원한 최고의 감독이신 보혜사 성령(파라클레토스)이 계십니다. 주님은 우리의 호흡을 가다듬으시고, 하늘의 완벽한 전술을 내면에 주입하시며, 넘어진 자리를 박차고 일어나 담대히 돌진할 수 있도록 지치지 않는 영적 추진력을 공급하십니다.",
+            notes: "💡 주요 키워드: #나눔주일 #보혜사성령 #파라클레토스 #인생의감독 #전술지시\n💡 구역과 공동체 안에서 벤치에 홀로 앉아 우는 지체들을 향해 성령의 위로를 흘려보내는 나눔의 사명\n💡 사탄의 거짓 작전 타임에 속지 않고 성령의 전술 노트를 펼치는 일상적 영적 전쟁법",
+            timeline: [
+                { time: "[00:05:20]", secs: 320, title: "성경 봉독 (요한복음 14:16~17)" },
+                { time: "[00:15:30]", secs: 930, title: "우리 곁에 돕는 자로 곁에 서 계시는 '파라클레토스'의 어원 및 은혜 강해" },
+                { time: "[00:34:15]", secs: 2055, title: "📝 오늘의 시 낭송: 《작은 벤치 위의 감독 — 김형종》" }
+            ]
+        },
+        {
+            index: 6, year: "2026", id: "BoutY9Rmn6Y", title: "2026년 2월 8일 통합설교 (음악설교) — 지금부터 영원까지", date: "2026-02-08", month: "2월",
+            categoryKo: "음악설교", scripture: "시편 121편 7~8절",
+            summary: "시간의 흐름 속에 낡아지고 부서지는 세상의 조건과 달리, 하나님의 사랑과 돌보심의 유효기간은 '지금부터 영원까지(메아타 웨아드 올람)' 지속됩니다. 내 영혼의 바퀴가 거친 인생길에서 빠지지 않도록 기관차 되신 예수님께 굳건히 결속되어 있을 때, 우리의 현재는 미래의 영광과 맞닿아 결코 요동치 않는 하늘의 평안을 누리게 됩니다.",
+            notes: "💡 주요 키워드: #음악설교 #영원한사랑 #올람 #기관차결속 #평안의바퀴\n💡 🎵 음악설교 특송: 《지금부터 영원까지》 (신상호 작곡 — 하늘스크린 중창단)\n💡 불안한 노후 문제와 미래의 염려를 영원한 요새이신 주님께 이탁하는 자족의 훈련",
+            timeline: [
+                { time: "[00:04:15]", secs: 255, title: "성경 봉독 (시편 121:7~8)" },
+                { time: "[00:09:40]", secs: 580, title: "🎵 음악설교 특송: 《지금부터 영원까지》" },
+                { time: "[00:25:40]", secs: 1540, title: "스스로 방향을 정하지 않고 오직 기관차의 추진력으로 험로를 통과하는 객차(성도)의 믿음 바퀴" },
+                { time: "[00:33:15]", secs: 1995, title: "📝 오늘의 시 낭송: 《시간의 강물 위에서 — 김형종》" }
+            ]
+        },
+        {
+            index: 7, year: "2026", id: "eE-WT_kIb0o", title: "2026년 2월 15일 통합설교 (비전설교) — 고난을 압도하는 결과", date: "2026-02-15", month: "2월",
+            categoryKo: "비전설교", scripture: "베드로전서 1장 7절",
+            summary: "성도가 직면하는 현재의 시련과 거친 고난은 인생의 결론이 아니라, 정금보다 귀한 믿음의 순도를 완성해 가는 영적 풀무질입니다. 풀무 불 속에서 불순물이 타버리듯 묵은 습관과 상처의 조각들이 소멸될 때, 주님은 고난의 강도를 완벽히 압도하는 부활의 찬란한 영광과 영원한 기업의 결과를 우리의 삶에 명백히 증명해 내십니다.",
+            notes: "💡 주요 키워드: #비전설교 #풀무질 #믿음의시련 #정금같은믿음 #압도적결과\n💡 슬라이도 앱을 통한 성도들의 '현재 겪는 가장 큰 고난과 기도의 제목' 실시간 직시\n💡 우리의 겉사람은 낡아지나 속사람은 날마다 새로워지는 부활 소망의 선포 (고후 4:16)",
+            timeline: [
+                { time: "[00:08:16]", secs: 496, title: "성경 봉독 (베드로전서 1:7)" },
+                { time: "[00:08:56]", secs: 536, title: "설교 도입 시 낭송: 《풀무 불 속의 정금 — 김형종》" },
+                { time: "[00:45:20]", secs: 2720, title: "슬라이도 앱을 통한 성도들의 '현재 겪는 가장 큰 고난과 기도의 제목' 실시간 직시" }
+            ]
+        },
+        {
+            index: 8, year: "2026", id: "ZVLGiyIPmmU", title: "2026년 2월 22일 통합설교 (영화설교) — 삼킬 자를 찾는 사탄", date: "2026-02-22", month: "2월",
+            categoryKo: "영화설교", scripture: "베드로전서 5장 8~9절",
+            summary: "우는 사자처럼 두루 다니며 삼킬 자를 찾는 사탄의 주된 공격 무기는 성도의 마음 틈새에 미움과 억울함, 분노의 발판(토포스)을 만드는 것입니다. 감정의 브레이크가 파손되어 분노의 불길을 방치하면 온 인생이 잿더미가 되지만, 성령의 지혜로 즉각 '일단 멈춤'을 선포하고 용서의 물을 뿌릴 때 사탄의 모든 파괴적 음모는 완벽히 무력화됩니다.",
+            notes: "💡 주요 키워드: #영화설교 #우는사자 #사탄의틈 #토포스 #일단멈춤\n💡 헬라어 '토포스(Topos)' 강해: 마귀에게 자리를 내어주는 분노와 억울함의 위험성 (에베소서 4:26~27)\n💡 내 힘으로 복수하려 하지 않고 재판장이신 하나님께 모든 원수 갚는 것을 맡기는 신뢰",
+            timeline: [
+                { time: "[00:05:15]", secs: 315, title: "성경 봉독 (베드로전서 5:8~9)" },
+                { time: "[00:22:15]", secs: 1335, title: "헬라어 '토포스' 강해 및 마귀에게 자리를 내어주는 분노의 위험성" },
+                { time: "[00:38:50]", secs: 2330, title: "📝 오늘의 시 낭송: 《사자의 그늘을 지나며 — 김형종》" }
+            ]
+        },
+        {
+            index: 9, year: "2026", id: "nQW_wcxVSus", title: "2026년 3월 1일 통합설교 (나눔설교) — 영원한 동행 보혜사", date: "2026-03-01", month: "3월",
+            categoryKo: "통합설교", scripture: "요한복음 14장 18, 26절",
+            summary: "인생의 차디찬 광야에서 고아와 같이 홀로 버려졌다고 느낄 때, 진리의 영이신 보혜사는 우리의 영원한 동행자로 내주하십니다. 내면의 작은 신음에도 귀 기울이시는 주님과의 친밀한 교통을 회복할 때, 우리는 환경의 결핍을 뛰어넘어 하늘의 부유함을 이웃에게 아낌없이 흘려보내는 참된 '사랑의 공급자'로 우뚝 서게 됩니다.",
+            notes: "💡 주요 키워드: #나눔설교 #보혜사 #진리의영 #영원한동행 #고아와같이\n💡 내면에서 지워지지 않는 성령의 도장, 영원토록 함께 거하시는 보혜사의 동행 확증\n💡 오늘의 시 낭송: 《동행의 발자국 — 김형종》",
+            timeline: [
+                { time: "[00:04:50]", secs: 290, title: "성경 봉독 (요한복음 14:18, 26)" },
+                { time: "[00:14:35]", secs: 875, title: "내면에서 지워지지 않는 성령의 도장, 영원토록 함께 거하시는 보혜사 확증" },
+                { time: "[00:32:15]", secs: 1935, title: "📝 오늘의 시 낭송: 《동행의 발자국 — 김형종》" }
+            ]
+        },
+        {
+            index: 10, year: "2026", id: "uq0NMAyinuM", title: "2026년 3월 8일 통합설교 (음악설교) — 내 마음 깊은 곳에", date: "2026-03-08", month: "3월",
+            categoryKo: "음악설교", scripture: "시편 42편 7~8절",
+            summary: "인간의 가장 깊은 내면에 자리 잡은 무거운 응어리와 감추어진 상처는 세상의 어떤 위로로도 도달할 수 없습니다. 오직 가장 낮은 음으로 울리는 하나님의 깊은 사랑의 공명이 마음 심연에 닿을 때, 갇혀 있던 억울함의 빗장이 풀리고 영혼의 밑바닥에서부터 샘솟는 천국의 생명 노래가 비로소 시작됩니다.",
+            notes: "💡 주요 키워드: #음악설교 #내마음깊은곳 #영혼의공명 #생명의샘 #낮은음의위로\n💡 🎵 음악설교 특송: 《내 마음 깊은 곳에》 (신상호 작사/작곡 — 여전도회 찬양단)\n💡 마음 깊은 곳의 쓴 뿌리와 용서하지 못한 기억들을 십자가 보혈의 강물에 수장시키는 결단",
+            timeline: [
+                { time: "[00:04:40]", secs: 280, title: "성경 봉독 (시편 42:7~8)" },
+                { time: "[00:09:15]", secs: 555, title: "🎵 음악설교 특송: 《내 마음 깊은 곳에》" },
+                { time: "[00:32:50]", secs: 1970, title: "📝 오늘의 시 낭송: 《심연의 노래 — 김형종》" }
+            ]
+        },
+        {
+            index: 11, year: "2026", id: "3PZmfraM2gk", title: "2026년 3월 15일 통합예배 (비전설교) — 약점이 걸작된다", date: "2026-03-15", month: "3월",
+            categoryKo: "비전설교", scripture: "고린도후서 12장 9~10절",
+            summary: "우리가 지닌 치명적인 조건의 한계와 부끄러운 약점은 인생을 주저앉히는 걸림돌이 아닙니다. 하나님의 손길이 가닿는 순간, 세상이 무시하던 연약함은 거대한 판세를 뒤집는 독창적인 가드의 무기가 되며, 깨진 조각들마다 은혜의 황금 라인이 메워져 세상이 부러워하는 하나님의 가장 위대한 '걸작품(포이에마)'으로 변모합니다.",
+            notes: "💡 주요 키워드: #비전주일 #약점의반전 #포이에마 #걸작품 #게임체인저\n💡 헬라어 '포이에마(Poiema)' 강해: 상처를 통해 빚어 가시는 대장장이 하나님의 걸작 실체\n💡 슬라이도 앱을 통한 '내가 생각하는 나의 가장 치명적인 약점' 성도들의 라이브 고백",
+            timeline: [
+                { time: "[00:07:20]", secs: 440, title: "성경 봉독 (고린도후서 12:9~10)" },
+                { time: "[00:18:30]", secs: 1110, title: "헬라어 '포이에마(Poiema)' 강해: 상처를 통해 빚어 가시는 대장장이 하나님의 걸작" },
+                { time: "[00:38:40]", secs: 2320, title: "📝 오늘의 시 낭송: 《약점이라는 이름의 보석 — 김형종》" }
+            ]
+        },
+        {
+            index: 12, year: "2026", id: "CrIX1tdxEIw", title: "2026년 3월 22일 통합예배 (영화설교) — 하나님의 도우심", date: "2026-03-22", month: "3월",
+            categoryKo: "영화설교", scripture: "시편 121편 1~2절",
+            summary: "사방이 우겨쌈을 당하고 인간의 모든 수단이 고립된 영적 '덩케르크'의 현장은 하나님의 초자연적 도우심이 시작되는 지점입니다. 내 힘으로 아우성치던 모든 도모를 내려놓고 가만히 서서 구원을 바랄 때, 주님은 전혀 예기치 못한 민간 선박(평범한 지체들)의 십자가 다리를 통해 우리를 완벽한 승리와 생환의 길로 인도하십니다.",
+            notes: "💡 주요 키워드: #영화설교 #덩케르크 #고립상황 #가만히서서 #초자연적도우심\n💡 출애굽 홍해 앞바다에서 '너희는 두려워하지 말고 가만히 서서 구원을 보라' 모세의 우선 멈춤 법칙\n💡 평범한 성도들의 연대와 구역 식구들의 중보기도가 가진 구조선으로서의 가치 확증",
+            timeline: [
+                { time: "[00:06:11]", secs: 371, title: "성경 봉독 (시편 121:1~2)" },
+                { time: "[00:19:40]", secs: 1180, title: "출애굽 홍해 앞바다에서 '가만히 서서 구원을 보라' 모세의 법칙 강해" },
+                { time: "[00:28:54]", secs: 1734, title: "📝 오늘의 시 낭송: 《눈부시게 찬란한 희망 — 김형종》" }
+            ]
+        },
+        {
+            index: 13, year: "2026", id: "L73gXY7g5xs", title: "2026년 3월 29일 통합예배 (문학설교) — 대속과 상속자", date: "2026-03-29", month: "3월",
+            categoryKo: "문학설교", scripture: "로마서 8장 16~17절",
+            summary: "죄의 무거운 빚에 눌려 영원한 파산 선고를 받은 인생을 위해, 예수 그리스도께서는 십자가에서 나의 모든 부채를 단번에 청산하셨습니다(대속). 이 위대한 바보 이반과 같은 대속의 신비를 믿는 자에게 주님은 단순한 면책을 넘어, 하늘의 거대한 영광과 천국 기업을 온전히 물려받는 당당한 '하나님의 상속자'라는 최고의 신분을 허락하십니다.",
+            notes: "💡 주요 키워드: #문학설교 #톨스토이 #바보이반 #대속의은혜 #천국상속자\n💡 계산기 두드리지 않는 바보 같은 사랑으로 인류의 죄를 짊어지신 예수님의 대속적 비움 강해\n💡 사탄의 정죄와 죄책감의 영수증을 십자가 보혈로 완전히 찢어버리시는 상속자의 권세",
+            timeline: [
+                { time: "[00:04:30]", secs: 270, title: "성경 봉독 (로마서 8:16~17)" },
+                { time: "[00:12:40]", secs: 760, title: "계산기 두드리지 않는 바보 같은 사랑으로 인류의 죄를 짊어지신 예수님의 대속적 비움" },
+                { time: "[00:29:40]", secs: 1780, title: "📝 오늘의 시 낭송: 《상속자의 영광 — 김형종》" }
+            ]
+        },
+        {
+            index: 14, year: "2026", id: "KfpqMWMFJsE", title: "2026년 4월 5일 부활주일 — 부활을 보는 시력", date: "2026-04-05", month: "4월",
+            categoryKo: "주일예배", scripture: "요한복음 14장 19절",
+            summary: "부활의 아침은 단순히 역사적 사건의 기념이 아니라, 사망의 음침한 무덤 속에 갇혀 있던 성도의 눈을 열어 영원한 생명의 빛을 보게 하는 신령한 시력의 회복입니다. 부활의 렌즈로 현실을 바라볼 때, 우리는 죽음의 공포와 질병의 위협을 완전히 압도하며 이미 승리하신 주님의 영광에 동참하는 완전한 자유를 누리게 됩니다.",
+            notes: "💡 주요 키워드: #부활주일 #부활의시력 #생명의빛 #무덤의대반전 #영원한승리\n💡 '내가 살아 있고 너희도 살아나겠음이라' 하신 주님의 부활 첫 음성 강해\n💡 🎵 부활절 특별 칸타타: 연합찬양대의 웅장한 부활 찬송 메들리",
+            timeline: [
+                { time: "[00:05:14]", secs: 314, title: "성경 봉독 (요한복음 14:19)" },
+                { time: "[00:08:53]", secs: 533, title: "내가 살아 있고 너희도 살아나겠음이라 하신 주님의 부활 첫 음성 강해" },
+                { time: "[00:24:49]", secs: 1489, title: "📝 오늘의 시 낭송: 《부활의 아침, 눈을 뜨다 — 김형종》" }
+            ]
+        },
+        {
+            index: 15, year: "2026", id: "8aAdRX2LTDM", title: "2026년 4월 12일 통합설교 (음악설교) — 믿을 수 없는 중에도", date: "2026-04-12", month: "4월",
+            categoryKo: "음악설교", scripture: "로마서 4장 18절",
+            summary: "도무지 믿을 수 없고 손에 잡히는 증거가 없는 짙은 안개 속에서도, 말씀의 확실한 이정표를 따라 걷는 것이 진짜 믿음입니다. 감정과 환경의 변화에 널뛰기하는 내 생각을 내려놓고 약속의 신실하심에 영혼의 닻을 내릴 때, 비바람이 몰아쳐도 전복되지 않는 완전한 평강이 내 마음의 중심을 견고히 붙들어줍니다.",
+            notes: "💡 주요 키워드: #음악설교 #믿음의안개 #약속의닻 #신실하심 #중심의평강\n💡 🎵 음악설교 특송: 《믿을 수 없는 중에도》 (신상호 작곡 — 하늘스크린 솔리스트)\n💡 내 눈의 시각적 증거보다 하나님의 들리는 음성을 더 신뢰하는 안목의 훈련",
+            timeline: [
+                { time: "[00:04:20]", secs: 260, title: "성경 봉독 (로마서 4:18)" },
+                { time: "[00:09:30]", secs: 570, title: "🎵 음악설교 특송: 《믿을 수 없는 중에도》 (신상호 작곡 — 하늘스크린 솔리스트)" },
+                { time: "[00:33:40]", secs: 2020, title: "📝 오늘의 시 낭송: 《안개 속의 나침반 — 김형종》" }
+            ]
+        },
+        {
+            index: 16, year: "2026", id: "Nq7786Ru8rc", title: "2026년 4월 19일 비전설교 — 성공적인 실패", date: "2026-04-19", month: "4월",
+            categoryKo: "비전설교", scripture: "고린도후서 4장 8~10절",
+            summary: "안식처라 여겼던 인생의 배가 파선하여 가라앉는 극심한 실패의 현장은 하나님의 새로운 위대한 목표가 시작되는 지점입니다. 지나간 과거의 영광과 미련을 과감히 포기하고 '전원 생환'이라는 주님의 새로운 약속에 시선을 고정할 때, 고독한 조난의 바위섬은 절망의 무덤이 아니라 약속의 신실함을 체험하는 영광의 요새로 완벽히 전환됩니다.",
+            notes: "💡 주요 키워드: #비전주일 #섀클턴 #인듀런스호 #일단멈춤 #성공적인실패\n💡 남극 탐험 중 빙하에 갇혀 침몰한 '인듀런스호'와 리더 섀클턴의 대원 28명 전원 무사 생환 실화\n💡 위기를 만났을 때 성도가 취해야 할 '일단 멈춤'의 지혜와 가만히 서 있는 법칙",
+            timeline: [
+                { time: "[00:06:36]", secs: 396, title: "성경 봉독 (고린도후서 4:8~10)" },
+                { time: "[00:11:06]", secs: 666, title: "실제 남극 탐험 중 빙하에 침몰한 '인듀런스호' 리더 섀클턴의 실화 소개" },
+                { time: "[00:14:52]", secs: 892, title: "위기를 만났을 때 성도가 취해야 할 '일단 멈춤'의 지혜 (출 14:13)" }
+            ]
+        },
+        {
+            index: 17, year: "2026", id: "wDKeWx2ls-s", title: "2026년 4월 26일 영화설교 — 자라게 하시는 하나님", date: "2026-04-26", month: "4월",
+            categoryKo: "영화설교", scripture: "마가복음 4장 26~29절",
+            summary: "인생의 밭에 뿌려진 말씀의 씨앗이 언제 싹이 나고 자랄지 인간의 눈으로는 도무지 측량할 수 없습니다. 당장의 눈에 보이는 가시적 결과에 조급해하며 내 힘으로 잡아당기지 않고, 보이지 않는 땅속에서 밤낮 자고 깨는 사이 은밀히 일하시는 하나님의 주권적 성장 능력을 온전히 신뢰할 때 우리의 삶은 마침내 풍성한 결실을 맺게 됩니다.",
+            notes: "💡 주요 키워드: #영화설교 #씨앗의성장 #은밀한섭리 #조급함배격 #자라게하시는주권\n💡 밤낮 자고 깨는 사이에 씨가 자라나는 영적 자람의 본질과 인간 조급증 허망함 지적\n💡 내 자녀와 내 가정이 당장 변하지 않아도 낙심하지 않고 말씀의 물을 주는 영적 농부의 태도",
+            timeline: [
+                { time: "[00:04:15]", secs: 255, title: "성경 봉독 (마가복음 4:26~29)" },
+                { time: "[00:22:40]", secs: 1360, title: "밤낮 자고 깨는 사이에 씨가 자라나는 영적 자람의 본질 강해" },
+                { time: "[00:31:15]", secs: 1875, title: "📝 오늘의 시 낭송: 《땅속의 숨소리 — 김형종》" }
+            ]
+        },
+        {
+            index: 18, year: "2026", id: "9qAKUU8oeCo", title: "2026년 5월 3일 주일설교 (부모자녀주일) — 선한말 용서의 말", date: "2026-05-03", month: "5월",
+            categoryKo: "주일예배", scripture: "잠언 12장 18절, 에베소서 4장 32절",
+            summary: "5월 가정의 달을 맞아 선포된 언어의 영적 권세입니다. 죽고 사는 것이 혀의 힘에 달렸으니, 가정 안에서 칼로 찌르는 듯한 날카로운 언어 폭력을 과감히 종식하고 상처를 싸매는 선한 말과 무조건적인 용서의 언어(베라카)를 심어야 합니다.",
+            notes: "💡 주요 키워드: #가정의달 #언어의권세 #선한말 #용서의언어 #천국의쉼터\n💡 히브리어 '베라카(Berakah)'의 축복과 용서의 언어가 지닌 영적 보호막 강해\n💡 부부간의 무심코 던진 가시 돋친 대화의 습관을 교정하는 3가지 영적 청정 언어 필터링",
+            timeline: [
+                { time: "[00:05:40]", secs: 340, title: "성경 봉독 (잠언 12:18, 에베소서 4:32)" },
+                { time: "[00:16:30]", secs: 990, title: "히브리어 '베라카(Berakah)' 축복과 용서의 언어가 지닌 영적 보호막 강해" },
+                { time: "[00:34:20]", secs: 2060, title: "📝 오늘의 시 낭송: 《가장 따뜻한 고백 — 김형종》" }
+            ]
+        },
+        {
+            index: 19, year: "2026", id: "48wBdYza01U", title: "2026년 5월 10일 통합설교 (음악설교) — 끝까지 지켜야 할 가정과 교회", date: "2026-05-10", month: "5월",
+            categoryKo: "음악설교", scripture: "요한복음 6장 67~68절",
+            summary: "세상을 살면서 성도가 결단코 타협하거나 빼앗기지 말아야 할 두 가지 절대적 가치는 바로 가정과 교회입니다. 교회는 세상의 모든 상처와 피로를 씻어내고 하늘의 무한한 에너지를 공급받는 영적 유조 탱크이며, 가정은 그 에너지를 바탕으로 다시 호흡할 수 있도록 진정한 안식을 주는 사랑의 둥지입니다.",
+            notes: "💡 주요 키워드: #음악설교 #가정의가치 #교회의사명 #에너지탱크 #안식의둥지\n💡 🎵 음악설교 특송: 《아무도 예배하지 않고》 (작사·작곡 이오늘 — 찬양 김주윤)\n💡 의인 한 사람이 확고히 서 있으면 그 집은 절대로 망하지 않는다는 보호의 약속 (잠언 12:7)",
+            timeline: [
+                { time: "[00:00:33]", secs: 33, title: "성경 봉독 (요한복음 6:67~68)" },
+                { time: "[00:09:05]", secs: 545, title: "🎵 음악설교 특송: 《아무도 예배하지 않고》 (찬양 김주윤)" },
+                { time: "[00:25:00]", secs: 1500, title: "📝 오늘의 시 낭송: 《확신과 믿음 — 김형종》" }
+            ]
+        },
+        {
+            index: 20, year: "2026", id: "hJIV5WnqxuM", title: "2026년 5월 17일 비전설교 — 가시 사랑", date: "2026-05-17", month: "5월",
+            categoryKo: "비전설교", scripture: "고린도후서 12장 7~9절",
+            summary: "인생을 찌르는 치명적인 고통의 가시와 육체의 아픔은 나를 파괴하려는 저주가 아니라, 자만하지 않고 오직 주님의 전능하심만을 의지하게 하려는 역설적인 '은혜의 장치'입니다. 가시의 뾰족한 통증 속에서 내 힘의 교만을 완전히 빼내고 그리스도의 능력 아래 엎드릴 때, 그 가시는 부활의 찬란한 영광의 흔적이자 면류관으로 승화됩니다.",
+            notes: "💡 주요 키워드: #비전주일 #육체의가시 #은혜의장치 #겸손의훈련 #면류관전환\n💡 사도 바울이 가시 제거를 위해 세 번 간구했을 때 '내 은혜가 네게 족하도다' 음성 고찰\n💡 오늘의 시 낭송: 《가시나무새의 노래 — 김형종 shadow》",
+            timeline: [
+                { time: "[00:05:40]", secs: 340, title: "성경 봉독 (고린도후서 12:7~9)" },
+                { time: "[00:08:10]", secs: 490, title: "내 인생을 사정없이 찌르는 지독한 결핍과 육체적 질병의 가시 직시" },
+                { time: "[00:33:15]", secs: 1995, title: "📝 오늘의 시 낭송: 《가시나무새의 노래 — 김형종 shadow》" }
+            ]
+        },
+        {
+            index: 21, year: "2026", id: "glwIPMh7eI4", title: "2026년 5월 24일 영화설교 — 내 아이에게 주신 길", date: "2026-05-24", month: "5월",
+            categoryKo: "영화설교", scripture: "에베소서 6장 4절",
+            summary: "부모의 과도한 욕심과 결과 중심적 기대치에 맞추어 자녀를 코너로 몰아넣는 혹독한 억압은 아이의 심령을 파괴하는 언어 폭력(파로기조)입니다. 하나님께서 내 아이 속에 태어날 때부터 심어놓으신 고유의 색깔과 달란트를 발견하고 기질에 맞추어 마땅히 행할 길(알 피 다르코)을 존중하는 부모가 진짜 성도입니다.",
+            notes: "💡 주요 키워드: #영화설교 #영조와사도세자 #파로기조 #알피다르코 #개성존중\n💡 히브리어 '알 피 다르코(Al Pi Darko)'의 참뜻: 아이의 길과 개성에 완전히 맞추어 가르치는 교육 본질\n💡 자녀의 순종을 이끌어내기 위해 아래에서 경청하는 '휘파쿠어(Hypakouo)'의 자세",
+            timeline: [
+                { time: "[00:05:45]", secs: 345, title: "성경 봉독 (에베소서 6:4)" },
+                { time: "[00:16:56]", secs: 1016, title: "사도세자의 절규: 내가 바란 것은 따뜻한 눈길 한 번이었소 메시지 공찰" },
+                { time: "[00:35:45]", secs: 2145, title: "📝 오늘의 시 낭송: 《어른들이 모르는 세계 — 김형종》" }
+            ]
+        },
+        {
+            index: 22, year: "2026", id: "V6ghXSRj-ZQ", title: "2026년 5월 31일 문학설교 — 용서와 건강한 약속", date: "2026-05-31", month: "5월",
+            categoryKo: "문학설교", scripture: "마태복음 18장 21~22절",
+            summary: "사소한 오해와 감정의 변화로 시작된 미움의 작은 불씨를 초기에 다스리지 못하면, 온 인생과 공동체를 순식간에 전소시키는 방화의 비극으로 번져갑니다. 상대의 죄를 하나님의 시선으로 깨끗이 덮어주고 내면에 찌꺼기를 남기지 않는 완전한 용서(아피에미)를 선포할 때 분노의 자리는 소멸됩니다.",
+            notes: "💡 주요 키워드: #문학설교 #톨스토이 #방화의비극 #아피에미 #완전한용서\n💡 헬라어 '아피에미(Aphiemi)'의 영적 실체: 미움의 찌꺼기가 남지 않도록 완전히 내보내는 용서\n💡 소설 속 위대한 유언: '방화범의 죄를 숨겨주어라, 그것이 불을 끄는 법이다' 순종",
+            timeline: [
+                { time: "[00:12:51]", secs: 771, title: "성경 봉독 (마태복음 18:21~22)" },
+                { time: "[00:14:11]", secs: 851, title: "헬라어 '아피에미(Aphiemi)'의 영적 실체 강해" },
+                { time: "[00:38:41]", secs: 2321, title: "소설 속 아버지가 숨을 거두며 남긴 위대한 유언 경청" }
+            ]
+        },
+        {
+            index: 23, year: "2026", id: "wrmRpng3laQ", title: "2026년 6월 7일 부부주일 — 돕는 배필", date: "2026-06-07", month: "6월",
+            categoryKo: "주일예배", scripture: "창세기 2장 18, 21~23절",
+            summary: "하나님께서 설계하신 부부의 신비는 서로의 조건과 성향을 비교하며 저울질하는 계약 관계가 아닙니다. 내 뼈 중의 뼈요 살 중의 살로 고백하는 절대적인 확신(에제르) 위에 서서, 서로의 다름을 비난하지 않고 톱니바퀴처럼 묵묵히 조율해 가며 천성을 향해 함께 굴러가는 가장 아름답고 견고한 하늘의 동역자입니다.",
+            notes: "💡 주요 키워드: #부부주일 #돕는배필 #에제르 #톱니바퀴조율 #안식의기둥\n💡 히브리어 'Ezer(에제르)' 강해: 생명을 지키는 동등하고 강력한 구원적 돕는 배필 실체\n💡 일상 가동 지침: 대문 앞에서 가정의 어둠을 차단하고 빛의 영역으로 들어가는 10초 대문 기도법",
+            timeline: [
+                { time: "[00:04:22]", secs: 262, title: "성경 봉독 (창세기 2:18, 21~23)" },
+                { time: "[00:14:30]", secs: 870, title: "히브리어 '에제르(Ezer)' 구원적 배필의 조력 구조 해설" },
+                { time: "[00:19:45]", secs: 1185, title: "📝 오늘의 시 낭송: 《하나의 이름을 마주하고 — 김형종》" }
+            ]
+        },
+        {
+            index: 24, year: "2026", id: "aH_n7Fnby30", title: "2026년 6월 14일 통합설교 (음악설교) — 하나님의 시간", date: "2026-06-14", month: "6월",
+            categoryKo: "음악설교", scripture: "전도서 3장 1, 11절",
+            summary: "우리의 조급한 시계와 달리, 하나님의 약속이 성취되는 '하나님의 시간(카이로스)'은 단 1초의 오차도 없이 가장 완벽한 타이밍에 작동합니다. 내 뜻대로 상황을 재촉하려는 욕심의 초침을 멈추고 주님의 신실한 스케줄에 영혼의 주파수를 맞출 때, 삶의 모든 닫힌 관문들은 일제히 열리며 거대한 생명의 결실을 맞이하게 됩니다.",
+            notes: "💡 주요 키워드: #음악설교 #하나님의시간 #카이로스 #완벽한타이밍 #스케줄신뢰\n💡 물리적 시간(크로노스)과 신령한 시간(카이로스)의 영적 정의 대비\n💡 🎵 음악설교 특송: 《하나님의 시간》 (신상호 작사/작곡 — 하늘스크린 연합 성가대)",
+            timeline: [
+                { time: "[00:04:10]", secs: 250, title: "성경 봉독 (전도서 3:1, 11)" },
+                { time: "[00:06:20]", secs: 380, title: "물리적 시간(크로노스)과 신령한 시간(카이로스)의 영적 정의 대비" },
+                { time: "[00:33:15]", secs: 1995, title: "📝 오늘의 시 낭송: 《기다림의 강가에서 — 김형종》" }
+            ]
+        }
+    ];
+
+    // ================================================
+    // 상태 변수
+    // ================================================
+    let sermonDatabase = [];
+    let currentMonthFilter = 'all';
+    let currentSitFilter = 'all';
+    let activeItemContext = null;
+    let ytPlayer = null;           // YouTube IFrame API 플레이어 객체
+    let ytPlayerReady = false;     // 플레이어 준비 완료 여부
+    let playerStateTimer = null;   // 현재 재생 시간 추적 타이머
+
+    // ================================================
+    // YouTube IFrame API 콜백 (전역 함수 필수)
+    // ================================================
+    window.onYouTubeIframeAPIReady = function() {
+        // API 로드 완료 — 플레이어는 모달 열릴 때 생성
+        console.log('[YT API] Ready');
+    };
+
+    function createYouTubePlayer(videoId, startSeconds) {
+        // 기존 플레이어 파괴
+        if (ytPlayer) {
+            try { ytPlayer.destroy(); } catch(e) {}
+            ytPlayer = null;
+            ytPlayerReady = false;
+        }
+
+        // 플레이어 컨테이너 초기화
+        document.getElementById('ytPlayer').innerHTML = '';
+        document.getElementById('embedBlockedOverlay').classList.add('hidden');
+
+        setPlayerStatus('loading', '영상 로딩 중...');
+
+        ytPlayer = new YT.Player('ytPlayer', {
+            videoId: videoId,
+            playerVars: {
+                autoplay: 1,
+                start: startSeconds || 0,
+                rel: 0,
+                modestbranding: 1,
+                playsinline: 1,
+                cc_load_policy: 0,
+                iv_load_policy: 3,
+                origin: window.location.origin || 'https://localhost'
+            },
+            events: {
+                onReady: function(e) {
+                    ytPlayerReady = true;
+                    setPlayerStatus('playing', '재생 중');
+                    startProgressTracker();
+                },
+                onStateChange: function(e) {
+                    const states = { '-1': '준비 중', 0: '재생 완료', 1: '재생 중', 2: '일시정지', 3: '버퍼링 중', 5: '대기 중' };
+                    const stateKey = e.data === 1 ? 'playing' : (e.data === 0 ? 'ended' : 'paused');
+                    setPlayerStatus(stateKey, states[e.data] || '');
+                    if (e.data === 1) startProgressTracker();
+                    else stopProgressTracker();
+                },
+                onError: function(e) {
+                    // 에러 코드 150, 101: 채널이 임베드를 허용하지 않음
+                    console.warn('[YT] 임베드 오류:', e.data);
+                    showEmbedBlocked();
+                }
+            }
+        });
+    }
+
+    function showEmbedBlocked() {
+        ytPlayerReady = false;
+        setPlayerStatus('blocked', '임베드 재생 불가');
+        const overlay = document.getElementById('embedBlockedOverlay');
+        overlay.classList.remove('hidden');
+        if (activeItemContext) {
+            const link = document.getElementById('blockedDirectLink');
+            link.href = 'https://youtu.be/' + activeItemContext.id;
+        }
+    }
+
+    function setPlayerStatus(state, text) {
+        const dot = document.getElementById('playerStatusDot');
+        const label = document.getElementById('playerStatusText');
+        const colors = { playing: 'bg-green-500', paused: 'bg-yellow-500', loading: 'bg-blue-500 animate-pulse', blocked: 'bg-red-500', ended: 'bg-slate-500' };
+        dot.className = 'w-2 h-2 rounded-full ' + (colors[state] || 'bg-slate-500');
+        label.textContent = text;
+        label.className = state === 'playing' ? 'text-green-400 font-medium' : (state === 'blocked' ? 'text-red-400 font-medium' : 'text-slate-400 font-medium');
+    }
+
+    // 재생 진행 추적 → 현재 섹션 하이라이트
+    function startProgressTracker() {
+        stopProgressTracker();
+        playerStateTimer = setInterval(updateTimelineHighlight, 1000);
+    }
+
+    function stopProgressTracker() {
+        if (playerStateTimer) { clearInterval(playerStateTimer); playerStateTimer = null; }
+    }
+
+    function updateTimelineHighlight() {
+        if (!ytPlayer || !ytPlayerReady || typeof ytPlayer.getCurrentTime !== 'function') return;
+        const currentSec = Math.floor(ytPlayer.getCurrentTime());
+        if (!activeItemContext) return;
+
+        const tl = activeItemContext.timeline;
+        let currentNode = null;
+        for (let i = tl.length - 1; i >= 0; i--) {
+            if (currentSec >= tl[i].secs) { currentNode = tl[i]; break; }
+        }
+
+        // 타임라인 버튼 하이라이트
+        document.querySelectorAll('#mTimelineContainer .tl-btn').forEach((btn, idx) => {
+            btn.classList.remove('tl-btn-active');
+            if (currentNode && tl[idx] && tl[idx].secs === currentNode.secs) {
+                btn.classList.add('tl-btn-active');
+            }
+        });
+
+        // 지금 재생 중 섹션
+        const nowPlayingSection = document.getElementById('nowPlayingSection');
+        const nowPlayingText = document.getElementById('nowPlayingText');
+        if (currentNode) {
+            nowPlayingSection.classList.remove('hidden');
+            nowPlayingText.textContent = currentNode.title;
+        } else {
+            nowPlayingSection.classList.add('hidden');
+        }
+    }
+
+    // 특정 초로 점프
+    function seekToTime(seconds) {
+        if (ytPlayer && ytPlayerReady && typeof ytPlayer.seekTo === 'function') {
+            ytPlayer.seekTo(seconds, true);
+            ytPlayer.playVideo();
+        } else {
+            // 플레이어가 준비되지 않은 경우 → 새 창으로 열기
+            if (activeItemContext) {
+                window.open('https://youtu.be/' + activeItemContext.id + '?t=' + seconds, '_blank');
+            }
+        }
+
+        // 직접 링크도 해당 시간으로 업데이트
+        updateDirectLinks(seconds);
+    }
+
+    function updateDirectLinks(seconds) {
+        if (!activeItemContext) return;
+        const url = 'https://youtu.be/' + activeItemContext.id + (seconds > 0 ? '?t=' + seconds : '');
+        const ytDirectLink = document.getElementById('ytDirectLink');
+        if (ytDirectLink) ytDirectLink.href = url;
+        const blockedLink = document.getElementById('blockedDirectLink');
+        if (blockedLink) blockedLink.href = url;
+    }
+
+    // ================================================
+    // 모달 열기 / 닫기
+    // ================================================
+    function openPlaybackModal(idx) {
+        const item = sermonDatabase.find(s => s.index === idx);
+        if (!item) return;
+        activeItemContext = item;
+
+        // 모달 기본 정보 채우기
+        document.getElementById('mCategoryLabel').textContent = item.categoryKo;
+        document.getElementById('mTitleLabel').textContent = item.title;
+        document.getElementById('mMetaLabel').innerHTML =
+            '<span><i class="fa-regular fa-calendar mr-1"></i> 선포: ' + item.date + '</span> | <span class="text-indigo-700 font-bold">' + item.month + ' 대예배</span>';
+
+        const summary = item.summary || '';
+        const notes = item.notes || '';
+        if (document.getElementById('mSummaryLabel')) document.getElementById('mSummaryLabel').textContent = summary;
+        if (document.getElementById('mNotesLabel')) document.getElementById('mNotesLabel').textContent = notes;
+        if (document.getElementById('mSummaryLabelMobile')) document.getElementById('mSummaryLabelMobile').textContent = summary;
+        if (document.getElementById('mNotesLabelMobile')) document.getElementById('mNotesLabelMobile').textContent = notes;
+
+        // 직접 링크 초기화
+        updateDirectLinks(0);
+
+        // 타임라인 렌더링
+        const tlBox = document.getElementById('mTimelineContainer');
+        tlBox.innerHTML = '';
+        item.timeline.forEach(function(node, idx) {
+            const btn = document.createElement('button');
+            btn.className = 'tl-btn w-full text-left text-xs bg-slate-50 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-300 p-3 rounded-xl flex items-center justify-between transition group shadow-sm';
+            const secs = node.secs || node.seconds || 0;
+            btn.onclick = function() {
+                seekToTime(secs);
+                updateDirectLinks(secs);
+            };
+            btn.innerHTML =
+                '<span class="text-slate-700 font-medium group-hover:text-indigo-950 transition flex items-center gap-2 min-w-0 flex-1">' +
+                    '<i class="fa-solid fa-play text-indigo-500 text-[10px] flex-shrink-0 group-hover:text-indigo-700 transition"></i>' +
+                    '<span class="truncate leading-snug">' + node.title + '</span>' +
+                '</span>' +
+                '<span class="tl-time-badge text-indigo-600 font-bold bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100 group-hover:bg-indigo-600 group-hover:text-white transition serif flex-shrink-0 ml-2 text-[11px] font-mono">' + node.time + '</span>';
+            tlBox.appendChild(btn);
+        });
+
+        // 모달 표시
+        document.getElementById('playbackModal').classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+        document.getElementById('nowPlayingSection').classList.add('hidden');
+
+        // 유튜브 플레이어 생성
+        if (window.YT && window.YT.Player) {
+            createYouTubePlayer(item.id, 0);
+        } else {
+            // API 아직 로드 중 → 잠시 후 재시도
+            setTimeout(function() {
+                if (window.YT && window.YT.Player) createYouTubePlayer(item.id, 0);
+                else showEmbedBlocked();
+            }, 2000);
+        }
+    }
+
+    function closeModal() {
+        stopProgressTracker();
+        if (ytPlayer) {
+            try { ytPlayer.stopVideo(); ytPlayer.destroy(); } catch(e) {}
+            ytPlayer = null;
+            ytPlayerReady = false;
+        }
+        document.getElementById('ytPlayer').innerHTML = '';
+        document.getElementById('playbackModal').classList.add('hidden');
+        document.body.style.overflow = '';
+        document.getElementById('nowPlayingSection').classList.add('hidden');
+    }
+
+    // ================================================
+    // 필터 & 렌더링
+    // ================================================
+    function analyzeTextToSituation(title, summary, notes) {
+        const text = (title + ' ' + summary + ' ' + notes).toLowerCase();
+        if (/상처|자존감|치유|흉터|킨츠기|가시|포이에마/.test(text)) return '상처치유';
+        if (/우울|불안|고독|변호사|파라클레토스|보혜사|외로움/.test(text)) return '우울불안';
+        if (/고난|시련|풀무질|정금|연단|부활/.test(text)) return '고난시련';
+        if (/실패|결핍|가난|파선|덩케르크|고립|벤치|빈민촌|야니스/.test(text)) return '실패결핍';
+        if (/미움|분노|용서|토포스|아피에미|대속|복수|불씨|방화/.test(text)) return '분노용서';
+        if (/가정|가족|부부|자녀|아내|남편|사도세자|영조|베라카|배필|에제르/.test(text)) return '가정가족';
+        if (/조급|인내|기다림|카이로스|크로노스|안개|나침반|시간|스케줄/.test(text)) return '조급인내';
+        return '고난시련';
+    }
+
+    function buildMonthFilterTabs() {
+        const wrapper = document.getElementById('monthTabsWrapper');
+        if (!wrapper) return;
+        wrapper.innerHTML = '';
+        const allBtn = document.createElement('button');
+        allBtn.className = 'tab-btn active-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition';
+        allBtn.setAttribute('data-month', 'all');
+        allBtn.onclick = function() { setMonthFilter('all'); };
+        allBtn.textContent = '전체보기';
+        wrapper.appendChild(allBtn);
+
+        const months = [...new Set(sermonDatabase.map(function(item) { return item.month; }))].sort(function(a, b) { return parseInt(a) - parseInt(b); });
+        months.forEach(function(m) {
+            if (!m) return;
+            const btn = document.createElement('button');
+            btn.className = 'tab-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition';
+            btn.setAttribute('data-month', m);
+            btn.onclick = function() { setMonthFilter(m); };
+            btn.textContent = m;
+            wrapper.appendChild(btn);
+        });
+    }
+
+    function executeDynamicFilter() {
+        const searchInput = document.getElementById('searchInput').value.toLowerCase().trim();
+        const yearSelect = document.getElementById('yearFilter').value;
+        const filtered = sermonDatabase.filter(function(item) {
+            const yMatch = (yearSelect === 'all' || item.year === yearSelect);
+            const mMatch = (currentMonthFilter === 'all' || item.month === currentMonthFilter);
+            const sMatch = (currentSitFilter === 'all' || item.situation === currentSitFilter);
+            const tMatch = !searchInput ||
+                item.title.toLowerCase().includes(searchInput) ||
+                item.summary.toLowerCase().includes(searchInput) ||
+                item.notes.toLowerCase().includes(searchInput) ||
+                item.scripture.toLowerCase().includes(searchInput);
+            return yMatch && mMatch && sMatch && tMatch;
+        });
+        renderGridCards(filtered);
+    }
+
+    function renderGridCards(data) {
+        const container = document.getElementById('cardsGridSection');
+        if (!container) return;
+        container.innerHTML = '';
+        const sitLabels = { '상처치유': '🩹 상처치유', '우울불안': '💭 우울불안', '고난시련': '🔥 고난시련', '실패결핍': '📉 실패결핍', '분노용서': '⚓ 분노용서', '가정가족': '🏠 가정가족', '조급인내': '⏳ 조급인내' };
+
+        data.forEach(function(item) {
+            const card = document.createElement('div');
+            card.className = 'bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm sermon-card flex flex-col justify-between cursor-pointer';
+            card.onclick = function() { openPlaybackModal(item.index); };
+            card.innerHTML =
+                '<div class="p-6">' +
+                    '<div class="flex items-center justify-between mb-3">' +
+                        '<span class="text-[11px] font-bold px-2.5 py-1 rounded-full border bg-indigo-50 text-indigo-950 border-indigo-200">' + item.categoryKo + '</span>' +
+                        '<span class="text-xs text-slate-400 font-bold serif">' + item.date + ' (' + item.month + ')</span>' +
+                    '</div>' +
+                    '<h4 class="font-bold text-slate-900 leading-snug hover:text-indigo-900 transition-all mb-2 serif text-base">' + item.title + '</h4>' +
+                    '<div class="text-xs text-slate-900 font-semibold mb-3 flex items-center bg-slate-50 p-2 py-1.5 rounded-lg border border-slate-100">' +
+                        '<span class="text-indigo-700 font-bold mr-2">' + (sitLabels[item.situation] || '🛡️ 영적대처') + '</span>' +
+                        '<span class="text-slate-300">|</span>' +
+                        '<span class="truncate ml-2 text-slate-600 font-light">' + item.scripture + '</span>' +
+                    '</div>' +
+                    '<p class="text-xs text-slate-500 font-light leading-relaxed line-clamp-3">' + item.summary + '</p>' +
+                '</div>' +
+                '<div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-xs">' +
+                    '<span class="text-indigo-600 font-bold flex items-center gap-1.5"><i class="fa-brands fa-youtube text-red-500"></i> 영상 재생하기</span>' +
+                    '<span class="text-slate-400 text-[11px]">' + item.timeline.length + '개 타임라인</span>' +
+                '</div>';
+            container.appendChild(card);
+        });
+
+        const countEl = document.getElementById('counterTracker');
+        if (countEl) countEl.innerHTML = '<i class="fa-solid fa-database mr-2 text-indigo-500"></i> 필터 동기화 일치 노드: 총 ' + data.length + '개';
+    }
+
+    function setMonthFilter(m) { currentMonthFilter = m; updateUI('monthTabsWrapper', 'data-month', m); executeDynamicFilter(); }
+    function setSituationFilter(s) { currentSitFilter = s; updateUI('situationTabsWrapper', 'data-sit', s); executeDynamicFilter(); }
+    function updateUI(gId, attr, target) {
+        document.querySelectorAll('#' + gId + ' .tab-btn').forEach(function(b) {
+            if (b.getAttribute(attr) === target) b.classList.add('active-btn');
+            else b.classList.remove('active-btn');
+        });
+    }
+
+    // ================================================
+    // 새 말씀 등록
+    // ================================================
+    function processSystemInsertion() {
+        const password = document.getElementById('formPassword').value;
+        if (password !== '1234') { showCustomAlert('보안 인증 실패: 패스워드가 올바르지 않습니다.', 'error'); return; }
+        const title = document.getElementById('formTitle').value.trim();
+        let rawUrl = document.getElementById('formUrl').value.trim();
+        const date = document.getElementById('formDate').value;
+        const categoryKo = document.getElementById('formCategory').value;
+        const summary = document.getElementById('formSummary').value.trim();
+        const notes = document.getElementById('formNotes').value.trim();
+        const rawTimeline = document.getElementById('formTimeline').value.trim();
+        if (!title || !rawUrl || !summary || !rawTimeline) { showCustomAlert('모든 필수 입력 항목(*)을 기입하세요.', 'error'); return; }
+
+        if (rawUrl.includes('<iframe') && rawUrl.includes('src=')) {
+            const srcMatch = rawUrl.match(/src=["']([^"']+)["']/);
+            if (srcMatch) rawUrl = srcMatch[1];
+        }
+        let videoId = '';
+        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+        const match = rawUrl.match(regExp);
+        if (match && match[2].length === 11) videoId = match[2];
+        else if (rawUrl.length === 11) videoId = rawUrl;
+        else { showCustomAlert('퍼가기 주소 식별코드를 파싱하지 못했습니다.', 'error'); return; }
+
+        const extractedYear = date.split('-')[0];
+        const extractedMonth = parseInt(date.split('-')[1]) + '월';
+        const parsedTimeline = [];
+        rawTimeline.split('\n').forEach(function(line) {
+            const tlMatch = line.match(/\[(\d{2}):(\d{2}):(\d{2})\](.*)/);
+            if (tlMatch) {
+                const secs = parseInt(tlMatch[1]) * 3600 + parseInt(tlMatch[2]) * 60 + parseInt(tlMatch[3]);
+                parsedTimeline.push({ time: '[' + tlMatch[1] + ':' + tlMatch[2] + ':' + tlMatch[3] + ']', secs: secs, title: tlMatch[4].trim() });
+            }
+        });
+
+        const newNode = {
+            index: sermonDatabase.length + 1, year: extractedYear, id: videoId, title: title, date: date, month: extractedMonth,
+            situation: analyzeTextToSituation(title, summary, notes), categoryKo: categoryKo, scripture: title.split('—')[0].trim(),
+            summary: summary, notes: notes, timeline: parsedTimeline
+        };
+        sermonDatabase.unshift(newNode);
+        localStorage.setItem('h_sermon_db_2026_v5', JSON.stringify(sermonDatabase));
+        showCustomAlert('말씀 자산 등록 성공!', 'success');
+        clearUploadFormFields();
+        toggleUploadForm();
+        buildMonthFilterTabs();
+        executeDynamicFilter();
+    }
+
+    // ================================================
+    // 유틸리티
+    // ================================================
+    function toggleUploadForm() { document.getElementById('uploadSection').classList.toggle('hidden'); }
+    function clearUploadFormFields() {
+        ['formTitle','formUrl','formSummary','formNotes','formTimeline','formPassword'].forEach(function(id) {
+            document.getElementById(id).value = '';
+        });
+    }
+    function resetSystemData() {
+        showCustomConfirm('시스템 전체 데이터를 초기화하시겠습니까?', function() {
+            localStorage.removeItem('h_sermon_db_2026_v5');
+            startArchiveSystem();
+        });
+    }
+
+    function showCustomAlert(message, type) {
+        const modal = document.getElementById('customAlertModal');
+        const icon = document.getElementById('customAlertIcon');
+        const title = document.getElementById('customAlertTitle');
+        document.getElementById('customAlertMessage').textContent = message;
+        if (type === 'error') { icon.className = 'w-12 h-12 rounded-full flex items-center justify-center mx-auto text-xl bg-red-100 text-red-700'; icon.innerHTML = '<i class="fa-solid fa-circle-xmark"></i>'; title.textContent = '오류 발생'; }
+        else if (type === 'success') { icon.className = 'w-12 h-12 rounded-full flex items-center justify-center mx-auto text-xl bg-green-100 text-green-700'; icon.innerHTML = '<i class="fa-solid fa-circle-check"></i>'; title.textContent = '성공'; }
+        else { icon.className = 'w-12 h-12 rounded-full flex items-center justify-center mx-auto text-xl bg-indigo-100 text-indigo-900'; icon.innerHTML = '<i class="fa-solid fa-circle-info"></i>'; title.textContent = '알림'; }
+        modal.classList.remove('hidden');
+    }
+    function closeCustomAlert() { document.getElementById('customAlertModal').classList.add('hidden'); }
+
+    let confirmCallback = null;
+    function showCustomConfirm(message, callback) {
+        document.getElementById('customConfirmMessage').textContent = message;
+        confirmCallback = callback;
+        document.getElementById('customConfirmModal').classList.remove('hidden');
+    }
+    function closeCustomConfirm() { document.getElementById('customConfirmModal').classList.add('hidden'); confirmCallback = null; }
+    function executeCustomConfirm() { if (confirmCallback) confirmCallback(); closeCustomConfirm(); }
+
+    // ================================================
+    // 시스템 초기화
+    // ================================================
+    function startArchiveSystem() {
+        const saved = localStorage.getItem('h_sermon_db_2026_v5');
+        if (saved) {
+            sermonDatabase = JSON.parse(saved);
+        } else {
+            sermonDatabase = masterInitialDatabase.map(function(item) {
+                return Object.assign({}, item, { situation: analyzeTextToSituation(item.title, item.summary, item.notes) });
+            });
+            localStorage.setItem('h_sermon_db_2026_v5', JSON.stringify(sermonDatabase));
+        }
+        buildMonthFilterTabs();
+        executeDynamicFilter();
+    }
+
+    window.onload = startArchiveSystem;
+    </script>
+</body>
+</html>
