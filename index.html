@@ -1,363 +1,267 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="referrer" content="strict-origin-when-cross-origin">
-    <title>하늘스크린교회 지능형 말씀 아카이브 센터</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
-    <!-- YouTube IFrame API -->
-    <script src="https://www.youtube.com/iframe_api"></script>
-    <style>
-        body { font-family: 'Noto Sans KR', sans-serif; background-color: #f8fafc; }
-        .serif { font-family: 'Noto Serif KR', serif; }
-        .sermon-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        .sermon-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(15, 23, 42, 0.08); }
-        .active-btn { background-color: #1e1b4b !important; color: #ffffff !important; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #f1f5f9; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>하늘스크린교회 말씀 아카이브</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  body { font-family:'Noto Sans KR',sans-serif; background:#f8fafc; }
+  .serif { font-family:'Noto Serif KR',serif; }
+  .sermon-card { transition:all .3s cubic-bezier(.4,0,.2,1); }
+  .sermon-card:hover { transform:translateY(-4px); box-shadow:0 12px 28px rgba(15,23,42,.1); }
+  .active-btn { background:#1e1b4b!important; color:#fff!important; }
 
-        /* 유튜브 플레이어 래퍼 */
-        #ytPlayerWrapper {
-            position: relative;
-            width: 100%;
-            padding-bottom: 56.25%; /* 16:9 비율 */
-            background: #000;
-            border-radius: 16px;
-            overflow: hidden;
-        }
-        #ytPlayerWrapper iframe,
-        #ytPlayerWrapper #ytPlayer {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            border: none;
-            border-radius: 16px;
-        }
+  /* ── 플레이어 래퍼 ── */
+  .player-wrap {
+    position:relative; width:100%; padding-bottom:56.25%;
+    background:#0f172a; border-radius:14px; overflow:hidden;
+  }
+  .player-wrap > * {
+    position:absolute; inset:0; width:100%; height:100%; border:none;
+  }
 
-        /* 타임라인 활성화 버튼 */
-        .tl-btn-active {
-            background-color: #eef2ff !important;
-            border-color: #4f46e5 !important;
-            color: #1e1b4b !important;
-        }
-        .tl-btn-active .tl-time-badge {
-            background-color: #4f46e5 !important;
-            color: #fff !important;
-        }
+  /* ── 썸네일 오버레이 ── */
+  .thumb-overlay {
+    cursor:pointer; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; gap:12px;
+    background:rgba(0,0,0,.35); transition:background .2s;
+  }
+  .thumb-overlay:hover { background:rgba(0,0,0,.55); }
+  .thumb-overlay img.thumb-bg {
+    position:absolute; inset:0; width:100%; height:100%;
+    object-fit:cover; transition:transform .3s,filter .3s;
+  }
+  .thumb-overlay:hover img.thumb-bg { transform:scale(1.04); filter:brightness(.7); }
+  .play-ring {
+    position:relative; z-index:2;
+    width:72px; height:72px; border-radius:50%;
+    background:#ff0000; display:flex; align-items:center; justify-content:center;
+    box-shadow:0 4px 24px rgba(0,0,0,.5); transition:transform .2s,box-shadow .2s;
+  }
+  .thumb-overlay:hover .play-ring { transform:scale(1.12); box-shadow:0 8px 32px rgba(255,0,0,.45); }
+  .play-ring svg { margin-left:5px; }
+  .play-label {
+    position:relative; z-index:2;
+    color:#fff; font-size:13px; font-weight:700;
+    text-shadow:0 2px 8px rgba(0,0,0,.8); letter-spacing:.02em;
+  }
 
-        /* 플레이어 상태 표시 */
-        #playerStatusBar {
-            transition: all 0.3s ease;
-        }
+  /* ── 타임라인 ── */
+  .tl-btn { transition:all .15s; }
+  .tl-btn:hover { background:#eef2ff; border-color:#818cf8; }
+  .tl-btn.active { background:#eef2ff!important; border-color:#4f46e5!important; }
+  .tl-btn.active .tl-badge { background:#4f46e5!important; color:#fff!important; }
 
-        /* 임베드 차단 감지 오버레이 */
-        #embedBlockedOverlay {
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(135deg, #0f172a, #1e1b4b);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            border-radius: 16px;
-            z-index: 10;
-            padding: 20px;
-            text-align: center;
-        }
-    </style>
+  ::-webkit-scrollbar{width:5px}
+  ::-webkit-scrollbar-track{background:#f1f5f9}
+  ::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px}
+</style>
 </head>
 <body class="text-slate-800 antialiased">
 
-    <header class="bg-white/90 backdrop-blur-md border-b border-slate-200 sticky top-0 z-40 shadow-sm">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-            <div class="flex items-center space-x-4">
-                <div class="bg-indigo-950 text-amber-400 p-2.5 rounded-xl shadow-md">
-                    <i class="fa-solid fa-church text-2xl"></i>
-                </div>
-                <div>
-                    <h1 class="text-xl font-bold text-slate-900 tracking-wide serif">하늘스크린교회</h1>
-                    <p class="text-xs text-indigo-600 font-bold tracking-tight">AI 상황별 말씀 매칭 &amp; 초정밀 타임 싱크로 아카이브</p>
-                </div>
-            </div>
-            <div class="flex items-center space-x-2">
-                <button onclick="toggleUploadForm()" class="text-xs bg-indigo-950 hover:bg-indigo-900 text-white font-bold px-4 py-2.5 rounded-xl transition shadow-md flex items-center space-x-1.5">
-                    <i class="fa-solid fa-square-plus"></i>
-                    <span>새 말씀 등록 (비밀번호: 1234)</span>
-                </button>
-                <button onclick="resetSystemData()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-500 font-semibold px-3 py-2.5 rounded-xl transition">
-                    <i class="fa-solid fa-arrow-rotate-left"></i> DB 리셋
-                </button>
-            </div>
+<!-- ══ HEADER ══ -->
+<header class="bg-white/90 backdrop-blur-md border-b border-slate-200 sticky top-0 z-40 shadow-sm">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+    <div class="flex items-center space-x-4">
+      <div class="bg-indigo-950 text-amber-400 p-2.5 rounded-xl shadow-md">
+        <i class="fa-solid fa-church text-2xl"></i>
+      </div>
+      <div>
+        <h1 class="text-xl font-bold text-slate-900 tracking-wide serif">하늘스크린교회</h1>
+        <p class="text-xs text-indigo-600 font-bold">AI 상황별 말씀 매칭 &amp; 타임 싱크로 아카이브</p>
+      </div>
+    </div>
+    <div class="flex items-center space-x-2">
+      <button onclick="toggleUpload()" class="text-xs bg-indigo-950 hover:bg-indigo-900 text-white font-bold px-4 py-2.5 rounded-xl transition shadow-md flex items-center gap-1.5">
+        <i class="fa-solid fa-square-plus"></i><span>새 말씀 등록</span>
+      </button>
+      <button onclick="resetDB()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-500 font-semibold px-3 py-2.5 rounded-xl transition">
+        <i class="fa-solid fa-arrow-rotate-left"></i> 초기화
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+
+  <!-- 배너 -->
+  <div class="bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 rounded-3xl p-8 text-white mb-10 shadow-xl border border-indigo-900/40 relative overflow-hidden">
+    <div class="absolute right-0 bottom-0 opacity-5 text-[14rem] translate-x-12 translate-y-16 pointer-events-none"><i class="fa-solid fa-quote-right"></i></div>
+    <span class="bg-amber-400/20 text-amber-300 text-xs font-bold px-3 py-1 rounded-full border border-amber-400/30">2026 영적 은혜 가동 전선</span>
+    <h2 class="text-xl sm:text-2xl font-bold mt-4 mb-2 serif text-amber-100">"내 형편에 맞는 생명의 만나와 영적 전술 노트를 펼쳐라"</h2>
+    <p class="text-slate-300 text-sm max-w-4xl font-light leading-relaxed">말씀 카드를 클릭하면 영상이 재생됩니다. 타임라인 항목을 누르면 해당 시간대로 즉시 이동합니다.</p>
+  </div>
+
+  <!-- 등록 폼 -->
+  <div id="uploadSection" class="hidden bg-white rounded-3xl p-6 shadow-lg border border-slate-200 mb-10 space-y-4">
+    <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+      <h3 class="text-base font-bold text-slate-900"><i class="fa-solid fa-code text-indigo-600 mr-2"></i>말씀 등록</h3>
+      <span class="text-xs text-amber-600 font-bold bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200"><i class="fa-solid fa-key"></i> 비밀번호: 1234</span>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+      <div class="space-y-3">
+        <div><label class="block font-bold text-slate-600 mb-1">제목 *</label><input type="text" id="fTitle" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 outline-none text-slate-900"></div>
+        <div><label class="block font-bold text-slate-600 mb-1">유튜브 주소 또는 퍼가기 코드 *</label><textarea id="fUrl" rows="2" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 outline-none font-mono text-indigo-950"></textarea></div>
+        <div class="grid grid-cols-2 gap-2">
+          <div><label class="block font-bold text-slate-600 mb-1">날짜 *</label><input type="date" id="fDate" value="2026-06-20" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 outline-none"></div>
+          <div><label class="block font-bold text-slate-600 mb-1">분류 *</label>
+            <select id="fCategory" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 outline-none font-bold text-slate-900">
+              <option>통합설교</option><option>음악설교</option><option>주일예배</option><option>비전설교</option><option>영화설교</option><option>문학설교</option>
+            </select>
+          </div>
         </div>
-    </header>
+        <div><label class="block font-bold text-slate-600 mb-1">비밀번호 *</label><input type="password" id="fPw" class="w-full bg-amber-50 border border-amber-300 rounded-lg p-2.5 outline-none font-bold"></div>
+      </div>
+      <div class="space-y-3">
+        <div><label class="block font-bold text-slate-600 mb-1">요약 *</label><textarea id="fSummary" rows="2" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 outline-none font-light"></textarea></div>
+        <div><label class="block font-bold text-slate-600 mb-1">노트 &amp; 해시태그</label><textarea id="fNotes" rows="2" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 outline-none font-light"></textarea></div>
+        <div><label class="block font-bold text-slate-600 mb-1">타임라인 *</label><textarea id="fTimeline" rows="2" placeholder="[00:05:12] 제목" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 outline-none font-mono"></textarea></div>
+      </div>
+    </div>
+    <div class="flex justify-end space-x-2 pt-2 border-t border-slate-100">
+      <button onclick="toggleUpload()" class="bg-slate-100 text-slate-600 font-bold text-xs px-4 py-2.5 rounded-lg">닫기</button>
+      <button onclick="saveSermon()" class="bg-indigo-950 hover:bg-indigo-900 text-white font-bold text-xs px-6 py-2.5 rounded-lg shadow-md"><i class="fa-solid fa-cloud-arrow-up"></i> 등록</button>
+    </div>
+  </div>
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+  <!-- 필터 -->
+  <div class="bg-white rounded-3xl p-6 shadow-md border border-slate-200 mb-10 space-y-5">
+    <div class="relative">
+      <i class="fa-solid fa-magnifying-glass absolute left-4 top-4 text-slate-400"></i>
+      <input type="text" id="searchInput" oninput="filterCards()" placeholder="키워드, 성경 구절, 찬양 곡명으로 검색..."
+        class="w-full bg-slate-50 border border-slate-300 rounded-xl pl-12 pr-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:bg-white transition">
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5 border-t border-slate-100 pt-4">
+      <div>
+        <label class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2"><i class="fa-solid fa-clock-rotate-left mr-1 text-indigo-600"></i>연도</label>
+        <select id="yearFilter" onchange="filterCards()" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-600">
+          <option value="all">전체</option><option value="2026">2026년</option>
+        </select>
+      </div>
+      <div class="md:col-span-2">
+        <label class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2"><i class="fa-regular fa-calendar-days mr-1 text-indigo-600"></i>월별</label>
+        <div class="flex flex-wrap gap-1.5" id="monthTabs"></div>
+      </div>
+    </div>
+    <div class="border-t border-slate-100 pt-4">
+      <label class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2"><i class="fa-solid fa-heart-pulse mr-1 text-indigo-600"></i>마음 상황별 처방</label>
+      <div class="flex flex-wrap gap-2" id="sitTabs">
+        <button onclick="setSit('all')" data-sit="all" class="tab-sit active-btn px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 transition">모든 형편</button>
+        <button onclick="setSit('상처치유')" data-sit="상처치유" class="tab-sit px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">🩹 상처·자존감 치유</button>
+        <button onclick="setSit('우울불안')" data-sit="우울불안" class="tab-sit px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">💭 우울·불안·고독</button>
+        <button onclick="setSit('고난시련')" data-sit="고난시련" class="tab-sit px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">🔥 연단과 시련</button>
+        <button onclick="setSit('실패결핍')" data-sit="실패결핍" class="tab-sit px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">📉 파선·결핍·실패</button>
+        <button onclick="setSit('분노용서')" data-sit="분노용서" class="tab-sit px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">⚓ 미움·분노·용서</button>
+        <button onclick="setSit('가정가족')" data-sit="가정가족" class="tab-sit px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">🏠 부부·자녀·가정</button>
+        <button onclick="setSit('조급인내')" data-sit="조급인내" class="tab-sit px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">⏳ 조급함·기다림</button>
+      </div>
+    </div>
+    <p class="text-xs text-slate-400 font-bold border-t border-slate-100 pt-3" id="counter"><i class="fa-solid fa-database mr-2 text-indigo-500"></i>로딩 중...</p>
+  </div>
 
-        <!-- 상단 묵상 대시 배너 -->
-        <div class="bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 rounded-3xl p-8 text-white mb-10 shadow-xl border border-indigo-900/40 relative overflow-hidden">
-            <div class="absolute right-0 bottom-0 opacity-5 text-[15rem] transform translate-x-12 translate-y-16 pointer-events-none">
-                <i class="fa-solid fa-quote-right"></i>
-            </div>
-            <span class="bg-amber-400/20 text-amber-300 text-xs font-bold px-3 py-1 rounded-full border border-amber-400/30">2026 영적 은혜 가동 전선</span>
-            <h2 class="text-xl sm:text-2xl font-bold mt-4 mb-2 serif text-amber-100">"내 형편에 맞는 생명의 만나와 영적 전술 노트를 펼쳐라"</h2>
-            <p class="text-slate-300 text-sm max-w-4xl font-light leading-relaxed">
-                말씀을 클릭하면 유튜브 영상이 바로 재생됩니다. 타임라인을 클릭하시면 해당 지점으로 즉시 이동하여 감상하실 수 있습니다. 환경에 따라 재생이 어려울 경우 유튜브 바로가기 버튼을 이용해 주세요.
-            </p>
-        </div>
+  <!-- 카드 그리드 -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="cardGrid"></div>
+</main>
 
-        <!-- [관리자 전용 새 말씀 등록 폼] -->
-        <div id="uploadSection" class="bg-white rounded-3xl p-6 shadow-lg border border-slate-200 mb-10 hidden space-y-4">
-            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                <h3 class="text-base font-bold text-slate-900 flex items-center"><i class="fa-solid fa-code text-indigo-600 mr-2"></i> 말씀 유튜브 임베드 소스 주입기</h3>
-                <span class="text-xs text-amber-600 font-bold bg-amber-50 px-2.5 py-1 rounded-lg border border-amber-200"><i class="fa-solid fa-key"></i> 마스터 인증 모드</span>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-                <div class="space-y-3">
-                    <div>
-                        <label class="block font-bold text-slate-600 mb-1">성회 대제목 <span class="text-red-500">*</span></label>
-                        <input type="text" id="formTitle" placeholder="예: 2026년 7월 5일 통합설교 — 말씀 제목" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 outline-none text-slate-900">
-                    </div>
-                    <div>
-                        <label class="block font-bold text-slate-600 mb-1">유튜브 공유 주소 또는 퍼가기 소스(iframe) <span class="text-red-500">*</span></label>
-                        <textarea id="formUrl" rows="2" placeholder="유튜브 주소나 퍼가기 HTML 소스 전체를 복사해서 붙여넣어 주십시오." class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 outline-none text-indigo-950 font-mono"></textarea>
-                    </div>
-                    <div class="grid grid-cols-2 gap-2">
-                        <div>
-                            <label class="block font-bold text-slate-600 mb-1">선포 일자 <span class="text-red-500">*</span></label>
-                            <input type="date" id="formDate" value="2026-06-20" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 outline-none text-slate-900">
-                        </div>
-                        <div>
-                            <label class="block font-bold text-slate-600 mb-1">성회 분류 <span class="text-red-500">*</span></label>
-                            <select id="formCategory" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 outline-none font-bold text-slate-900">
-                                <option value="통합설교">통합설교</option>
-                                <option value="음악설교">음악설교</option>
-                                <option value="주일예배">주일예배</option>
-                                <option value="비전설교">비전설교</option>
-                                <option value="영화설교">영화설교</option>
-                                <option value="문학설교">문학설교</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block font-bold text-slate-600 mb-1">관리자 인증 비밀번호 <span class="text-red-500">*</span></label>
-                        <input type="password" id="formPassword" placeholder="비밀번호 '1234'를 입력해야 정상 가동됩니다" class="w-full bg-amber-50/60 border border-amber-300 rounded-lg p-2.5 font-bold outline-none text-slate-900">
-                    </div>
-                </div>
-                <div class="space-y-3">
-                    <div>
-                        <label class="block font-bold text-slate-600 mb-1">영적 본질 요약문 <span class="text-red-500">*</span></label>
-                        <textarea id="formSummary" rows="2" placeholder="성회의 핵심 메시지와 영적 본질 내용을 간략히 기입하세요..." class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 outline-none text-slate-900 font-light"></textarea>
-                    </div>
-                    <div>
-                        <label class="block font-bold text-slate-600 mb-1">성령 전술 노트 및 해시태그</label>
-                        <textarea id="formNotes" rows="2" placeholder="인사이트 요약이나 주요 해시태그를 입력하세요..." class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 outline-none text-slate-900 font-light"></textarea>
-                    </div>
-                    <div>
-                        <label class="block font-bold text-slate-600 mb-1">정밀 타임라인 코드 명세 <span class="text-red-500">*</span></label>
-                        <textarea id="formTimeline" rows="2" placeholder="[00:05:12] 파트 대주제 명칭&#10;[00:23:45] 🎵 기획 찬양 특송 제목" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 outline-none tracking-wide text-indigo-950 font-medium font-mono"></textarea>
-                    </div>
-                </div>
-            </div>
-            <div class="flex justify-end space-x-2 pt-2 border-t border-slate-100">
-                <button onclick="toggleUploadForm()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs px-4 py-2.5 rounded-lg transition">닫기</button>
-                <button onclick="processSystemInsertion()" class="bg-indigo-950 hover:bg-indigo-900 text-white font-bold text-xs px-6 py-2.5 rounded-lg transition shadow-md"><i class="fa-solid fa-cloud-arrow-up"></i> 말씀 영구 데이터 자산 등록</button>
-            </div>
-        </div>
+<!-- ══ 말씀 모달 ══ -->
+<div id="modal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+  <div class="bg-white rounded-3xl max-w-6xl w-full max-h-[92vh] overflow-y-auto shadow-2xl border border-slate-200 flex flex-col">
 
-        <!-- 지능형 복합 입체 필터링 판넬 -->
-        <div class="bg-white rounded-3xl p-6 shadow-md border border-slate-200 mb-10 space-y-6">
-            <div class="relative">
-                <i class="fa-solid fa-magnifying-glass absolute left-4 top-4 text-slate-400 text-lg"></i>
-                <input type="text" id="searchInput" oninput="executeDynamicFilter()" placeholder="키워드(#라와, #마샤흐, #킨츠기, #에제르, #아피에미), 성경 구절, 찬양 곡명으로 정밀 색인..." class="w-full bg-slate-50 border border-slate-300 rounded-xl pl-12 pr-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:bg-white transition text-slate-900 font-medium">
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 border-t border-slate-100 pt-4">
-                <div>
-                    <label class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2"><i class="fa-solid fa-clock-rotate-left mr-1.5 text-indigo-600"></i> 선포 연도 분류</label>
-                    <select id="yearFilter" onchange="executeDynamicFilter()" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-600 text-slate-700">
-                        <option value="all">전체 연도보기</option>
-                        <option value="2026">2026년 말씀 성회</option>
-                    </select>
-                </div>
-                <div class="md:col-span-2">
-                    <label class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2"><i class="fa-regular fa-calendar-days mr-1.5 text-indigo-600"></i> 선포 월별 분류 필터</label>
-                    <div class="flex flex-wrap gap-1.5" id="monthTabsWrapper">
-                        <button onclick="setMonthFilter('all')" data-month="all" class="tab-btn active-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">전체보기</button>
-                    </div>
-                </div>
-            </div>
-            <div class="border-t border-slate-100 pt-4">
-                <label class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2"><i class="fa-solid fa-heart-pulse mr-1.5 text-indigo-600"></i> 성도의 현재 영적 마음 상황별 맞춤 처방 필터</label>
-                <div class="flex flex-wrap gap-2" id="situationTabsWrapper">
-                    <button onclick="setSituationFilter('all')" data-sit="all" class="tab-btn active-btn px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">모든 마음 형편</button>
-                    <button onclick="setSituationFilter('상처치유')" data-sit="상처치유" class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">🩹 상처와 낮은 자존감 치유</button>
-                    <button onclick="setSituationFilter('우울불안')" data-sit="우울불안" class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">💭 우울감·불안·고독 해방</button>
-                    <button onclick="setSituationFilter('고난시련')" data-sit="고난시련" class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">🔥 이해할 수 없는 연단과 시련</button>
-                    <button onclick="setSituationFilter('실패결핍')" data-sit="실패결핍" class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">📉 파선, 경제적 결핍, 진로 실패</button>
-                    <button onclick="setSituationFilter('분노용서')" data-sit="분노용서" class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">⚓ 미움, 분노, 용서의 한계</button>
-                    <button onclick="setSituationFilter('가정가족')" data-sit="가정가족" class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">🏠 부부 관계, 자녀 양육, 위기 가정</button>
-                    <button onclick="setSituationFilter('조급인내')" data-sit="조급인내" class="tab-btn px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">⏳ 기도 응답이 느려 조급할 때</button>
-                </div>
-            </div>
-            <div class="text-xs text-slate-400 font-bold border-t border-slate-100 pt-4 flex items-center" id="counterTracker">
-                <i class="fa-solid fa-database mr-2 text-indigo-500"></i> 마스터 복음 데이터 동기화 완료
-            </div>
-        </div>
-
-        <!-- 말씀 아카이브 카드 그리드 -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="cardsGridSection"></div>
-    </main>
-
-    <!-- ===== 말씀 재생 모달 (유튜브 플레이어 + 타임라인 이동) ===== -->
-    <div id="playbackModal" class="fixed inset-0 z-50 overflow-y-auto hidden bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
-        <div class="bg-white rounded-3xl max-w-6xl w-full max-h-[92vh] overflow-y-auto shadow-2xl border border-slate-200 flex flex-col">
-
-            <!-- 모달 상부 -->
-            <div class="p-5 border-b border-slate-200 bg-slate-50 rounded-t-3xl flex items-center justify-between flex-shrink-0">
-                <div class="flex-1 min-w-0 mr-4">
-                    <span id="mCategoryLabel" class="bg-indigo-100 text-indigo-950 text-xs font-bold px-3 py-1 rounded-full border border-indigo-200">분류</span>
-                    <h3 id="mTitleLabel" class="text-lg font-bold mt-2 text-slate-900 serif leading-snug line-clamp-2">성회 주제명</h3>
-                    <p id="mMetaLabel" class="text-xs text-slate-500 mt-1.5 font-medium flex items-center gap-2"></p>
-                </div>
-                <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 p-2.5 rounded-full hover:bg-slate-200 transition-all flex-shrink-0">
-                    <i class="fa-solid fa-xmark text-2xl"></i>
-                </button>
-            </div>
-
-            <!-- 메인 콘텐츠 (좌: 플레이어, 우: 노트+타임라인) -->
-            <div class="p-5 grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1">
-
-                <!-- ===== 좌측: 유튜브 플레이어 영역 ===== -->
-                <div class="lg:col-span-7 flex flex-col space-y-4">
-
-                    <!-- 유튜브 플레이어 -->
-                    <div id="ytPlayerWrapper">
-                        <!-- YouTube IFrame API가 여기에 플레이어를 주입함 -->
-                        <div id="ytPlayer"></div>
-                        <!-- 임베드 차단 시 표시되는 오버레이 (기본 숨김) -->
-                        <div id="embedBlockedOverlay" class="hidden">
-                            <div class="bg-red-600/20 border border-red-500/40 p-3 rounded-xl">
-                                <i class="fa-brands fa-youtube text-red-400 text-3xl"></i>
-                            </div>
-                            <p class="text-white font-bold text-sm">이 영상은 외부 재생이 제한되어 있습니다</p>
-                            <p class="text-slate-300 text-xs leading-relaxed">유튜브 채널 설정에 따라 웹사이트 임베드가 차단되었습니다.<br>아래 버튼으로 유튜브에서 바로 시청하세요.</p>
-                            <a id="blockedDirectLink" href="#" target="_blank" class="bg-red-600 hover:bg-red-700 text-white font-bold text-xs px-5 py-2.5 rounded-xl flex items-center gap-2 transition">
-                                <i class="fa-brands fa-youtube"></i> 유튜브에서 직접 시청하기
-                            </a>
-                        </div>
-                    </div>
-
-                    <!-- 플레이어 상태 표시 바 -->
-                    <div id="playerStatusBar" class="bg-slate-900 rounded-xl px-4 py-2.5 flex items-center justify-between text-xs">
-                        <div class="flex items-center gap-2">
-                            <div id="playerStatusDot" class="w-2 h-2 rounded-full bg-slate-500"></div>
-                            <span id="playerStatusText" class="text-slate-400 font-medium">영상 로딩 중...</span>
-                        </div>
-                        <a id="ytDirectLink" href="#" target="_blank" class="text-slate-400 hover:text-white flex items-center gap-1.5 transition font-bold">
-                            <i class="fa-brands fa-youtube text-red-500"></i>
-                            <span>유튜브에서 보기</span>
-                            <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
-                        </a>
-                    </div>
-
-                    <!-- 요약 및 노트 (모바일에서는 타임라인 아래로 내려감) -->
-                    <div class="hidden lg:block space-y-4">
-                        <div>
-                            <h4 class="text-xs font-bold text-indigo-700 uppercase tracking-widest mb-1.5"><i class="fa-solid fa-quote-left mr-2"></i>성회 영적 본질 요약</h4>
-                            <p id="mSummaryLabel" class="text-sm text-slate-600 leading-relaxed bg-slate-50 p-4 rounded-xl border border-slate-200 font-light"></p>
-                        </div>
-                        <div>
-                            <h4 class="text-xs font-bold text-indigo-700 uppercase tracking-widest mb-1.5"><i class="fa-solid fa-scroll mr-2"></i>인사이트 &amp; 성령 전술 노트</h4>
-                            <div id="mNotesLabel" class="text-sm text-indigo-950 font-medium leading-relaxed bg-indigo-50/40 p-4 rounded-xl border border-indigo-100 whitespace-pre-line serif shadow-inner"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- ===== 우측: 타임라인 인덱스 ===== -->
-                <div class="lg:col-span-5 flex flex-col space-y-4">
-
-                    <!-- 타임라인 헤더 -->
-                    <div class="flex items-center justify-between">
-                        <h4 class="text-xs font-bold text-indigo-700 uppercase tracking-widest flex items-center gap-1.5">
-                            <i class="fa-solid fa-list-ol"></i>
-                            타임라인 인덱스
-                        </h4>
-                        <span class="text-[10px] text-slate-400 font-medium bg-slate-100 px-2 py-1 rounded-full">클릭 시 해당 지점으로 이동</span>
-                    </div>
-
-                    <!-- 타임라인 목록 -->
-                    <div id="mTimelineContainer" class="flex flex-col space-y-2 overflow-y-auto" style="max-height: 420px; padding-right: 4px;">
-                        <!-- JS 동적 바인딩 -->
-                    </div>
-
-                    <!-- 현재 재생 중인 섹션 표시 -->
-                    <div id="nowPlayingSection" class="hidden bg-indigo-950 rounded-xl p-3 text-white text-xs">
-                        <div class="flex items-center gap-2 mb-1">
-                            <div class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
-                            <span class="font-bold text-amber-300 uppercase tracking-wide">지금 재생 중</span>
-                        </div>
-                        <p id="nowPlayingText" class="font-medium text-slate-200 leading-snug"></p>
-                    </div>
-
-                    <!-- 모바일용: 요약 및 노트 -->
-                    <div class="lg:hidden space-y-4 border-t border-slate-100 pt-4">
-                        <div>
-                            <h4 class="text-xs font-bold text-indigo-700 uppercase tracking-widest mb-1.5"><i class="fa-solid fa-quote-left mr-2"></i>성회 영적 본질 요약</h4>
-                            <p id="mSummaryLabelMobile" class="text-sm text-slate-600 leading-relaxed bg-slate-50 p-4 rounded-xl border border-slate-200 font-light"></p>
-                        </div>
-                        <div>
-                            <h4 class="text-xs font-bold text-indigo-700 uppercase tracking-widest mb-1.5"><i class="fa-solid fa-scroll mr-2"></i>인사이트 &amp; 성령 전술 노트</h4>
-                            <div id="mNotesLabelMobile" class="text-sm text-indigo-950 font-medium leading-relaxed bg-indigo-50/40 p-4 rounded-xl border border-indigo-100 whitespace-pre-line serif shadow-inner"></div>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </div>
+    <!-- 모달 헤더 -->
+    <div class="p-5 border-b border-slate-200 bg-slate-50 rounded-t-3xl flex items-start justify-between flex-shrink-0">
+      <div class="flex-1 min-w-0 mr-4">
+        <span id="mCat" class="bg-indigo-100 text-indigo-950 text-xs font-bold px-3 py-1 rounded-full border border-indigo-200"></span>
+        <h3 id="mTitle" class="text-lg font-bold mt-2 text-slate-900 serif leading-snug"></h3>
+        <p id="mMeta" class="text-xs text-slate-500 mt-1.5 font-medium"></p>
+      </div>
+      <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 p-2.5 rounded-full hover:bg-slate-200 transition flex-shrink-0">
+        <i class="fa-solid fa-xmark text-2xl"></i>
+      </button>
     </div>
 
-    <!-- 커스텀 알림 모달 -->
-    <div id="customAlertModal" class="fixed inset-0 z-50 overflow-y-auto hidden bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-xl border border-slate-200 text-center space-y-4">
-            <div id="customAlertIcon" class="w-12 h-12 rounded-full flex items-center justify-center mx-auto text-xl bg-indigo-100 text-indigo-900">
-                <i class="fa-solid fa-info"></i>
-            </div>
-            <h4 id="customAlertTitle" class="text-base font-bold text-slate-900 serif">알림</h4>
-            <p id="customAlertMessage" class="text-xs text-slate-500 leading-relaxed font-light"></p>
-            <div class="flex justify-center pt-2">
-                <button onclick="closeCustomAlert()" class="bg-indigo-950 hover:bg-indigo-900 text-white font-bold text-xs px-6 py-2.5 rounded-lg transition shadow-md">확인</button>
-            </div>
+    <!-- 모달 바디 -->
+    <div class="p-5 grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1">
+
+      <!-- 좌: 플레이어 -->
+      <div class="lg:col-span-7 flex flex-col gap-4">
+
+        <!-- ★ 핵심: 썸네일(클릭 전) / iframe(클릭 후) 토글 영역 -->
+        <div class="player-wrap" id="playerBox">
+          <!-- JS가 여기에 썸네일 또는 iframe을 주입 -->
         </div>
-    </div>
 
-    <!-- 커스텀 확인 모달 -->
-    <div id="customConfirmModal" class="fixed inset-0 z-50 overflow-y-auto hidden bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-xl border border-slate-200 text-center space-y-4">
-            <div class="w-12 h-12 rounded-full flex items-center justify-center mx-auto text-xl bg-amber-100 text-amber-800">
-                <i class="fa-solid fa-triangle-exclamation"></i>
-            </div>
-            <h4 class="text-base font-bold text-slate-900 serif">실행 확인</h4>
-            <p id="customConfirmMessage" class="text-xs text-slate-500 leading-relaxed font-light"></p>
-            <div class="flex justify-center space-x-2 pt-2">
-                <button onclick="closeCustomConfirm()" class="bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-xs px-4 py-2.5 rounded-lg transition">취소</button>
-                <button onclick="executeCustomConfirm()" class="bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs px-6 py-2.5 rounded-lg transition shadow-md">확인</button>
-            </div>
+        <!-- 유튜브 바로가기 -->
+        <a id="ytLink" href="#" target="_blank"
+           class="flex items-center justify-center gap-2 bg-slate-900 hover:bg-red-700 text-white text-xs font-bold py-2.5 rounded-xl transition">
+          <i class="fa-brands fa-youtube text-red-500 text-base"></i>
+          <span id="ytLinkText">유튜브에서 보기</span>
+          <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i>
+        </a>
+
+        <!-- 요약 / 노트 (데스크톱) -->
+        <div class="hidden lg:flex flex-col gap-4">
+          <div>
+            <p class="text-xs font-bold text-indigo-700 uppercase tracking-widest mb-1.5"><i class="fa-solid fa-quote-left mr-2"></i>영적 본질 요약</p>
+            <p id="mSummary" class="text-sm text-slate-600 leading-relaxed bg-slate-50 p-4 rounded-xl border border-slate-200 font-light"></p>
+          </div>
+          <div>
+            <p class="text-xs font-bold text-indigo-700 uppercase tracking-widest mb-1.5"><i class="fa-solid fa-scroll mr-2"></i>인사이트 &amp; 전술 노트</p>
+            <div id="mNotes" class="text-sm text-indigo-950 font-medium leading-relaxed bg-indigo-50/40 p-4 rounded-xl border border-indigo-100 whitespace-pre-line serif"></div>
+          </div>
         </div>
+      </div>
+
+      <!-- 우: 타임라인 -->
+      <div class="lg:col-span-5 flex flex-col gap-3">
+        <div class="flex items-center justify-between">
+          <p class="text-xs font-bold text-indigo-700 uppercase tracking-widest"><i class="fa-solid fa-list-ol mr-1.5"></i>타임라인 인덱스</p>
+          <span class="text-[10px] text-slate-400 bg-slate-100 px-2 py-1 rounded-full">클릭 → 해당 시간으로 이동</span>
+        </div>
+
+        <div id="tlList" class="flex flex-col gap-2 overflow-y-auto pr-1" style="max-height:420px"></div>
+
+        <!-- 현재 재생 중 표시 -->
+        <div id="nowPlaying" class="hidden bg-indigo-950 rounded-xl p-3 text-white text-xs">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse inline-block"></span>
+            <span class="font-bold text-amber-300 uppercase tracking-wide">지금 재생 중</span>
+          </div>
+          <p id="nowText" class="text-slate-200 leading-snug font-medium"></p>
+        </div>
+
+        <!-- 요약 / 노트 (모바일) -->
+        <div class="lg:hidden flex flex-col gap-4 border-t border-slate-100 pt-4 mt-2">
+          <div>
+            <p class="text-xs font-bold text-indigo-700 uppercase tracking-widest mb-1.5"><i class="fa-solid fa-quote-left mr-2"></i>영적 본질 요약</p>
+            <p id="mSummaryM" class="text-sm text-slate-600 leading-relaxed bg-slate-50 p-4 rounded-xl border border-slate-200 font-light"></p>
+          </div>
+          <div>
+            <p class="text-xs font-bold text-indigo-700 uppercase tracking-widest mb-1.5"><i class="fa-solid fa-scroll mr-2"></i>인사이트 &amp; 전술 노트</p>
+            <div id="mNotesM" class="text-sm text-indigo-950 font-medium leading-relaxed bg-indigo-50/40 p-4 rounded-xl border border-indigo-100 whitespace-pre-line serif"></div>
+          </div>
+        </div>
+      </div>
     </div>
+  </div>
+</div>
 
+<!-- 알림 모달 -->
+<div id="alertModal" class="fixed inset-0 z-50 hidden bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-xl border border-slate-200 text-center space-y-4">
+    <div id="alertIcon" class="w-12 h-12 rounded-full flex items-center justify-center mx-auto text-xl"></div>
+    <h4 id="alertTitle" class="text-base font-bold text-slate-900 serif"></h4>
+    <p id="alertMsg" class="text-xs text-slate-500 leading-relaxed font-light"></p>
+    <button onclick="document.getElementById('alertModal').classList.add('hidden')" class="bg-indigo-950 hover:bg-indigo-900 text-white font-bold text-xs px-6 py-2.5 rounded-lg transition shadow-md">확인</button>
+  </div>
+</div>
 
-    <!-- ===== 데이터 & 로직 스크립트 ===== -->
-    <script>
-    // ================================================
-    // 데이터베이스
-    // ================================================
+<script>
+// ────────────────────────────────────────────────
+// 데이터베이스
+// ────────────────────────────────────────────────
     const masterInitialDatabase = [
         {
             index: 1, year: "2026", id: "sCSSvc_ADks", title: "2026년 1월 4일 통합설교 (신년감사) — 거룩한 역설", date: "2026-01-04", month: "1월",
@@ -636,437 +540,325 @@
         }
     ];
 
-    // ================================================
-    // 상태 변수
-    // ================================================
-    let sermonDatabase = [];
-    let currentMonthFilter = 'all';
-    let currentSitFilter = 'all';
-    let activeItemContext = null;
-    let ytPlayer = null;           // YouTube IFrame API 플레이어 객체
-    let ytPlayerReady = false;     // 플레이어 준비 완료 여부
-    let playerStateTimer = null;   // 현재 재생 시간 추적 타이머
+// ────────────────────────────────────────────────
+// 상태
+// ────────────────────────────────────────────────
+let db = [];
+let curMonth = 'all', curSit = 'all';
+let activeItem = null;
+let progressTimer = null;
+let playStartWall = 0, playStartSec = 0;
 
-    // ================================================
-    // YouTube IFrame API 콜백 (전역 함수 필수)
-    // ================================================
-    window.onYouTubeIframeAPIReady = function() {
-        // API 로드 완료 — 플레이어는 모달 열릴 때 생성
-        console.log('[YT API] Ready');
+// ────────────────────────────────────────────────
+// 상황 분류
+// ────────────────────────────────────────────────
+function classify(t, s, n) {
+  const txt = (t+' '+s+' '+n).toLowerCase();
+  if (/상처|자존감|치유|흉터|킨츠기|포이에마/.test(txt)) return '상처치유';
+  if (/우울|불안|고독|파라클레토스|보혜사|외로움/.test(txt)) return '우울불안';
+  if (/고난|시련|풀무질|정금|연단|부활/.test(txt)) return '고난시련';
+  if (/실패|결핍|파선|덩케르크|고립|벤치|야니스/.test(txt)) return '실패결핍';
+  if (/미움|분노|용서|토포스|아피에미|방화/.test(txt)) return '분노용서';
+  if (/가정|가족|부부|자녀|사도세자|베라카|에제르|배필/.test(txt)) return '가정가족';
+  if (/조급|인내|기다림|카이로스|크로노스|안개|스케줄/.test(txt)) return '조급인내';
+  return '고난시련';
+}
+
+// ────────────────────────────────────────────────
+// 플레이어: 썸네일 → iframe 전환
+// 핵심: iframe src에 origin 파라미터를 넣지 않음
+//        → 오류 153 완전 해결
+// ────────────────────────────────────────────────
+function showThumb(videoId) {
+  const box = document.getElementById('playerBox');
+  const thumbUrl = 'https://i.ytimg.com/vi/' + videoId + '/hqdefault.jpg';
+  box.innerHTML =
+    '<img class="thumb-bg" src="' + thumbUrl + '" onerror="this.src=\'https://i.ytimg.com/vi/' + videoId + '/default.jpg\'">' +
+    '<div class="thumb-overlay" onclick="openInYouTube(0)">' +
+      '<div class="play-ring"><svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg></div>' +
+      '<span class="play-label">▶ 유튜브에서 재생하기</span>' +
+    '</div>';
+}
+
+// youtube.com/embed 는 로컬(file://) 환경에서 항상 오류 153 발생
+// → embed 완전 제거, 유튜브 새 탭으로 직접 열기
+function openInYouTube(startSec) {
+  if (!activeItem) return;
+  const url = 'https://www.youtube.com/watch?v=' + activeItem.id
+            + (startSec > 0 ? '&t=' + startSec + 's' : '');
+  window.open(url, '_blank');
+
+  // 썸네일 영역 → "재생 중" 안내 화면으로 전환
+  const box = document.getElementById('playerBox');
+  const vid = activeItem.id;
+  const sec = startSec || 0;
+  const thumbUrl = 'https://i.ytimg.com/vi/' + vid + '/hqdefault.jpg';
+  box.innerHTML =
+    '<img class="thumb-bg" src="' + thumbUrl + '" style="filter:brightness(0.3)">' +
+    '<div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px;text-align:center;">' +
+      '<div style="background:#ff0000;border-radius:50%;width:64px;height:64px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(255,0,0,.5)">' +
+        '<svg width="26" height="26" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>' +
+      '</div>' +
+      '<p style="color:#fff;font-size:14px;font-weight:700;text-shadow:0 2px 6px rgba(0,0,0,.9)">유튜브에서 재생 중</p>' +
+      '<p style="color:#94a3b8;font-size:11px;line-height:1.7;max-width:240px">새 탭에서 영상을 시청하세요.<br>아래 타임라인을 클릭하면<br>해당 시간부터 바로 재생됩니다.</p>' +
+      '<button onclick="openInYouTube(' + sec + ')" style="background:#ff0000;color:#fff;border:none;border-radius:10px;padding:8px 22px;font-size:12px;font-weight:700;cursor:pointer;box-shadow:0 2px 12px rgba(255,0,0,.4)">다시 열기 ↗</button>' +
+    '</div>';
+
+  playStartWall = Date.now();
+  playStartSec  = sec;
+  startProgress();
+  updateYtLink(sec);
+}
+
+function loadPlayer(startSec) { openInYouTube(startSec || 0); }
+
+// ────────────────────────────────────────────────
+// 타임라인 하이라이트 (경과 시간 기반)
+// ────────────────────────────────────────────────
+function startProgress() {
+  stopProgress();
+  progressTimer = setInterval(function() {
+    if (!activeItem) return;
+    const elapsed = Math.floor((Date.now() - playStartWall) / 1000);
+    const cur = playStartSec + elapsed;
+    const tl = activeItem.timeline;
+    let node = null;
+    for (let i = tl.length - 1; i >= 0; i--) {
+      if (cur >= tl[i].secs) { node = tl[i]; break; }
+    }
+    document.querySelectorAll('#tlList .tl-btn').forEach(function(btn, i) {
+      btn.classList.toggle('active', !!(node && tl[i] && tl[i].secs === node.secs));
+    });
+    const np = document.getElementById('nowPlaying');
+    const nt = document.getElementById('nowText');
+    if (node) { np.classList.remove('hidden'); nt.textContent = node.title; }
+    else { np.classList.add('hidden'); }
+  }, 1000);
+}
+
+function stopProgress() {
+  if (progressTimer) { clearInterval(progressTimer); progressTimer = null; }
+}
+
+function updateYtLink(sec) {
+  if (!activeItem) return;
+  const url = 'https://www.youtube.com/watch?v=' + activeItem.id + (sec > 0 ? '&t=' + sec + 's' : '');
+  const a = document.getElementById('ytLink');
+  const t = document.getElementById('ytLinkText');
+  if (a) a.href = url;
+  if (t) t.textContent = sec > 0 ? '유튜브에서 ' + sec + '초 지점 보기' : '유튜브에서 보기';
+}
+
+// ────────────────────────────────────────────────
+// 모달 열기 / 닫기
+// ────────────────────────────────────────────────
+function openModal(idx) {
+  const item = db.find(function(d) { return d.index === idx; });
+  if (!item) return;
+  activeItem = item;
+
+  document.getElementById('mCat').textContent   = item.categoryKo;
+  document.getElementById('mTitle').textContent  = item.title;
+  document.getElementById('mMeta').innerHTML     = '<i class="fa-regular fa-calendar mr-1"></i>' + item.date + ' &nbsp;|&nbsp; <span class="text-indigo-700 font-bold">' + item.month + ' 대예배</span>';
+  document.getElementById('mSummary').textContent  = item.summary;
+  document.getElementById('mNotes').textContent    = item.notes;
+  document.getElementById('mSummaryM').textContent = item.summary;
+  document.getElementById('mNotesM').textContent   = item.notes;
+
+  updateYtLink(0);
+  document.getElementById('nowPlaying').classList.add('hidden');
+
+  // 타임라인 렌더링
+  const tlList = document.getElementById('tlList');
+  tlList.innerHTML = '';
+  item.timeline.forEach(function(node) {
+    const btn = document.createElement('button');
+    btn.className = 'tl-btn w-full text-left text-xs bg-slate-50 border border-slate-200 p-3 rounded-xl flex items-center justify-between group gap-2';
+    btn.onclick = function() {
+      openInYouTube(node.secs);
+      updateYtLink(node.secs);
     };
+    btn.innerHTML =
+      '<span class="flex items-center gap-2 min-w-0 flex-1 text-slate-700 font-medium group-hover:text-indigo-900">' +
+        '<i class="fa-solid fa-play text-indigo-400 text-[10px] flex-shrink-0"></i>' +
+        '<span class="truncate leading-snug">' + node.title + '</span>' +
+      '</span>' +
+      '<span class="tl-badge text-indigo-600 font-bold bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100 text-[11px] font-mono flex-shrink-0 ml-1">' + node.time + '</span>';
+    tlList.appendChild(btn);
+  });
 
-    function createYouTubePlayer(videoId, startSeconds) {
-        // 기존 플레이어 파괴
-        if (ytPlayer) {
-            try { ytPlayer.destroy(); } catch(e) {}
-            ytPlayer = null;
-            ytPlayerReady = false;
-        }
+  // 썸네일 표시 (클릭 전 상태)
+  showThumb(item.id);
 
-        // 플레이어 컨테이너 초기화
-        document.getElementById('ytPlayer').innerHTML = '';
-        document.getElementById('embedBlockedOverlay').classList.add('hidden');
+  document.getElementById('modal').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
 
-        setPlayerStatus('loading', '영상 로딩 중...');
+function closeModal() {
+  stopProgress();
+  // iframe src를 비워 재생 즉시 중단
+  const box = document.getElementById('playerBox');
+  box.innerHTML = '';
+  activeItem = null;
+  document.getElementById('modal').classList.add('hidden');
+  document.body.style.overflow = '';
+}
 
-        ytPlayer = new YT.Player('ytPlayer', {
-            videoId: videoId,
-            playerVars: {
-                autoplay: 1,
-                start: startSeconds || 0,
-                rel: 0,
-                modestbranding: 1,
-                playsinline: 1,
-                cc_load_policy: 0,
-                iv_load_policy: 3,
-                origin: window.location.origin || 'https://localhost'
-            },
-            events: {
-                onReady: function(e) {
-                    ytPlayerReady = true;
-                    setPlayerStatus('playing', '재생 중');
-                    startProgressTracker();
-                },
-                onStateChange: function(e) {
-                    const states = { '-1': '준비 중', 0: '재생 완료', 1: '재생 중', 2: '일시정지', 3: '버퍼링 중', 5: '대기 중' };
-                    const stateKey = e.data === 1 ? 'playing' : (e.data === 0 ? 'ended' : 'paused');
-                    setPlayerStatus(stateKey, states[e.data] || '');
-                    if (e.data === 1) startProgressTracker();
-                    else stopProgressTracker();
-                },
-                onError: function(e) {
-                    // 에러 코드 150, 101: 채널이 임베드를 허용하지 않음
-                    console.warn('[YT] 임베드 오류:', e.data);
-                    showEmbedBlocked();
-                }
-            }
-        });
-    }
+// ────────────────────────────────────────────────
+// 카드 렌더링 & 필터
+// ────────────────────────────────────────────────
+const sitLabel = { '상처치유':'🩹 상처치유','우울불안':'💭 우울불안','고난시련':'🔥 고난시련','실패결핍':'📉 실패결핍','분노용서':'⚓ 분노용서','가정가족':'🏠 가정가족','조급인내':'⏳ 조급인내' };
 
-    function showEmbedBlocked() {
-        ytPlayerReady = false;
-        setPlayerStatus('blocked', '임베드 재생 불가');
-        const overlay = document.getElementById('embedBlockedOverlay');
-        overlay.classList.remove('hidden');
-        if (activeItemContext) {
-            const link = document.getElementById('blockedDirectLink');
-            link.href = 'https://youtu.be/' + activeItemContext.id;
-        }
-    }
+function renderCards(data) {
+  const grid = document.getElementById('cardGrid');
+  grid.innerHTML = '';
+  data.forEach(function(item) {
+    const div = document.createElement('div');
+    div.className = 'bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm sermon-card flex flex-col cursor-pointer';
+    div.onclick = function() { openModal(item.index); };
+    div.innerHTML =
+      '<div class="p-6 flex-1">' +
+        '<div class="flex items-center justify-between mb-3">' +
+          '<span class="text-[11px] font-bold px-2.5 py-1 rounded-full border bg-indigo-50 text-indigo-950 border-indigo-200">' + item.categoryKo + '</span>' +
+          '<span class="text-xs text-slate-400 font-bold serif">' + item.date + '</span>' +
+        '</div>' +
+        '<h4 class="font-bold text-slate-900 leading-snug mb-2 serif text-base hover:text-indigo-900 transition">' + item.title + '</h4>' +
+        '<div class="text-xs flex items-center bg-slate-50 p-2 rounded-lg border border-slate-100 mb-3">' +
+          '<span class="text-indigo-700 font-bold mr-2">' + (sitLabel[item.situation]||'🛡️') + '</span>' +
+          '<span class="text-slate-300 mr-2">|</span>' +
+          '<span class="truncate text-slate-500 font-light">' + item.scripture + '</span>' +
+        '</div>' +
+        '<p class="text-xs text-slate-500 font-light leading-relaxed line-clamp-3">' + item.summary + '</p>' +
+      '</div>' +
+      '<div class="px-6 py-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-xs">' +
+        '<span class="text-indigo-600 font-bold flex items-center gap-1.5"><i class="fa-brands fa-youtube text-red-500"></i>영상 재생</span>' +
+        '<span class="text-slate-400">' + item.timeline.length + '개 타임라인</span>' +
+      '</div>';
+    grid.appendChild(div);
+  });
+  document.getElementById('counter').innerHTML = '<i class="fa-solid fa-database mr-2 text-indigo-500"></i>검색 결과: <b>' + data.length + '개</b>';
+}
 
-    function setPlayerStatus(state, text) {
-        const dot = document.getElementById('playerStatusDot');
-        const label = document.getElementById('playerStatusText');
-        const colors = { playing: 'bg-green-500', paused: 'bg-yellow-500', loading: 'bg-blue-500 animate-pulse', blocked: 'bg-red-500', ended: 'bg-slate-500' };
-        dot.className = 'w-2 h-2 rounded-full ' + (colors[state] || 'bg-slate-500');
-        label.textContent = text;
-        label.className = state === 'playing' ? 'text-green-400 font-medium' : (state === 'blocked' ? 'text-red-400 font-medium' : 'text-slate-400 font-medium');
-    }
+function filterCards() {
+  const q = document.getElementById('searchInput').value.toLowerCase().trim();
+  const yr = document.getElementById('yearFilter').value;
+  const filtered = db.filter(function(item) {
+    return (yr === 'all' || item.year === yr) &&
+           (curMonth === 'all' || item.month === curMonth) &&
+           (curSit === 'all' || item.situation === curSit) &&
+           (!q || (item.title+item.summary+item.notes+item.scripture).toLowerCase().includes(q));
+  });
+  renderCards(filtered);
+}
 
-    // 재생 진행 추적 → 현재 섹션 하이라이트
-    function startProgressTracker() {
-        stopProgressTracker();
-        playerStateTimer = setInterval(updateTimelineHighlight, 1000);
-    }
+function setMonth(m) {
+  curMonth = m;
+  document.querySelectorAll('.tab-month').forEach(function(b) {
+    b.classList.toggle('active-btn', b.dataset.month === m);
+    if (b.dataset.month !== m) b.classList.add('bg-slate-100','text-slate-600');
+    else { b.classList.remove('bg-slate-100','text-slate-600'); }
+  });
+  filterCards();
+}
 
-    function stopProgressTracker() {
-        if (playerStateTimer) { clearInterval(playerStateTimer); playerStateTimer = null; }
-    }
+function setSit(s) {
+  curSit = s;
+  document.querySelectorAll('.tab-sit').forEach(function(b) {
+    const on = b.dataset.sit === s;
+    b.classList.toggle('active-btn', on);
+    b.classList.toggle('bg-slate-100', !on);
+    b.classList.toggle('text-slate-600', !on);
+  });
+  filterCards();
+}
 
-    function updateTimelineHighlight() {
-        if (!ytPlayer || !ytPlayerReady || typeof ytPlayer.getCurrentTime !== 'function') return;
-        const currentSec = Math.floor(ytPlayer.getCurrentTime());
-        if (!activeItemContext) return;
+function buildMonthTabs() {
+  const wrap = document.getElementById('monthTabs');
+  wrap.innerHTML = '';
+  const months = [...new Set(db.map(function(d){return d.month;}))].sort(function(a,b){return parseInt(a)-parseInt(b);});
+  [['all','전체보기'],...months.map(function(m){return [m,m];})].forEach(function(pair) {
+    const btn = document.createElement('button');
+    btn.className = 'tab-month px-3 py-1.5 rounded-lg text-xs font-semibold transition ' + (pair[0]==='all'?'active-btn':'bg-slate-100 text-slate-600 hover:bg-slate-200');
+    btn.dataset.month = pair[0];
+    btn.textContent = pair[1];
+    btn.onclick = function() { setMonth(pair[0]); };
+    wrap.appendChild(btn);
+  });
+}
 
-        const tl = activeItemContext.timeline;
-        let currentNode = null;
-        for (let i = tl.length - 1; i >= 0; i--) {
-            if (currentSec >= tl[i].secs) { currentNode = tl[i]; break; }
-        }
+// ────────────────────────────────────────────────
+// 등록 폼
+// ────────────────────────────────────────────────
+function toggleUpload() { document.getElementById('uploadSection').classList.toggle('hidden'); }
 
-        // 타임라인 버튼 하이라이트
-        document.querySelectorAll('#mTimelineContainer .tl-btn').forEach((btn, idx) => {
-            btn.classList.remove('tl-btn-active');
-            if (currentNode && tl[idx] && tl[idx].secs === currentNode.secs) {
-                btn.classList.add('tl-btn-active');
-            }
-        });
+function saveSermon() {
+  if (document.getElementById('fPw').value !== '1234') { showAlert('비밀번호 오류','error'); return; }
+  const title = document.getElementById('fTitle').value.trim();
+  let raw   = document.getElementById('fUrl').value.trim();
+  const date = document.getElementById('fDate').value;
+  const cat  = document.getElementById('fCategory').value;
+  const sum  = document.getElementById('fSummary').value.trim();
+  const notes= document.getElementById('fNotes').value.trim();
+  const tlRaw= document.getElementById('fTimeline').value.trim();
+  if (!title||!raw||!sum||!tlRaw) { showAlert('필수 항목을 모두 입력하세요','error'); return; }
 
-        // 지금 재생 중 섹션
-        const nowPlayingSection = document.getElementById('nowPlayingSection');
-        const nowPlayingText = document.getElementById('nowPlayingText');
-        if (currentNode) {
-            nowPlayingSection.classList.remove('hidden');
-            nowPlayingText.textContent = currentNode.title;
-        } else {
-            nowPlayingSection.classList.add('hidden');
-        }
-    }
+  if (raw.includes('<iframe')) { const m=raw.match(/src=["']([^"']+)/); if(m) raw=m[1]; }
+  let vid='';
+  const m=raw.match(/(?:youtu\.be\/|embed\/|watch\?v=|&v=)([^#&?]{11})/);
+  if(m) vid=m[1]; else if(raw.length===11) vid=raw;
+  else { showAlert('유튜브 ID를 인식하지 못했습니다','error'); return; }
 
-    // 특정 초로 점프
-    function seekToTime(seconds) {
-        if (ytPlayer && ytPlayerReady && typeof ytPlayer.seekTo === 'function') {
-            ytPlayer.seekTo(seconds, true);
-            ytPlayer.playVideo();
-        } else {
-            // 플레이어가 준비되지 않은 경우 → 새 창으로 열기
-            if (activeItemContext) {
-                window.open('https://youtu.be/' + activeItemContext.id + '?t=' + seconds, '_blank');
-            }
-        }
+  const tl=[];
+  tlRaw.split('\n').forEach(function(line){
+    const r=line.match(/\[(\d{2}):(\d{2}):(\d{2})\](.*)/);
+    if(r){ const s=+r[1]*3600+ +r[2]*60+ +r[3]; tl.push({time:'['+r[1]+':'+r[2]+':'+r[3]+']',secs:s,title:r[4].trim()}); }
+  });
 
-        // 직접 링크도 해당 시간으로 업데이트
-        updateDirectLinks(seconds);
-    }
+  const item={index:db.length+1,year:date.split('-')[0],id:vid,title,date,month:parseInt(date.split('-')[1])+'월',
+    categoryKo:cat,scripture:title.split('—')[0].trim(),summary:sum,notes,timeline:tl,
+    situation:classify(title,sum,notes)};
+  db.unshift(item);
+  localStorage.setItem('hs_db_v6',JSON.stringify(db));
+  showAlert('등록 완료!','success');
+  ['fTitle','fUrl','fSummary','fNotes','fTimeline','fPw'].forEach(function(id){document.getElementById(id).value='';});
+  toggleUpload(); buildMonthTabs(); filterCards();
+}
 
-    function updateDirectLinks(seconds) {
-        if (!activeItemContext) return;
-        const url = 'https://youtu.be/' + activeItemContext.id + (seconds > 0 ? '?t=' + seconds : '');
-        const ytDirectLink = document.getElementById('ytDirectLink');
-        if (ytDirectLink) ytDirectLink.href = url;
-        const blockedLink = document.getElementById('blockedDirectLink');
-        if (blockedLink) blockedLink.href = url;
-    }
+function resetDB() {
+  if (!confirm('데이터를 초기화하시겠습니까?')) return;
+  localStorage.removeItem('hs_db_v6'); init();
+}
 
-    // ================================================
-    // 모달 열기 / 닫기
-    // ================================================
-    function openPlaybackModal(idx) {
-        const item = sermonDatabase.find(s => s.index === idx);
-        if (!item) return;
-        activeItemContext = item;
+// ────────────────────────────────────────────────
+// 알림
+// ────────────────────────────────────────────────
+function showAlert(msg, type) {
+  const icon=document.getElementById('alertIcon');
+  document.getElementById('alertTitle').textContent = type==='error'?'오류':type==='success'?'성공':'알림';
+  document.getElementById('alertMsg').textContent = msg;
+  icon.className='w-12 h-12 rounded-full flex items-center justify-center mx-auto text-xl '+(type==='error'?'bg-red-100 text-red-700':type==='success'?'bg-green-100 text-green-700':'bg-indigo-100 text-indigo-900');
+  icon.innerHTML='<i class="fa-solid '+(type==='error'?'fa-circle-xmark':type==='success'?'fa-circle-check':'fa-circle-info')+'"></i>';
+  document.getElementById('alertModal').classList.remove('hidden');
+}
 
-        // 모달 기본 정보 채우기
-        document.getElementById('mCategoryLabel').textContent = item.categoryKo;
-        document.getElementById('mTitleLabel').textContent = item.title;
-        document.getElementById('mMetaLabel').innerHTML =
-            '<span><i class="fa-regular fa-calendar mr-1"></i> 선포: ' + item.date + '</span> | <span class="text-indigo-700 font-bold">' + item.month + ' 대예배</span>';
+// ────────────────────────────────────────────────
+// 초기화
+// ────────────────────────────────────────────────
+function init() {
+  const saved = localStorage.getItem('hs_db_v6');
+  if (saved) {
+    db = JSON.parse(saved);
+  } else {
+    db = masterInitialDatabase.map(function(item) {
+      return Object.assign({}, item, { situation: classify(item.title, item.summary, item.notes) });
+    });
+    localStorage.setItem('hs_db_v6', JSON.stringify(db));
+  }
+  buildMonthTabs();
+  filterCards();
+}
 
-        const summary = item.summary || '';
-        const notes = item.notes || '';
-        if (document.getElementById('mSummaryLabel')) document.getElementById('mSummaryLabel').textContent = summary;
-        if (document.getElementById('mNotesLabel')) document.getElementById('mNotesLabel').textContent = notes;
-        if (document.getElementById('mSummaryLabelMobile')) document.getElementById('mSummaryLabelMobile').textContent = summary;
-        if (document.getElementById('mNotesLabelMobile')) document.getElementById('mNotesLabelMobile').textContent = notes;
-
-        // 직접 링크 초기화
-        updateDirectLinks(0);
-
-        // 타임라인 렌더링
-        const tlBox = document.getElementById('mTimelineContainer');
-        tlBox.innerHTML = '';
-        item.timeline.forEach(function(node, idx) {
-            const btn = document.createElement('button');
-            btn.className = 'tl-btn w-full text-left text-xs bg-slate-50 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-300 p-3 rounded-xl flex items-center justify-between transition group shadow-sm';
-            const secs = node.secs || node.seconds || 0;
-            btn.onclick = function() {
-                seekToTime(secs);
-                updateDirectLinks(secs);
-            };
-            btn.innerHTML =
-                '<span class="text-slate-700 font-medium group-hover:text-indigo-950 transition flex items-center gap-2 min-w-0 flex-1">' +
-                    '<i class="fa-solid fa-play text-indigo-500 text-[10px] flex-shrink-0 group-hover:text-indigo-700 transition"></i>' +
-                    '<span class="truncate leading-snug">' + node.title + '</span>' +
-                '</span>' +
-                '<span class="tl-time-badge text-indigo-600 font-bold bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100 group-hover:bg-indigo-600 group-hover:text-white transition serif flex-shrink-0 ml-2 text-[11px] font-mono">' + node.time + '</span>';
-            tlBox.appendChild(btn);
-        });
-
-        // 모달 표시
-        document.getElementById('playbackModal').classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
-        document.getElementById('nowPlayingSection').classList.add('hidden');
-
-        // 유튜브 플레이어 생성
-        if (window.YT && window.YT.Player) {
-            createYouTubePlayer(item.id, 0);
-        } else {
-            // API 아직 로드 중 → 잠시 후 재시도
-            setTimeout(function() {
-                if (window.YT && window.YT.Player) createYouTubePlayer(item.id, 0);
-                else showEmbedBlocked();
-            }, 2000);
-        }
-    }
-
-    function closeModal() {
-        stopProgressTracker();
-        if (ytPlayer) {
-            try { ytPlayer.stopVideo(); ytPlayer.destroy(); } catch(e) {}
-            ytPlayer = null;
-            ytPlayerReady = false;
-        }
-        document.getElementById('ytPlayer').innerHTML = '';
-        document.getElementById('playbackModal').classList.add('hidden');
-        document.body.style.overflow = '';
-        document.getElementById('nowPlayingSection').classList.add('hidden');
-    }
-
-    // ================================================
-    // 필터 & 렌더링
-    // ================================================
-    function analyzeTextToSituation(title, summary, notes) {
-        const text = (title + ' ' + summary + ' ' + notes).toLowerCase();
-        if (/상처|자존감|치유|흉터|킨츠기|가시|포이에마/.test(text)) return '상처치유';
-        if (/우울|불안|고독|변호사|파라클레토스|보혜사|외로움/.test(text)) return '우울불안';
-        if (/고난|시련|풀무질|정금|연단|부활/.test(text)) return '고난시련';
-        if (/실패|결핍|가난|파선|덩케르크|고립|벤치|빈민촌|야니스/.test(text)) return '실패결핍';
-        if (/미움|분노|용서|토포스|아피에미|대속|복수|불씨|방화/.test(text)) return '분노용서';
-        if (/가정|가족|부부|자녀|아내|남편|사도세자|영조|베라카|배필|에제르/.test(text)) return '가정가족';
-        if (/조급|인내|기다림|카이로스|크로노스|안개|나침반|시간|스케줄/.test(text)) return '조급인내';
-        return '고난시련';
-    }
-
-    function buildMonthFilterTabs() {
-        const wrapper = document.getElementById('monthTabsWrapper');
-        if (!wrapper) return;
-        wrapper.innerHTML = '';
-        const allBtn = document.createElement('button');
-        allBtn.className = 'tab-btn active-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition';
-        allBtn.setAttribute('data-month', 'all');
-        allBtn.onclick = function() { setMonthFilter('all'); };
-        allBtn.textContent = '전체보기';
-        wrapper.appendChild(allBtn);
-
-        const months = [...new Set(sermonDatabase.map(function(item) { return item.month; }))].sort(function(a, b) { return parseInt(a) - parseInt(b); });
-        months.forEach(function(m) {
-            if (!m) return;
-            const btn = document.createElement('button');
-            btn.className = 'tab-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition';
-            btn.setAttribute('data-month', m);
-            btn.onclick = function() { setMonthFilter(m); };
-            btn.textContent = m;
-            wrapper.appendChild(btn);
-        });
-    }
-
-    function executeDynamicFilter() {
-        const searchInput = document.getElementById('searchInput').value.toLowerCase().trim();
-        const yearSelect = document.getElementById('yearFilter').value;
-        const filtered = sermonDatabase.filter(function(item) {
-            const yMatch = (yearSelect === 'all' || item.year === yearSelect);
-            const mMatch = (currentMonthFilter === 'all' || item.month === currentMonthFilter);
-            const sMatch = (currentSitFilter === 'all' || item.situation === currentSitFilter);
-            const tMatch = !searchInput ||
-                item.title.toLowerCase().includes(searchInput) ||
-                item.summary.toLowerCase().includes(searchInput) ||
-                item.notes.toLowerCase().includes(searchInput) ||
-                item.scripture.toLowerCase().includes(searchInput);
-            return yMatch && mMatch && sMatch && tMatch;
-        });
-        renderGridCards(filtered);
-    }
-
-    function renderGridCards(data) {
-        const container = document.getElementById('cardsGridSection');
-        if (!container) return;
-        container.innerHTML = '';
-        const sitLabels = { '상처치유': '🩹 상처치유', '우울불안': '💭 우울불안', '고난시련': '🔥 고난시련', '실패결핍': '📉 실패결핍', '분노용서': '⚓ 분노용서', '가정가족': '🏠 가정가족', '조급인내': '⏳ 조급인내' };
-
-        data.forEach(function(item) {
-            const card = document.createElement('div');
-            card.className = 'bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm sermon-card flex flex-col justify-between cursor-pointer';
-            card.onclick = function() { openPlaybackModal(item.index); };
-            card.innerHTML =
-                '<div class="p-6">' +
-                    '<div class="flex items-center justify-between mb-3">' +
-                        '<span class="text-[11px] font-bold px-2.5 py-1 rounded-full border bg-indigo-50 text-indigo-950 border-indigo-200">' + item.categoryKo + '</span>' +
-                        '<span class="text-xs text-slate-400 font-bold serif">' + item.date + ' (' + item.month + ')</span>' +
-                    '</div>' +
-                    '<h4 class="font-bold text-slate-900 leading-snug hover:text-indigo-900 transition-all mb-2 serif text-base">' + item.title + '</h4>' +
-                    '<div class="text-xs text-slate-900 font-semibold mb-3 flex items-center bg-slate-50 p-2 py-1.5 rounded-lg border border-slate-100">' +
-                        '<span class="text-indigo-700 font-bold mr-2">' + (sitLabels[item.situation] || '🛡️ 영적대처') + '</span>' +
-                        '<span class="text-slate-300">|</span>' +
-                        '<span class="truncate ml-2 text-slate-600 font-light">' + item.scripture + '</span>' +
-                    '</div>' +
-                    '<p class="text-xs text-slate-500 font-light leading-relaxed line-clamp-3">' + item.summary + '</p>' +
-                '</div>' +
-                '<div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-xs">' +
-                    '<span class="text-indigo-600 font-bold flex items-center gap-1.5"><i class="fa-brands fa-youtube text-red-500"></i> 영상 재생하기</span>' +
-                    '<span class="text-slate-400 text-[11px]">' + item.timeline.length + '개 타임라인</span>' +
-                '</div>';
-            container.appendChild(card);
-        });
-
-        const countEl = document.getElementById('counterTracker');
-        if (countEl) countEl.innerHTML = '<i class="fa-solid fa-database mr-2 text-indigo-500"></i> 필터 동기화 일치 노드: 총 ' + data.length + '개';
-    }
-
-    function setMonthFilter(m) { currentMonthFilter = m; updateUI('monthTabsWrapper', 'data-month', m); executeDynamicFilter(); }
-    function setSituationFilter(s) { currentSitFilter = s; updateUI('situationTabsWrapper', 'data-sit', s); executeDynamicFilter(); }
-    function updateUI(gId, attr, target) {
-        document.querySelectorAll('#' + gId + ' .tab-btn').forEach(function(b) {
-            if (b.getAttribute(attr) === target) b.classList.add('active-btn');
-            else b.classList.remove('active-btn');
-        });
-    }
-
-    // ================================================
-    // 새 말씀 등록
-    // ================================================
-    function processSystemInsertion() {
-        const password = document.getElementById('formPassword').value;
-        if (password !== '1234') { showCustomAlert('보안 인증 실패: 패스워드가 올바르지 않습니다.', 'error'); return; }
-        const title = document.getElementById('formTitle').value.trim();
-        let rawUrl = document.getElementById('formUrl').value.trim();
-        const date = document.getElementById('formDate').value;
-        const categoryKo = document.getElementById('formCategory').value;
-        const summary = document.getElementById('formSummary').value.trim();
-        const notes = document.getElementById('formNotes').value.trim();
-        const rawTimeline = document.getElementById('formTimeline').value.trim();
-        if (!title || !rawUrl || !summary || !rawTimeline) { showCustomAlert('모든 필수 입력 항목(*)을 기입하세요.', 'error'); return; }
-
-        if (rawUrl.includes('<iframe') && rawUrl.includes('src=')) {
-            const srcMatch = rawUrl.match(/src=["']([^"']+)["']/);
-            if (srcMatch) rawUrl = srcMatch[1];
-        }
-        let videoId = '';
-        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-        const match = rawUrl.match(regExp);
-        if (match && match[2].length === 11) videoId = match[2];
-        else if (rawUrl.length === 11) videoId = rawUrl;
-        else { showCustomAlert('퍼가기 주소 식별코드를 파싱하지 못했습니다.', 'error'); return; }
-
-        const extractedYear = date.split('-')[0];
-        const extractedMonth = parseInt(date.split('-')[1]) + '월';
-        const parsedTimeline = [];
-        rawTimeline.split('\n').forEach(function(line) {
-            const tlMatch = line.match(/\[(\d{2}):(\d{2}):(\d{2})\](.*)/);
-            if (tlMatch) {
-                const secs = parseInt(tlMatch[1]) * 3600 + parseInt(tlMatch[2]) * 60 + parseInt(tlMatch[3]);
-                parsedTimeline.push({ time: '[' + tlMatch[1] + ':' + tlMatch[2] + ':' + tlMatch[3] + ']', secs: secs, title: tlMatch[4].trim() });
-            }
-        });
-
-        const newNode = {
-            index: sermonDatabase.length + 1, year: extractedYear, id: videoId, title: title, date: date, month: extractedMonth,
-            situation: analyzeTextToSituation(title, summary, notes), categoryKo: categoryKo, scripture: title.split('—')[0].trim(),
-            summary: summary, notes: notes, timeline: parsedTimeline
-        };
-        sermonDatabase.unshift(newNode);
-        localStorage.setItem('h_sermon_db_2026_v5', JSON.stringify(sermonDatabase));
-        showCustomAlert('말씀 자산 등록 성공!', 'success');
-        clearUploadFormFields();
-        toggleUploadForm();
-        buildMonthFilterTabs();
-        executeDynamicFilter();
-    }
-
-    // ================================================
-    // 유틸리티
-    // ================================================
-    function toggleUploadForm() { document.getElementById('uploadSection').classList.toggle('hidden'); }
-    function clearUploadFormFields() {
-        ['formTitle','formUrl','formSummary','formNotes','formTimeline','formPassword'].forEach(function(id) {
-            document.getElementById(id).value = '';
-        });
-    }
-    function resetSystemData() {
-        showCustomConfirm('시스템 전체 데이터를 초기화하시겠습니까?', function() {
-            localStorage.removeItem('h_sermon_db_2026_v5');
-            startArchiveSystem();
-        });
-    }
-
-    function showCustomAlert(message, type) {
-        const modal = document.getElementById('customAlertModal');
-        const icon = document.getElementById('customAlertIcon');
-        const title = document.getElementById('customAlertTitle');
-        document.getElementById('customAlertMessage').textContent = message;
-        if (type === 'error') { icon.className = 'w-12 h-12 rounded-full flex items-center justify-center mx-auto text-xl bg-red-100 text-red-700'; icon.innerHTML = '<i class="fa-solid fa-circle-xmark"></i>'; title.textContent = '오류 발생'; }
-        else if (type === 'success') { icon.className = 'w-12 h-12 rounded-full flex items-center justify-center mx-auto text-xl bg-green-100 text-green-700'; icon.innerHTML = '<i class="fa-solid fa-circle-check"></i>'; title.textContent = '성공'; }
-        else { icon.className = 'w-12 h-12 rounded-full flex items-center justify-center mx-auto text-xl bg-indigo-100 text-indigo-900'; icon.innerHTML = '<i class="fa-solid fa-circle-info"></i>'; title.textContent = '알림'; }
-        modal.classList.remove('hidden');
-    }
-    function closeCustomAlert() { document.getElementById('customAlertModal').classList.add('hidden'); }
-
-    let confirmCallback = null;
-    function showCustomConfirm(message, callback) {
-        document.getElementById('customConfirmMessage').textContent = message;
-        confirmCallback = callback;
-        document.getElementById('customConfirmModal').classList.remove('hidden');
-    }
-    function closeCustomConfirm() { document.getElementById('customConfirmModal').classList.add('hidden'); confirmCallback = null; }
-    function executeCustomConfirm() { if (confirmCallback) confirmCallback(); closeCustomConfirm(); }
-
-    // ================================================
-    // 시스템 초기화
-    // ================================================
-    function startArchiveSystem() {
-        const saved = localStorage.getItem('h_sermon_db_2026_v5');
-        if (saved) {
-            sermonDatabase = JSON.parse(saved);
-        } else {
-            sermonDatabase = masterInitialDatabase.map(function(item) {
-                return Object.assign({}, item, { situation: analyzeTextToSituation(item.title, item.summary, item.notes) });
-            });
-            localStorage.setItem('h_sermon_db_2026_v5', JSON.stringify(sermonDatabase));
-        }
-        buildMonthFilterTabs();
-        executeDynamicFilter();
-    }
-
-    window.onload = startArchiveSystem;
-    </script>
+window.onload = init;
+</script>
 </body>
 </html>
