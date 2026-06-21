@@ -61,6 +61,34 @@
   ::-webkit-scrollbar{width:5px}
   ::-webkit-scrollbar-track{background:#f1f5f9}
   ::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px}
+
+/* ── 야간 모드 ── */
+body.dark-mode { background:#0f172a !important; color:#e2e8f0 !important; }
+body.dark-mode header { background:rgba(15,23,42,.97) !important; border-color:#1e293b !important; }
+body.dark-mode .bg-white { background:#1e293b !important; }
+body.dark-mode .bg-slate-50 { background:#0f172a !important; }
+body.dark-mode .text-slate-900, body.dark-mode .text-slate-800 { color:#f1f5f9 !important; }
+body.dark-mode .text-slate-600 { color:#94a3b8 !important; }
+body.dark-mode .text-slate-500 { color:#64748b !important; }
+body.dark-mode .border-slate-200 { border-color:#334155 !important; }
+body.dark-mode .border-slate-100 { border-color:#1e293b !important; }
+body.dark-mode .bg-slate-100 { background:#1e293b !important; }
+body.dark-mode .text-slate-700 { color:#cbd5e1 !important; }
+body.dark-mode .sermon-card { background:#1e293b !important; border-color:#334155 !important; }
+body.dark-mode .sermon-card:hover { box-shadow:0 12px 28px rgba(0,0,0,.5) !important; }
+body.dark-mode #modal .bg-white { background:#1e293b !important; }
+body.dark-mode #modal .bg-slate-50 { background:#0f172a !important; }
+body.dark-mode #modal .text-slate-900 { color:#f1f5f9 !important; }
+body.dark-mode #modal .text-slate-600 { color:#94a3b8 !important; }
+body.dark-mode #modal .border-slate-200 { border-color:#334155 !important; }
+body.dark-mode .bg-indigo-50\/40 { background:rgba(99,102,241,.1) !important; }
+body.dark-mode .text-slate-400 { color:#64748b !important; }
+body.dark-mode main { color:#e2e8f0; }
+
+/* ── 글자 크기 CSS 변수 ── */
+:root { --main-font-size: 14px; }
+.card-summary { font-size: var(--main-font-size) !important; line-height:1.7 !important; }
+#mSummary, #mSummaryM { font-size: var(--main-font-size) !important; line-height:1.8 !important; }
 </style>
 </head>
 <body class="text-slate-800 antialiased">
@@ -77,9 +105,28 @@
         <p class="text-xs text-indigo-600 font-bold">AI 상황별 말씀 매칭 &amp; 타임 싱크로 아카이브</p>
       </div>
     </div>
-    <div class="flex items-center space-x-2">
-      <button onclick="openAdminLogin()" class="text-xs bg-slate-700 hover:bg-slate-600 text-white font-bold px-4 py-2.5 rounded-xl transition shadow-md flex items-center gap-1.5">
-        <svg class="fa-icon" viewBox="0 0 512 512"><path d="M256 0c4.6 0 9.2 1 13.4 2.9L457.7 82.8c22 9.3 38.4 31 38.3 57.2c-.5 99.2-41.3 280.7-213.6 363.2c-16.7 8-36.1 8-52.8 0C57.3 420.7 16.5 239.2 16 140c-.1-26.2 16.3-47.9 38.3-57.2L242.7 2.9C246.8 1 251.4 0 256 0z"/></svg><span>관리자</span>
+    <div class="flex items-center gap-1.5">
+      <!-- 야간모드 버튼 (1) -->
+      <button onclick="toggleDarkMode()" id="darkModeBtn" title="야간/주간 모드" class="flex items-center justify-center rounded-xl transition shadow-md" style="width:38px;height:38px;background:#334155;border:none;cursor:pointer;flex-shrink:0">
+        <span id="darkModeIcon" style="font-size:16px">🌙</span>
+      </button>
+      <!-- 글자크기 버튼 (2) -->
+      <button onclick="mainFontDown()" title="글자 작게" class="flex items-center justify-center rounded-xl transition shadow-md" style="width:38px;height:38px;background:#334155;border:none;color:#e2e8f0;font-size:13px;font-weight:700;cursor:pointer;flex-shrink:0">A−</button>
+      <button onclick="mainFontUp()" title="글자 크게" class="flex items-center justify-center rounded-xl transition shadow-md" style="width:38px;height:38px;background:#334155;border:none;color:#e2e8f0;font-size:14px;font-weight:700;cursor:pointer;flex-shrink:0">A+</button>
+      <!-- 성경 읽기 -->
+      <button onclick="openBibleReader()" title="성경 읽기" class="flex items-center justify-center gap-1 rounded-xl transition shadow-md bg-violet-700 hover:bg-violet-600 text-white font-bold" style="height:38px;padding:0 10px;font-size:12px;border:none;cursor:pointer;white-space:nowrap;flex-shrink:0">
+        <svg style="width:13px;height:13px;fill:currentColor;flex-shrink:0" viewBox="0 0 576 512"><path d="M249.6 471.5c10.8 3.8 22.4-4.1 22.4-15.5V78.6c0-4.2-1.6-8.4-5-11C247.4 52 202.4 32 144 32C93.5 32 46.3 45.3 18.1 56.1C6.8 60.5 0 71.7 0 83.8V454.1c0 11.9 12.8 20.2 24.1 16.5C55.6 460.1 105.5 448 144 448c33.9 0 79 14 105.6 23.5zm76.8 0C353 462 398.1 448 432 448c38.5 0 88.4 12.1 119.9 22.6c11.3 3.8 24.1-4.6 24.1-16.5V83.8c0-12.1-6.8-23.3-18.1-27.6C529.7 45.3 482.5 32 432 32c-58.4 0-103.4 20-122.9 35.6c-3.3 2.6-5 6.8-5 11V456c0 11.4 11.7 19.3 22.4 15.5z"/></svg>
+        <span class="hidden sm:inline">성경 읽기</span>
+      </button>
+      <!-- 성경 책갈피 -->
+      <button onclick="openBibleIndex()" title="성경 책갈피" class="flex items-center justify-center gap-1 rounded-xl transition shadow-md bg-indigo-700 hover:bg-indigo-600 text-white font-bold" style="height:38px;padding:0 10px;font-size:12px;border:none;cursor:pointer;white-space:nowrap;flex-shrink:0">
+        <svg style="width:13px;height:13px;fill:currentColor;flex-shrink:0" viewBox="0 0 448 512"><path d="M96 0C43 0 0 43 0 96V416c0 53 43 96 96 96H384h32c17.7 0 32-14.3 32-32s-14.3-32-32-32V384c17.7 0 32-14.3 32-32V32c0-17.7-14.3-32-32-32H384 96zm0 384H352v64H96c-17.7 0-32-14.3-32-32s14.3-32 32-32zm32-240c0-8.8 7.2-16 16-16H336c8.8 0 16 7.2 16 16s-7.2 16-16 16H144c-8.8 0-16-7.2-16-16zm16 48H336c8.8 0 16 7.2 16 16s-7.2 16-16 16H144c-8.8 0-16-7.2-16-16s7.2-16 16-16z"/></svg>
+        <span class="hidden sm:inline">책갈피</span>
+      </button>
+      <!-- 관리자 -->
+      <button onclick="openAdminLogin()" title="관리자" class="flex items-center justify-center gap-1 rounded-xl transition shadow-md bg-slate-700 hover:bg-slate-600 text-white font-bold" style="height:38px;padding:0 10px;font-size:12px;border:none;cursor:pointer;white-space:nowrap;flex-shrink:0">
+        <svg style="width:12px;height:12px;fill:currentColor;flex-shrink:0" viewBox="0 0 512 512"><path d="M256 0c4.6 0 9.2 1 13.4 2.9L457.7 82.8c22 9.3 38.4 31 38.3 57.2c-.5 99.2-41.3 280.7-213.6 363.2c-16.7 8-36.1 8-52.8 0C57.3 420.7 16.5 239.2 16 140c-.1-26.2 16.3-47.9 38.3-57.2L242.7 2.9C246.8 1 251.4 0 256 0z"/></svg>
+        <span class="hidden sm:inline">관리자</span>
       </button>
     </div>
   </div>
@@ -147,9 +194,13 @@
         <h3 id="mTitle" class="text-lg font-bold mt-2 text-slate-900 serif leading-snug"></h3>
         <p id="mMeta" class="text-xs text-slate-500 mt-1.5 font-medium"></p>
       </div>
-      <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 p-2.5 rounded-full hover:bg-slate-200 transition flex-shrink-0">
-        <span class="text-2xl"><svg class="fa-icon" viewBox="0 0 384 512"><path d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"/></svg></span>
-      </button>
+      <div class="flex items-center gap-1.5 flex-shrink-0">
+        <button onclick="modalFontDown()" title="글자 작게" style="background:#f1f5f9;border:none;color:#64748b;border-radius:8px;width:34px;height:34px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center">A−</button>
+        <button onclick="modalFontUp()" title="글자 크게" style="background:#f1f5f9;border:none;color:#334155;border-radius:8px;width:34px;height:34px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center">A+</button>
+        <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 p-2 rounded-full hover:bg-slate-200 transition">
+          <svg class="fa-icon" style="width:20px;height:20px" viewBox="0 0 384 512"><path d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"/></svg>
+        </button>
+      </div>
     </div>
 
     <!-- 모달 바디 -->
@@ -218,6 +269,146 @@
   </div>
 </div>
 
+
+
+
+<!-- ══════════════════════════════════════════════════
+     성경 읽기 화면 (전체 페이지)
+══════════════════════════════════════════════════ -->
+<div id="bibleReaderPanel" style="display:none;position:fixed;inset:0;z-index:56;background:#0f172a;font-family:'Noto Sans KR',sans-serif;flex-direction:column;">
+
+  <!-- 헤더 1줄: 뒤로가기 + 제목 + 글자크기 -->
+  <div style="flex-shrink:0;background:#1e293b;border-bottom:1px solid #334155;padding:10px 12px;display:flex;align-items:center;gap:8px">
+    <button onclick="brGoBack()" title="뒤로" style="background:#334155;border:none;color:#e2e8f0;border-radius:10px;width:42px;height:42px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">←</button>
+    <div style="flex:1;min-width:0;overflow:hidden">
+      <p id="brNowLabel" style="color:#e2e8f0;font-size:14px;font-weight:700;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">성경 읽기</p>
+      <p style="color:#475569;font-size:10px;margin:0">개역한글 · bolls.life</p>
+    </div>
+    <button onclick="brChangeFontSize(-1)" style="background:#334155;border:none;color:#94a3b8;border-radius:8px;width:38px;height:38px;font-size:13px;cursor:pointer;flex-shrink:0">A−</button>
+    <button onclick="brChangeFontSize(1)"  style="background:#334155;border:none;color:#e2e8f0;border-radius:8px;width:38px;height:38px;font-size:14px;font-weight:700;cursor:pointer;flex-shrink:0">A+</button>
+  </div>
+
+  <!-- 헤더 2줄: 구약/신약 + 책 선택 + 장 선택 -->
+  <div style="flex-shrink:0;background:#1e293b;border-bottom:1px solid #334155;padding:8px 12px;display:flex;align-items:center;gap:7px">
+    <button id="brTabOT" onclick="brSetTestament('ot')" style="background:#4f46e5;border:none;color:#fff;border-radius:8px;padding:0 12px;height:38px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0">구약</button>
+    <button id="brTabNT" onclick="brSetTestament('nt')" style="background:#334155;border:none;color:#94a3b8;border-radius:8px;padding:0 12px;height:38px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0">신약</button>
+    <select id="brBookSelect" onchange="brOnBookChange()" style="flex:1;background:#0f172a;border:1.5px solid #4f46e5;color:#e2e8f0;border-radius:10px;padding:0 8px;height:38px;font-size:13px;font-weight:700;outline:none;min-width:0">
+      <option value="">책 선택</option>
+    </select>
+    <select id="brChapSelect" onchange="brLoadChapter()" style="background:#0f172a;border:1px solid #334155;color:#e2e8f0;border-radius:10px;padding:0 6px;height:38px;font-size:13px;font-weight:700;outline:none;width:65px;flex-shrink:0">
+      <option value="">장</option>
+    </select>
+  </div>
+
+  <!-- 본문 스크롤 영역 -->
+  <div style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch" id="brTextArea">
+
+    <div id="brWelcome" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:14px;text-align:center;padding:32px 20px">
+      <div style="font-size:50px">📖</div>
+      <p style="color:#e2e8f0;font-size:17px;font-weight:700;margin:0;font-family:'Noto Serif KR',serif">성경을 읽어보세요</p>
+      <p style="color:#475569;font-size:13px;line-height:1.8;margin:0">구약/신약 선택 후 책과 장을 선택하세요</p>
+      <p style="color:#6366f1;font-size:11px;margin:0;background:#1e1b4b;padding:6px 14px;border-radius:999px;border:1px solid #3730a3">📌 파란 구절 = 연결된 설교 있음</p>
+    </div>
+
+    <div id="brLoading" style="display:none;text-align:center;padding:80px 20px">
+      <div style="width:38px;height:38px;border:3px solid #334155;border-top-color:#6366f1;border-radius:50%;animation:brSpin 1s linear infinite;margin:0 auto 14px"></div>
+      <p style="color:#475569;font-size:13px;margin:0">본문 불러오는 중...</p>
+    </div>
+
+    <div id="brError" style="display:none;text-align:center;padding:60px 20px">
+      <div style="font-size:38px;margin-bottom:12px">⚠️</div>
+      <p style="color:#f87171;font-size:14px;font-weight:700;margin:0 0 6px">불러오지 못했습니다</p>
+      <p id="brErrorDetail" style="color:#64748b;font-size:11px;margin:0 0 18px;line-height:1.6"></p>
+      <button onclick="brLoadChapter()" style="background:#6366f1;border:none;color:#fff;border-radius:10px;padding:10px 24px;font-size:13px;font-weight:700;cursor:pointer">다시 시도</button>
+    </div>
+
+    <div id="brVerseContainer" style="display:none;padding:14px 14px 16px"></div>
+
+    <!-- 연결 설교 (본문 아래) -->
+    <div id="brSermonInline" style="display:none;padding:0 14px 20px">
+      <div style="background:#1e1b4b;border:1px solid #3730a3;border-radius:14px;padding:14px">
+        <p style="color:#a5b4fc;font-size:11px;font-weight:700;margin:0 0 10px;letter-spacing:.05em">📌 이 장의 연결 설교</p>
+        <div id="brSermonInlineList"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 하단 고정 바: 이전/다음 (엄지 터치 최적) -->
+  <div style="flex-shrink:0;background:#1e293b;border-top:1px solid #334155;padding:10px 12px;display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center">
+    <button onclick="brPrevChap()" style="background:#334155;border:none;color:#e2e8f0;border-radius:12px;height:50px;font-size:14px;font-weight:700;cursor:pointer">‹ 이전 장</button>
+    <div style="text-align:center;padding:0 4px">
+      <p id="brChapInfoText" style="color:#6366f1;font-size:12px;font-weight:700;margin:0;white-space:nowrap"></p>
+      <p id="brChapHint"     style="color:#334155;font-size:10px;margin:0;white-space:nowrap"></p>
+    </div>
+    <button onclick="brNextChap()" style="background:#4f46e5;border:none;color:#fff;border-radius:12px;height:50px;font-size:14px;font-weight:700;cursor:pointer">다음 장 ›</button>
+  </div>
+</div>
+
+<style>
+@keyframes spin { to { transform:rotate(360deg); } }
+@keyframes brSpin { to { transform:rotate(360deg); } }
+</style>
+
+<!-- ══════════════════════════════════════════════════
+     성경 책갈피 화면 (전체 페이지 오버레이)
+══════════════════════════════════════════════════ -->
+<div id="bibleIndexPanel" class="fixed inset-0 z-[55] hidden flex flex-col" style="background:#0f172a;font-family:'Noto Sans KR',sans-serif;">
+
+  <!-- 상단 헤더 -->
+  <div class="flex-shrink-0 border-b border-slate-700/60" style="background:#1e293b">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-4 flex-wrap">
+      <div class="flex items-center gap-3">
+        <div style="width:38px;height:38px;background:linear-gradient(135deg,#4f46e5,#7c3aed);border-radius:12px;display:flex;align-items:center;justify-content:center">
+          <svg style="width:18px;height:18px;fill:#fff" viewBox="0 0 448 512"><path d="M96 0C43 0 0 43 0 96V416c0 53 43 96 96 96H384h32c17.7 0 32-14.3 32-32s-14.3-32-32-32V384c17.7 0 32-14.3 32-32V32c0-17.7-14.3-32-32-32H384 96zm0 384H352v64H96c-17.7 0-32-14.3-32-32s14.3-32 32-32zm32-240c0-8.8 7.2-16 16-16H336c8.8 0 16 7.2 16 16s-7.2 16-16 16H144c-8.8 0-16-7.2-16-16zm16 48H336c8.8 0 16 7.2 16 16s-7.2 16-16 16H144c-8.8 0-16-7.2-16-16s7.2-16 16-16z"/></svg>
+        </div>
+        <div>
+          <h2 style="color:#fff;font-size:16px;font-weight:700;margin:0">성경 책갈피</h2>
+          <p style="color:#64748b;font-size:11px;margin:0" id="bibleIndexSubtitle">설교가 연결된 성경 구절을 책별로 탐색합니다</p>
+        </div>
+      </div>
+      <!-- 검색 -->
+      <div style="position:relative;flex:1;max-width:360px;min-width:200px">
+        <svg style="position:absolute;left:12px;top:50%;transform:translateY(-50%);width:13px;height:13px;fill:#64748b" viewBox="0 0 512 512"><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352a144 144 0 1 0 0-288 144 144 0 1 0 0 288z"/></svg>
+        <input id="bibleIndexSearch" type="text" oninput="renderBibleIndex()" placeholder="성경책, 구절, 설교 제목 검색..."
+          style="width:100%;background:#0f172a;border:1px solid #334155;border-radius:12px;padding:8px 12px 8px 34px;color:#fff;font-size:12px;outline:none;box-sizing:border-box">
+      </div>
+      <button onclick="closeBibleIndex()" style="background:#1e293b;border:1px solid #334155;color:#94a3b8;border-radius:10px;padding:8px 16px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">✕ 닫기</button>
+    </div>
+
+    <!-- 구약/신약 탭 + 분류 필터 -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 pb-3 flex items-center gap-3 flex-wrap">
+      <div style="display:flex;background:#0f172a;border-radius:10px;padding:3px;gap:2px">
+        <button id="biTabAll" onclick="setBiTab('all')" style="padding:5px 14px;border-radius:8px;font-size:11px;font-weight:700;border:none;cursor:pointer;background:#4f46e5;color:#fff">전체</button>
+        <button id="biTabOT"  onclick="setBiTab('ot')"  style="padding:5px 14px;border-radius:8px;font-size:11px;font-weight:700;border:none;cursor:pointer;background:transparent;color:#64748b">구약</button>
+        <button id="biTabNT"  onclick="setBiTab('nt')"  style="padding:5px 14px;border-radius:8px;font-size:11px;font-weight:700;border:none;cursor:pointer;background:transparent;color:#64748b">신약</button>
+        <button id="biTabUsed" onclick="setBiTab('used')" style="padding:5px 14px;border-radius:8px;font-size:11px;font-weight:700;border:none;cursor:pointer;background:transparent;color:#64748b">📌 설교있음</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 본문: 좌(책 목록) + 우(구절 + 연결 설교) -->
+  <div class="flex-1 overflow-hidden flex max-w-7xl mx-auto w-full px-0 sm:px-0" style="min-height:0">
+
+    <!-- 좌: 성경 목록 사이드바 -->
+    <div id="bibleBookList" style="width:160px;min-width:140px;flex-shrink:0;overflow-y:auto;background:#1e293b;border-right:1px solid #334155;padding:12px 8px">
+      <!-- JS 렌더링 -->
+    </div>
+
+    <!-- 우: 선택된 책의 구절 + 설교 -->
+    <div class="flex-1 overflow-y-auto" style="min-width:0">
+      <!-- 책 미선택 안내 -->
+      <div id="bibleWelcome" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:16px;padding:40px;text-align:center">
+        <div style="font-size:56px">📖</div>
+        <p style="color:#fff;font-size:18px;font-weight:700;margin:0">성경책을 선택하세요</p>
+        <p style="color:#475569;font-size:13px;line-height:1.7;margin:0;max-width:320px">왼쪽 목록에서 성경책을 클릭하면<br>해당 책과 연결된 설교를 확인할 수 있습니다.<br><span style="color:#6366f1;font-weight:600">📌 표시</span>는 설교가 등록된 책입니다.</p>
+      </div>
+      <!-- 선택된 책 내용 -->
+      <div id="bibleBookContent" style="display:none;padding:24px;max-width:860px">
+        <!-- JS 렌더링 -->
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- ══════════════════════════════════════════════════
      관리자 로그인 모달
@@ -431,6 +622,37 @@
   </div>
 </div>
 
+
+<!-- ══ 성경 구절 팝업 모달 ══ -->
+<div id="bibleModal" class="fixed inset-0 z-[90] hidden bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+  <div class="bg-white rounded-3xl w-full max-w-2xl max-h-[85vh] flex flex-col shadow-2xl border border-slate-200">
+    <!-- 헤더 -->
+    <div class="p-5 border-b border-slate-100 bg-gradient-to-r from-indigo-950 to-slate-900 rounded-t-3xl flex items-center justify-between flex-shrink-0">
+      <div>
+        <p class="text-indigo-300 text-xs font-bold uppercase tracking-widest mb-1">중심 성경 구절</p>
+        <h3 id="bibleRef" class="text-white text-lg font-bold serif"></h3>
+      </div>
+      <button onclick="closeBibleModal()" class="text-slate-400 hover:text-white p-2 rounded-full hover:bg-white/10 transition">
+        <svg class="fa-icon" style="width:20px;height:20px" viewBox="0 0 384 512"><path fill="currentColor" d="M342.6 150.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0L192 210.7 86.6 105.4c-12.5-12.5-32.8-12.5-45.3 0s-12.5 32.8 0 45.3L146.7 256 41.4 361.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L192 301.3 297.4 406.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L237.3 256 342.6 150.6z"/></svg>
+      </button>
+    </div>
+    <!-- 검색 -->
+    <div class="px-5 py-3 border-b border-slate-100 flex-shrink-0 bg-slate-50">
+      <div class="relative">
+        <svg class="fa-icon" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#94a3b8;width:14px;height:14px" viewBox="0 0 512 512"><path fill="currentColor" d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352a144 144 0 1 0 0-288 144 144 0 1 0 0 288z"/></svg>
+        <input type="text" id="bibleSearch" oninput="filterBibleVerses()" placeholder="구절 내용으로 검색..."
+          class="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-4 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-400">
+      </div>
+    </div>
+    <!-- 구절 목록 -->
+    <div class="flex-1 overflow-y-auto p-5" id="bibleVerseList"></div>
+    <!-- 하단 -->
+    <div class="p-4 border-t border-slate-100 bg-slate-50 rounded-b-3xl flex items-center justify-between flex-shrink-0">
+      <p id="bibleVerseCount" class="text-xs text-slate-400 font-medium"></p>
+      <button onclick="closeBibleModal()" class="bg-indigo-950 hover:bg-indigo-800 text-white font-bold text-xs px-5 py-2.5 rounded-xl transition">닫기</button>
+    </div>
+  </div>
+</div>
 <!-- 알림 모달 -->
 <div id="alertModal" class="fixed inset-0 z-50 hidden bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
   <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-xl border border-slate-200 text-center space-y-4">
@@ -448,28 +670,28 @@
     const masterInitialDatabase = [
 {index:1,year:"2026",id:"sCSSvc_ADks",title:"2026년 1월 4일 통합설교 (신년감사) — 거룩한 역설",date:"2026-01-04",month:"1월",categoryKo:"통합설교",scripture:"잠언 11장 24~25절",situation:"나눔전도",summary:"2026년 새해를 여는 첫 시간에 선포된 하나님 나라의 거룩한 영적 경제 법칙입니다. 세상은 내 것을 단단히 움켜쥐고 빼앗아야 부유해진다고 가르치지만, 기독교의 원리는 내 것을 아낌없이 흩어 뿌리고('파자르') 목마른 이웃의 심령을 충분히 적셔 윤택하게 할 때('라와') 오히려 상상치 못한 차원의 '역설적 부유'를 품속에 고봉으로 넘치도록 안겨주십니다. 성도는 하나님과의 영적인 관계가 바로 서는 영적인 축복과, 이 세상에서 이웃을 복되게 함으로써 스스로도 풍요로워지는 물질적·환경적 축복의 양면을 모두 조화롭게 누려야 합니다. 비판 대신 축복의 언어를 심고 공동체 내의 가장 낮은 곳을 돌보는 구체적인 실천을 통해, 뿌린 대로 거두게 하시는 주님의 역설적 은혜를 한해 동안 증명해 내야 합니다.",notes:"💡 주요 키워드: #신년감사 #거룩한역설 #역설적부유 #파자르 #라와",timeline:[{time:"[00:00:00]",secs:0,title:"예배 시작 / 준비찬양"},{time:"[00:05:10]",secs:310,title:"성경 봉독"},{time:"[00:06:03]",secs:363,title:"영상 시청"},{time:"[00:08:07]",secs:487,title:"설교 1: 신년 표어와 두 가지 부유의 법칙"},{time:"[00:24:11]",secs:1451,title:"시 낭송"},{time:"[00:26:08]",secs:1568,title:"설교 2: 윤택한 삶을 위한 5가지 실천 지침과 결단"}]},
 {index:2,year:"2026",id:"XtEDSWPyHx4",title:"2026년 1월 11일 통합설교 (음악설교) — 기름부으신 이유",date:"2026-01-11",month:"1월",categoryKo:"음악설교",scripture:"이사야 61장 1절",situation:"상처치유",summary:"하나님께서 성도에게 성령의 기름을 부으신(마샤흐) 목적은 세상적 특권을 누리게 함이 아닙니다. 철저히 세상과 구별되어 마음이 찢어지고 상한 자(니슈베레 레브)의 곁을 돌보고, 우울과 불안의 감옥에 갇힌 영혼들의 눈을 열어(페카코아흐) 궁극의 희망이신 예수 그리스도를 보게 하는 빛의 통로로 쓰임 받기 위함입니다.",notes:"💡 주요 키워드: #음악설교 #기름부음 #마샤흐 #상한마음치유 #페카코아흐",timeline:[{time:"[00:00:00]",secs:0,title:"성경 봉독 (이사야 61:1)"},{time:"[00:02:03]",secs:123,title:"설교 1 — 기름 부으심의 의미와 사명자로의 부르심"},{time:"[00:06:10]",secs:370,title:"찬양 / 기름 부으심 (신상우 작사·작곡, 장용진 장로)"},{time:"[00:11:49]",secs:709,title:"설교 2 — 마샤흐 강해, 상한 마음 치유, 페카코아흐의 권능"},{time:"[00:35:46]",secs:2146,title:"시 낭송 《그를 사랑하게 하소서 — 김형종》"},{time:"[00:37:52]",secs:2272,title:"설교 3 — 가족 공동체 효도 권면 및 마침 축복 기도"}]},
-{index:3,year:"2026",id:"9ryamgmm7cU",title:"2026년 1월 18일 통합설교 (비전설교) — 상처-면류관이 되다",date:"2026-01-18",month:"1월",categoryKo:"비전설교",scripture:"시편 147편 3절",situation:"상처치유",summary:"거친 세상에서 산산조각 난 우리의 정신과 깨진 마음('샤바르 레브')은 숨겨야 할 수치가 아닙니다. 영적 장인이신 하나님 앞에 아픔의 파편들을 그대로 내어놓을 때, 주님은 숙련된 손길로 붕대를 감으시고('하바쉬') 고난의 상처 틈새마다 별과 같은 은혜의 금가루를 메워 세상에 단 하나뿐인 찬란한 '명품 인생(킨츠기)'이자 승리의 면류관으로 재탄생시키십니다.  주요 키워드: #비전주일 #킨츠기공법 #샤바르레브 #하바쉬 #여호와라파  정밀 인덱싱 타임라인:  [00:00] 예배 시작 / 준비찬양 — 1월 비전 주일 예배 오프닝 선포, 시편 4편(교독 3번) 성시 교독, 온 회중의 사도신경 신앙고백 및 김순자 권사의 구원의 자존감 회복을 위한 대표 기도 진행  [07:44] 성경 봉독 — 시편 147편 3절 봉독  [08:11] 시 낭송 / 삶의 묵상 — [흉터 — 김형종] 감상  [10:42] 설교 1 — 아시카가 요시마사 장군의 깨진 찻잔 예화를 통해 본 일본의 '킨츠기(Kintsugi)' 복원 공법 소개, 깨진 가정·우울증·정신적 고뇌의 파편들을 숨기지 않고 전능자 앞에 직시해야 하는 필연성 역설, 슬라이도(Slido) 무기명 양방향 아픔 고백 및 연민의 소통 진행  [33:36] 비전특송 찬양 — 《말이라는 씨앗》 [정용진 장로 반주] (언어의 영적 동력과 위로를 노래하는 특송 세션)  [37:03] 설교 2 — 그릇이 부러진 극한의 상태 원어 '샤바르 레브(נִשְׁבְּרֵ이 לֵב)' 강해, 상처를 원래보다 온전하게 고치시는 '라파(רָפָא)'의 재창조 권능 선포, 붕대로 감싸 묶으시는 하나님의 '하바쉬(חָבַשׁ)' 치유법, 바울의 육체 가시 속에서 완전함에 도달하는 '텔레이오타이(τελειούται)'의 신비 강론, 두 번째 슬라이도 확신의 위로 나눔, 작가 사역자의 성화 해설, 가시를 면류관으로 바꾸는 결단 통성 기도 및 최영순 집사의 애찬 마침 기도",notes:"💡 주요 키워드: #비전주일 #킨츠기공법 #샤바르레브 #하바쉬 #여호와라파  정밀 인덱싱 타임라인:  [00:00] 예배 시작 / 준비찬양 — 1월 비전 주일 예배 오프닝 선포, 시편 4편(교독 3번) 성시 교독, 온 회중의 사도신경 신앙고백 및 김순자 권사의 구원의 자존감 회복을 위한 대표 기도 진행  [07:44] 성경 봉독 — 시편 147편 3절 봉독  [08:11] 시 낭송 / 삶의 묵상 — [흉터 — 김형종] 감상  [10:42] 설교 1 — 아시카가 요시마사 장군의 깨진 찻잔 예화를 통해 본 일본의 '킨츠기(Kintsugi)' 복원 공법 소개, 깨진 가정·우울증·정신적 고뇌의 파편들을 숨기지 않고 전능자 앞에 직시해야 하는 필연성 역설, 슬라이도(Slido) 무기명 양방향 아픔 고백 및 연민의 소통 진행  [33:36] 비전특송 찬양 — 《말이라는 씨앗》 [정용진 장로 반주] (언어의 영적 동력과 위로를 노래하는 특송 세션)  [37:03] 설교 2 — 그릇이 부러진 극한의 상태 원어 '샤바르 레브(נִשְׁבְּרֵ이 לֵב)' 강해, 상처를 원래보다 온전하게 고치시는 '라파(רָפָא)'의 재창조 권능 선포, 붕대로 감싸 묶으시는 하나님의 '하바쉬(חָבַשׁ)' 치유법, 바울의 육체 가시 속에서 완전함에 도달하는 '텔레이오타이(τελειούται)'의 신비 강론, 두 번째 슬라이도 확신의 위로 나눔, 작가 사역자의 성화 해설, 가시를 면류관으로 바꾸는 결단 통성 기도 및 최영순 집사의 애찬 마침 기도",timeline:[{time:"[00:00:00]",secs:0,title:"예배 시작 / 준비찬양 — 1월 비전 주일 예배 오프닝 선포, 시편 4편(교독 3번) 성시 교독, 온 회중의 사도신경 신앙고백 및 김순자 권사의 구원의 자존감 회복을 위한 대표 기도 진행"},{time:"[00:03:55]",secs:235,title:"성경 봉독 [요한복음 14:16~17;26]"},{time:"[00:05:05]",secs:305,title:"영상 1 [아마추어 감독님] (싹부터 대단한 생명은 없듯 가난한 난민 소년 야니스가 아마추어 감독의 지도로 인생의 공을 쥐고 성장해가는 영화 장면 시청)"},{time:"[00:06:27]",secs:387,title:"설교 1 (보혜사의 어원적 속성 강의, 짙은 환경의 안개 속에서 불빛 대신 '소리'로 신호를 바꾸어 객차를 건져내는 등대의 비유를 통한 성도의 영적 안테나 예리함 강조, 거대한 법정에서 성도의 죄악을 탄원하고 의롭다 하시는 무죄 변호 복음 선포)"},{time:"[00:07:44]",secs:464,title:"성경 봉독 — 시편 147편 3절 봉독"},{time:"[00:08:11]",secs:491,title:"시 낭송 / 삶의 묵상 — [흉터 — 김형종] 감상"},{time:"[00:10:42]",secs:642,title:"설교 1 — 아시카가 요시마사 장군의 깨진 찻잔 예화를 통해 본 일본의 '킨츠기(Kintsugi)' 복원 공법 소개, 깨진 가정·우울증·정신적 고뇌의 파편들을 숨기지 않고 전능자 앞에 직시해야 하는 필연성 역설, 슬라이도(Slido) 무기명 양방향 아픔 고백 및 연민의 소통 진행"},{time:"[00:29:06]",secs:1746,title:"영상 2 [재능을 알아보다] (야니스의 신체적 강점을 한눈에 파악하여 그리스 성인 3부 리그 연습생 프로 계약으로 가문의 첫 외식을 선물하는 감독의 결정적 추천 장면 시청)"},{time:"[00:29:58]",secs:1798,title:"설교 2 (만남을 통해 피할 길과 탈출구를 여시는 히브리·헬라어 거룩한 '크바시스(έκβασις)' 공식 대강해, 직장과 공동체 안에서 이웃의 은사이자 재능을 뜻하는 '카리스마(χάρισμα)'를 찾아 전하는 칭찬 매뉴얼 적용)"},{time:"[00:33:36]",secs:2016,title:"비전특송 찬양 — 《말이라는 씨앗》 [정용진 장로 반주] (언어의 영적 동력과 위로를 노래하는 특송 세션)"},{time:"[00:36:06]",secs:2166,title:"시 낭송 [선생님 — 김형종]"},{time:"[00:37:03]",secs:2223,title:"설교 2 — 그릇이 부러진 극한의 상태 원어 '샤바르 레브(נִשְׁבְּרֵ이 לֵב)' 강해, 상처를 원래보다 온전하게 고치시는 '라파(רָפָא)'의 재창조 권능 선포, 붕대로 감싸 묶으시는 하나님의 '하바쉬(חָבַשׁ)' 치유법, 바울의 육체 가시 속에서 완전함에 도달하는 '텔레이오타이(τελειούται)'의 신비 강론, 두 번째 슬라이도 확신의 위로 나눔, 작가 사역자의 성화 해설, 가시를 면류관으로 바꾸는 결단 통성 기도 및 최영순 집사의 애찬 마침 기도"},{time:"[00:38:29]",secs:2309,title:"설교 3 (어떠한 대가도 없이 성도의 삶이 되어지도록 은혜를 연결하시는 주님의 무조건적인 지지 확증, 공부와 직장에 지친 가족을 섣불리 가르치려 들기보다 조용히 머무는 '메노(μένω)'의 안식 사랑을 통한 가족 전도 비결 강론)"},{time:"[00:49:05]",secs:2945,title:"영상 3 [마지막 천사] (야니스가 꿈의 NBA 구단에 안착하기까지 밤잠 설치며 그의 가치를 역으로 증명해낸 수많은 무명의 천사·이름 없는 감독들의 조력 실화 시청)"},{time:"[00:50:02]",secs:3002,title:"설교 4 (우리를 끝까지 고아와 같이 버려두지 않고 최종 낙원까지 호위하시는 주님의 성령의 사람 인도법 해설, 작가 사역자의 성화 그림 해설 및 복된 은혜의 약속 전달자가 되기 위한 합심 마침 결단 기도)"}]},
+{index:3,year:"2026",id:"9ryamgmm7cU",title:"2026년 1월 18일 통합설교 (비전설교) — 상처-면류관이 되다",date:"2026-01-18",month:"1월",categoryKo:"비전설교",scripture:"시편 147편 3절",situation:"상처치유",summary:"거친 세상에서 산산조각 난 우리의 정신과 깨진 마음('샤바르 레브')은 숨겨야 할 수치가 아닙니다. 영적 장인이신 하나님 앞에 아픔의 파편들을 그대로 내어놓을 때, 주님은 숙련된 손길로 붕대를 감으시고('하바쉬') 고난의 상처 틈새마다 별과 같은 은혜의 금가루를 메워 세상에 단 하나뿐인 찬란한 '명품 인생(킨츠기)'이자 승리의 면류관으로 재탄생시키십니다.  주요 키워드: #비전주일 #킨츠기공법 #샤바르레브 #하바쉬 #여호와라파  정밀 인덱싱 타임라인:  [00:00] 예배 시작 / 준비찬양 — 1월 비전 주일 예배 오프닝 선포, 시편 4편(교독 3번) 성시 교독, 온 회중의 사도신경 신앙고백 및 김순자 권사의 구원의 자존감 회복을 위한 대표 기도 진행  [07:44] 성경 봉독 — 시편 147편 3절 봉독  [08:11] 시 낭송 / 삶의 묵상 — [흉터 — 김형종] 감상  [10:42] 설교 1 — 아시카가 요시마사 장군의 깨진 찻잔 예화를 통해 본 일본의 '킨츠기(Kintsugi)' 복원 공법 소개, 깨진 가정·우울증·정신적 고뇌의 파편들을 숨기지 않고 전능자 앞에 직시해야 하는 필연성 역설, 슬라이도(Slido) 무기명 양방향 아픔 고백 및 연민의 소통 진행  [33:36] 비전특송 찬양 — 《말이라는 씨앗》 [정용진 장로 반주] (언어의 영적 동력과 위로를 노래하는 특송 세션)  [37:03] 설교 2 — 그릇이 부러진 극한의 상태 원어 '샤바르 레브(נִשְׁבְּרֵ이 לֵב)' 강해, 상처를 원래보다 온전하게 고치시는 '라파(רָפָא)'의 재창조 권능 선포, 붕대로 감싸 묶으시는 하나님의 '하바쉬(חָבַשׁ)' 치유법, 바울의 육체 가시 속에서 완전함에 도달하는 '텔레이오타이(τελειούται)'의 신비 강론, 두 번째 슬라이도 확신의 위로 나눔, 작가 사역자의 성화 해설, 가시를 면류관으로 바꾸는 결단 통성 기도 및 최영순 집사의 애찬 마침 기도",notes:"💡 주요 키워드: #비전주일",timeline:[{time:"[00:00:00]",secs:0,title:"예배 시작 / 준비찬양 — 1월 비전 주일 예배 오프닝 선포, 시편 4편(교독 3번) 성시 교독, 온 회중의 사도신경 신앙고백 및 김순자 권사의 구원의 자존감 회복을 위한 대표 기도 진행"},{time:"[00:03:55]",secs:235,title:"성경 봉독 [요한복음 14:16~17;26]"},{time:"[00:05:05]",secs:305,title:"영상 1 [아마추어 감독님] (싹부터 대단한 생명은 없듯 가난한 난민 소년 야니스가 아마추어 감독의 지도로 인생의 공을 쥐고 성장해가는 영화 장면 시청)"},{time:"[00:06:27]",secs:387,title:"설교 1 (보혜사의 어원적 속성 강의, 짙은 환경의 안개 속에서 불빛 대신 '소리'로 신호를 바꾸어 객차를 건져내는 등대의 비유를 통한 성도의 영적 안테나 예리함 강조, 거대한 법정에서 성도의 죄악을 탄원하고 의롭다 하시는 무죄 변호 복음 선포)"},{time:"[00:07:44]",secs:464,title:"성경 봉독 — 시편 147편 3절 봉독"},{time:"[00:08:11]",secs:491,title:"시 낭송 / 삶의 묵상 — [흉터 — 김형종] 감상"},{time:"[00:10:42]",secs:642,title:"설교 1 — 아시카가 요시마사 장군의 깨진 찻잔 예화를 통해 본 일본의 '킨츠기(Kintsugi)' 복원 공법 소개, 깨진 가정·우울증·정신적 고뇌의 파편들을 숨기지 않고 전능자 앞에 직시해야 하는 필연성 역설, 슬라이도(Slido) 무기명 양방향 아픔 고백 및 연민의 소통 진행"},{time:"[00:29:06]",secs:1746,title:"영상 2 [재능을 알아보다] (야니스의 신체적 강점을 한눈에 파악하여 그리스 성인 3부 리그 연습생 프로 계약으로 가문의 첫 외식을 선물하는 감독의 결정적 추천 장면 시청)"},{time:"[00:29:58]",secs:1798,title:"설교 2 (만남을 통해 피할 길과 탈출구를 여시는 히브리·헬라어 거룩한 '크바시스(έκβασις)' 공식 대강해, 직장과 공동체 안에서 이웃의 은사이자 재능을 뜻하는 '카리스마(χάρισμα)'를 찾아 전하는 칭찬 매뉴얼 적용)"},{time:"[00:33:36]",secs:2016,title:"비전특송 찬양 — 《말이라는 씨앗》 [정용진 장로 반주] (언어의 영적 동력과 위로를 노래하는 특송 세션)"},{time:"[00:36:06]",secs:2166,title:"시 낭송 [선생님 — 김형종]"},{time:"[00:37:03]",secs:2223,title:"설교 2 — 그릇이 부러진 극한의 상태 원어 '샤바르 레브(נִשְׁבְּרֵ이 לֵב)' 강해, 상처를 원래보다 온전하게 고치시는 '라파(רָפָא)'의 재창조 권능 선포, 붕대로 감싸 묶으시는 하나님의 '하바쉬(חָבַשׁ)' 치유법, 바울의 육체 가시 속에서 완전함에 도달하는 '텔레이오타이(τελειούται)'의 신비 강론, 두 번째 슬라이도 확신의 위로 나눔, 작가 사역자의 성화 해설, 가시를 면류관으로 바꾸는 결단 통성 기도 및 최영순 집사의 애찬 마침 기도"},{time:"[00:38:29]",secs:2309,title:"설교 3 (어떠한 대가도 없이 성도의 삶이 되어지도록 은혜를 연결하시는 주님의 무조건적인 지지 확증, 공부와 직장에 지친 가족을 섣불리 가르치려 들기보다 조용히 머무는 '메노(μένω)'의 안식 사랑을 통한 가족 전도 비결 강론)"},{time:"[00:49:05]",secs:2945,title:"영상 3 [마지막 천사] (야니스가 꿈의 NBA 구단에 안착하기까지 밤잠 설치며 그의 가치를 역으로 증명해낸 수많은 무명의 천사·이름 없는 감독들의 조력 실화 시청)"},{time:"[00:50:02]",secs:3002,title:"설교 4 (우리를 끝까지 고아와 같이 버려두지 않고 최종 낙원까지 호위하시는 주님의 성령의 사람 인도법 해설, 작가 사역자의 성화 그림 해설 및 복된 은혜의 약속 전달자가 되기 위한 합심 마침 결단 기도)"}]},
 {index:4,year:"2026",id:"Y376GJbU9SY",title:"2026년 2월 1일 통합설교 (나눔주일) — 내 인생의 감독- 파라클레토스",date:"2026-02-01",month:"2월",categoryKo:"통합설교",scripture:"요한복음 14장 16~17절",situation:"우울불안",summary:"헬라어 원어로 파라클레토스(παράκλητος)인 보혜사 성령님은 어떠한 대가도 바라지 않고 우리를 무조건 지지하시며, 하늘의 거대한 법정에서 성도들의 모든 죄를 변호해 무죄 방면을 이끌어내시는 완벽한 조력자이십니다. 인생의 자욱한 안개로 앞이 보이지 않는 혹독한 순간일지라도, 신호를 음성으로 바꾸어 소리로 끝까지 길을 인도하시는 성령님의 세미한 음성에 주파수를 맞추어야 합니다.",notes:"💡 주요 키워드: #나눔주일 #보혜사성령 #파라클레토스 #인생의감독 #카리스마",timeline:[{time:"[00:00:00]",secs:0,title:"예배 시작 / 준비찬양"},{time:"[00:03:55]",secs:235,title:"성경 봉독 (요한복음 14:16~17, 26)"},{time:"[00:05:05]",secs:305,title:"영상 1 — 아마추어 감독님 (야니스의 성장 장면)"},{time:"[00:06:27]",secs:387,title:"설교 1 — 파라클레토스 어원 강해, 영적 안테나의 예리함"},{time:"[00:29:06]",secs:1746,title:"영상 2 — 재능을 알아보다 (야니스의 프로 계약 장면)"},{time:"[00:29:58]",secs:1798,title:"설교 2 — 크바시스 강해, 카리스마(은사) 발견 칭찬 매뉴얼"},{time:"[00:36:06]",secs:2166,title:"시 낭송 《선생님 — 김형종》"},{time:"[00:38:29]",secs:2309,title:"설교 3 — 메노의 안식 사랑과 가족 전도 비결"},{time:"[00:49:05]",secs:2945,title:"영상 3 — 마지막 천사 (야니스 NBA 안착 실화)"},{time:"[00:50:02]",secs:3002,title:"설교 4 — 성령의 사람 인도법, 마침 결단 기도"}]},
-{index:5,year:"2026",id:"BoutY9Rmn6Y",title:"2026년 2월 8일 통합설교 (음악설교) — 지금부터 영원까지",date:"2026-02-08",month:"2월",categoryKo:"음악설교",scripture:"이사야 43장 19절",situation:"고난시련",summary:"인간이 자신의 유한한 계산법으로 \"내 인생은 실패작이며 모든 가능성의 문이 완전히 끝났다\"고 선언하며 주저앉는 바로 그 척박한 겨울의 중심에서 하나님의 위대한 새 일은 비로소 태동합니다. 찬양 가사 속 성도를 향한 하나님의 완전하신 '계획'은 히브리어 원어로 '에차(עֵצָה)'인데, 이는 가벼운 처세술이나 임기응변이 아닌 하나님의 거대한 모략과 깊은 지혜를 의미합니다. 하나님께서는 우리에게 더 선한 영적 도약을 주시려고 때로 안주하던 기득권의 문을 과감히 닫으시며, 거친 폭풍을 통과하게 하심으로써 인생에 더 깊고 조밀한 신앙의 나이테를 새겨 넣으십니다. 백발이 되고 노년에 이르기까지 당신의 지으신 백성을 기어이 안고 업어 구원해 내시겠다는 신실한 약속(사 46:4)을 전적으로 신뢰하며, 조급한 염려를 물리치고 내면의 성숙함을 통해 기도를 찬송으로 바꾸어 내는 '기다림의 실력'을 완비해야 합니다.  주요 키워드: #음악설교 #지금부터영원까지 #이사야43장19절 #에차 #기다림의실력  정밀 인덱싱 타임라인:  [00:00] [성경봉독] — 이사야 43:19 ; 21 봉독  [00:45] [설교 1] — 차가운 2월 겨울 공기 속에 숨겨진 땅 밑 봄의 생명 태동 조명, 실패라 느끼는 긴 겨울의 상황 속에서 문제를 기쁨으로 맞닥뜨려 이겨내는 성도의 영적 '견디는 실력' 도입 강해  [03:08] [찬양] — 《그곳에서 시작되네》 (박은지 작사, 김민지 작곡 / 반주 신희정, 찬양 최유지 특송 세션)  [08:00] [설교 2] — 인간이 한계에 부딪혀 끝이라 생각하는 지점에서 시작되는 주님의 초자연적 역동성 분석, 저무는 달과 돋아나는 태양이 교차하는 십자가적 섭리 고찰  [13:45] 찬양. 1연 — 찬양 가사의 거룩한 의미 묵상 (\"끝이라고 생각했던 그곳에서 시작되네, 완전하신 주의 계획 이제 깨닫네\")  [14:16] [설교 3] — 사람의 예상을 무한히 뛰어넘는 하나님의 거룩한 지혜와 모략 원어 '에차(עֵצָה)' 영해 강론, 새로운 대안의 문을 열어두시기 위해 현재 유익이라 여겼던 문들을 여지없이 폐쇄하시는 주님의 깊은 반전 추동력 고찰  [20:53] [시 낭송] — 《성령의 바람 — 김형종》  [23:20] [설교 4] — 시간과 세월의 흐름에 따라 성도의 영혼에 촘촘하고 강하게 조각되는 영적 나이테 해설, 노년과 백발의 지점까지 반드시 업고 품어 건져내시겠다는 이사야 46:4 신실한 초석 선포  [29:25] 찬양. 2연 — 노래 가사 묵상 중창 (\"겨울 지나 봄이 오듯 인생의 계절 지날 때, 나의 믿음 깊어지고 내 기도는 노래가 되네\")  [29:58] [설교 5] — 다가올 노후에 대한 인간적 조급함과 두려움을 믿음으로 격파하고, 내면의 깊은 성숙을 거쳐 삶의 모든 호흡을 찬송으로 바꾸어내는 황혼 성도의 평안 권면  [40:24] 찬양. 3연 — 전 회중과 사역자가 주님의 신실한 보호를 찬미하는 결단 마침 중창  [41:00] [설교 6] — 광야와 사막에 기어이 길과 강을 내시는 주님의 약속을 온전히 가슴에 새기고, 삶의 거친 꼬인 환경을 넉넉히 통과해 완주하도록 선포하는 영적 회복의 전 성도 마침 통성 축복 기도",notes:"💡 주요 키워드: #음악설교 #지금부터영원까지 #이사야43장19절 #에차 #기다림의실력  정밀 인덱싱 타임라인:  [00:00] [성경봉독] — 이사야 43:19 ; 21 봉독  [00:45] [설교 1] — 차가운 2월 겨울 공기 속에 숨겨진 땅 밑 봄의 생명 태동 조명, 실패라 느끼는 긴 겨울의 상황 속에서 문제를 기쁨으로 맞닥뜨려 이겨내는 성도의 영적 '견디는 실력' 도입 강해  [03:08] [찬양] — 《그곳에서 시작되네》 (박은지 작사, 김민지 작곡 / 반주 신희정, 찬양 최유지 특송 세션)  [08:00] [설교 2] — 인간이 한계에 부딪혀 끝이라 생각하는 지점에서 시작되는 주님의 초자연적 역동성 분석, 저무는 달과 돋아나는 태양이 교차하는 십자가적 섭리 고찰  [13:45] 찬양. 1연 — 찬양 가사의 거룩한 의미 묵상 (\"끝이라고 생각했던 그곳에서 시작되네, 완전하신 주의 계획 이제 깨닫네\")  [14:16] [설교 3] — 사람의 예상을 무한히 뛰어넘는 하나님의 거룩한 지혜와 모략 원어 '에차(עֵצָה)' 영해 강론, 새로운 대안의 문을 열어두시기 위해 현재 유익이라 여겼던 문들을 여지없이 폐쇄하시는 주님의 깊은 반전 추동력 고찰  [20:53] [시 낭송] — 《성령의 바람 — 김형종》  [23:20] [설교 4] — 시간과 세월의 흐름에 따라 성도의 영혼에 촘촘하고 강하게 조각되는 영적 나이테 해설, 노년과 백발의 지점까지 반드시 업고 품어 건져내시겠다는 이사야 46:4 신실한 초석 선포  [29:25] 찬양. 2연 — 노래 가사 묵상 중창 (\"겨울 지나 봄이 오듯 인생의 계절 지날 때, 나의 믿음 깊어지고 내 기도는 노래가 되네\")  [29:58] [설교 5] — 다가올 노후에 대한 인간적 조급함과 두려움을 믿음으로 격파하고, 내면의 깊은 성숙을 거쳐 삶의 모든 호흡을 찬송으로 바꾸어내는 황혼 성도의 평안 권면  [40:24] 찬양. 3연 — 전 회중과 사역자가 주님의 신실한 보호를 찬미하는 결단 마침 중창  [41:00] [설교 6] — 광야와 사막에 기어이 길과 강을 내시는 주님의 약속을 온전히 가슴에 새기고, 삶의 거친 꼬인 환경을 넉넉히 통과해 완주하도록 선포하는 영적 회복의 전 성도 마침 통성 축복 기도",timeline:[{time:"[00:00:00]",secs:0,title:"[성경봉독] — 이사야 43:19 ; 21 봉독"},{time:"[00:00:45]",secs:45,title:"[설교 1] — 차가운 2월 겨울 공기 속에 숨겨진 땅 밑 봄의 생명 태동 조명, 실패라 느끼는 긴 겨울의 상황 속에서 문제를 기쁨으로 맞닥뜨려 이겨내는 성도의 영적 '견디는 실력' 도입 강해"},{time:"[00:03:08]",secs:188,title:"[찬양] — 《그곳에서 시작되네》 (박은지 작사, 김민지 작곡 / 반주 신희정, 찬양 최유지 특송 세션)"},{time:"[00:08:00]",secs:480,title:"[설교 2] — 인간이 한계에 부딪혀 끝이라 생각하는 지점에서 시작되는 주님의 초자연적 역동성 분석, 저무는 달과 돋아나는 태양이 교차하는 십자가적 섭리 고찰"},{time:"[00:13:45]",secs:825,title:"찬양. 1연 — 찬양 가사의 거룩한 의미 묵상 (\"끝이라고 생각했던 그곳에서 시작되네, 완전하신 주의 계획 이제 깨닫네\")"},{time:"[00:14:16]",secs:856,title:"[설교 3] — 사람의 예상을 무한히 뛰어넘는 하나님의 거룩한 지혜와 모략 원어 '에차(עֵצָה)' 영해 강론, 새로운 대안의 문을 열어두시기 위해 현재 유익이라 여겼던 문들을 여지없이 폐쇄하시는 주님의 깊은 반전 추동력 고찰"},{time:"[00:20:53]",secs:1253,title:"[시 낭송] — 《성령의 바람 — 김형종》"},{time:"[00:23:20]",secs:1400,title:"[설교 4] — 시간과 세월의 흐름에 따라 성도의 영혼에 촘촘하고 강하게 조각되는 영적 나이테 해설, 노년과 백발의 지점까지 반드시 업고 품어 건져내시겠다는 이사야 46:4 신실한 초석 선포"},{time:"[00:29:25]",secs:1765,title:"찬양. 2연 — 노래 가사 묵상 중창 (\"겨울 지나 봄이 오듯 인생의 계절 지날 때, 나의 믿음 깊어지고 내 기도는 노래가 되네\")"},{time:"[00:29:58]",secs:1798,title:"[설교 5] — 다가올 노후에 대한 인간적 조급함과 두려움을 믿음으로 격파하고, 내면의 깊은 성숙을 거쳐 삶의 모든 호흡을 찬송으로 바꾸어내는 황혼 성도의 평안 권면"},{time:"[00:40:24]",secs:2424,title:"찬양. 3연 — 전 회중과 사역자가 주님의 신실한 보호를 찬미하는 결단 마침 중창"},{time:"[00:41:00]",secs:2460,title:"[설교 6] — 광야와 사막에 기어이 길과 강을 내시는 주님의 약속을 온전히 가슴에 새기고, 삶의 거친 꼬인 환경을 넉넉히 통과해 완주하도록 선포하는 영적 회복의 전 성도 마침 통성 축복 기도"}]},
-{index:6,year:"2026",id:"eE-WT_kIb0o",title:"2026년 2월 15일 비전설교 — 고난을 압도하는 결과",date:"2026-02-15",month:"2월",categoryKo:"비전설교",scripture:"베드로전서 1장 7절",situation:"고난시련",summary:"인생에 예기치 않게 휘몰아치는 혹독한 찬바람과 긴 겨울은 우리를 파괴하는 재앙이 아니라, 회복될 에덴동산의 새로운 주인이자 '하늘의 상속자'로 우리를 빚어가시는 하나님의 필연적인 단련 과정입니다. 17세기 극심한 소빙하기의 혹한을 이겨내며 나이테가 매우 촘촘하고 단단해진 가문비나무가 마침내 310억 원 가치의 최고 명기인 '스트라디바리우스(Stradivarius)' 바이올린으로 재탄생하여 영롱한 울림을 낳듯, 고난을 통과한 성도의 삶에는 비교할 수 없는 영광의 울림이 깃듭니다. 본문 속 '확실함'의 헬라어 원어 '도키미온(δοκίμιον)'은 '시련을 통과하여 검증된 순전한 가치'를 의미합니다. 우리는 낙원의 새 주인으로 선택받았으며 추위가 모질고 길수록 확실한 주인이 되어간다는 확신을 품고, 세상의 물질과 출세 중심의 가치관을 깨뜨려 거룩한 산 제사의 삶을 완주해야 합니다.  주요 키워드: #비전설교 #고난을압도하는결과 #베드로전서1장7절 #스트라디바리우스 #도키미온  정밀 인덱싱 타임라인:  [00:00] 예배 시작 — 땅 밑에 온기가 차올라 봄을 준비하는 2월 비전 주일 오프닝, 동결심도까지 꽉 찬 냉기 속에서 사력을 다해 버텨내는 굳센 나무뿌리들의 인내 묵상  [01:11] 성시 교독 — 교독 7번(시편 13편) \"여호와여 어느 때까지니이까 나를 영원히 잊으시나이까\" 부르짖음과 오직 주의 인자하심을 의지하는 구원의 기쁨 합독  [02:30] 신앙고백 — 온 성도가 한목소리로 선포하는 사도신경 복창  [03:51] 대표 기도 [임향미 권사] — 약속의 말씀이 우리의 완벽한 짝이자 미래임을 고백하고, 인생의 겨울 장벽 앞에서 절망했던 연약함을 회개하며 다친 문은 새 계획의 시작임을 믿고 설 명절 가족 간의 화해와 세대 간의 이해를 구하는 대표 기도  [08:16] 성경 봉독 — [베드로전서 1:7] 봉독  [08:56] 시 낭송 — 《기쁨에 찬 노동요 — 김형종》  [10:58] 설교 1 — 초청한 적 없는 인생의 참바람이 부는 이유 재해석, 알프스 소빙하기의 극한 추위 속에서 세포가 촘촘해져 단단한 강질이 된 가문비나무로 제작된 명기 '스트라디바리우스'의 신비로운 나이테 비밀 대강해  [19:25] 실시간 상정 세션 (슬라이도 나눔) — 전 성도가 스마트폰으로 동시 접속하여 돈, 건강, 외로움, 소원해진 가족 관계, 고부 갈등, 직장과 신앙의 한계 등 각자가 겪고 있는 '인생의 겨울과 아픔'의 소리를 정직하게 스크린에 띄워 하나님 앞에 상정하는 쌍방향 치유 시간  [24:50] 설교 2 — 아픔의 응어리를 단단함으로 바꾸시는 주님의 전략 강의, '시련을 통과한 순전함'을 뜻하는 원어 '도키미온(δοκίμιον)'의 확실한 믿음 선포, 고난을 견뎌내는 동기부여가 되는 두 가지 영적 기둥(\"나는 낙원의 주인으로 선택되었다\", \"추위가 길수록 확실한 주인이 된다\") 해설  [30:38] 예배 중 찬양 — 교회를 떠나는 순간 믿음을 두고 내리는 위선적 예배를 타파하고 온전한 삶을 주께 드리기로 결단하는 전 성도 합심 합창: 《나의 삶을 거룩한 산 제사로 드리리 / 삶의 예배》  [34:14] 설교 3 — 고난을 압도하는 확실한 하늘 보상의 영광 선포, 가슴앓이의 고통 속에서도 자녀들을 먹여 살리기 위해 머리에 넥타이를 묶고 꾸역꾸역 일어나 헌신하셨던 우리 시대 어머니들의 숭고한 사랑을 빗댄 감동적 복음 권면, 작가 사역자의 성화 해설 및 구원의 자존감 회복을 선포하는 마침 축복 기도",notes:"💡 주요 키워드: #비전설교 #고난을압도하는결과 #베드로전서1장7절 #스트라디바리우스 #도키미온  정밀 인덱싱 타임라인:  [00:00] 예배 시작 — 땅 밑에 온기가 차올라 봄을 준비하는 2월 비전 주일 오프닝, 동결심도까지 꽉 찬 냉기 속에서 사력을 다해 버텨내는 굳센 나무뿌리들의 인내 묵상  [01:11] 성시 교독 — 교독 7번(시편 13편) \"여호와여 어느 때까지니이까 나를 영원히 잊으시나이까\" 부르짖음과 오직 주의 인자하심을 의지하는 구원의 기쁨 합독  [02:30] 신앙고백 — 온 성도가 한목소리로 선포하는 사도신경 복창  [03:51] 대표 기도 [임향미 권사] — 약속의 말씀이 우리의 완벽한 짝이자 미래임을 고백하고, 인생의 겨울 장벽 앞에서 절망했던 연약함을 회개하며 다친 문은 새 계획의 시작임을 믿고 설 명절 가족 간의 화해와 세대 간의 이해를 구하는 대표 기도  [08:16] 성경 봉독 — [베드로전서 1:7] 봉독  [08:56] 시 낭송 — 《기쁨에 찬 노동요 — 김형종》  [10:58] 설교 1 — 초청한 적 없는 인생의 참바람이 부는 이유 재해석, 알프스 소빙하기의 극한 추위 속에서 세포가 촘촘해져 단단한 강질이 된 가문비나무로 제작된 명기 '스트라디바리우스'의 신비로운 나이테 비밀 대강해  [19:25] 실시간 상정 세션 (슬라이도 나눔) — 전 성도가 스마트폰으로 동시 접속하여 돈, 건강, 외로움, 소원해진 가족 관계, 고부 갈등, 직장과 신앙의 한계 등 각자가 겪고 있는 '인생의 겨울과 아픔'의 소리를 정직하게 스크린에 띄워 하나님 앞에 상정하는 쌍방향 치유 시간  [24:50] 설교 2 — 아픔의 응어리를 단단함으로 바꾸시는 주님의 전략 강의, '시련을 통과한 순전함'을 뜻하는 원어 '도키미온(δοκίμιον)'의 확실한 믿음 선포, 고난을 견뎌내는 동기부여가 되는 두 가지 영적 기둥(\"나는 낙원의 주인으로 선택되었다\", \"추위가 길수록 확실한 주인이 된다\") 해설  [30:38] 예배 중 찬양 — 교회를 떠나는 순간 믿음을 두고 내리는 위선적 예배를 타파하고 온전한 삶을 주께 드리기로 결단하는 전 성도 합심 합창: 《나의 삶을 거룩한 산 제사로 드리리 / 삶의 예배》  [34:14] 설교 3 — 고난을 압도하는 확실한 하늘 보상의 영광 선포, 가슴앓이의 고통 속에서도 자녀들을 먹여 살리기 위해 머리에 넥타이를 묶고 꾸역꾸역 일어나 헌신하셨던 우리 시대 어머니들의 숭고한 사랑을 빗댄 감동적 복음 권면, 작가 사역자의 성화 해설 및 구원의 자존감 회복을 선포하는 마침 축복 기도",timeline:[{time:"[00:00:00]",secs:0,title:"예배 시작 — 땅 밑에 온기가 차올라 봄을 준비하는 2월 비전 주일 오프닝, 동결심도까지 꽉 찬 냉기 속에서 사력을 다해 버텨내는 굳센 나무뿌리들의 인내 묵상"},{time:"[00:01:11]",secs:71,title:"성시 교독 — 교독 7번(시편 13편) \"여호와여 어느 때까지니이까 나를 영원히 잊으시나이까\" 부르짖음과 오직 주의 인자하심을 의지하는 구원의 기쁨 합독"},{time:"[00:02:30]",secs:150,title:"신앙고백 — 온 성도가 한목소리로 선포하는 사도신경 복창"},{time:"[00:03:51]",secs:231,title:"대표 기도 [임향미 권사] — 약속의 말씀이 우리의 완벽한 짝이자 미래임을 고백하고, 인생의 겨울 장벽 앞에서 절망했던 연약함을 회개하며 다친 문은 새 계획의 시작임을 믿고 설 명절 가족 간의 화해와 세대 간의 이해를 구하는 대표 기도"},{time:"[00:08:16]",secs:496,title:"성경 봉독 — [베드로전서 1:7] 봉독"},{time:"[00:08:56]",secs:536,title:"시 낭송 — 《기쁨에 찬 노동요 — 김형종》"},{time:"[00:10:58]",secs:658,title:"설교 1 — 초청한 적 없는 인생의 참바람이 부는 이유 재해석, 알프스 소빙하기의 극한 추위 속에서 세포가 촘촘해져 단단한 강질이 된 가문비나무로 제작된 명기 '스트라디바리우스'의 신비로운 나이테 비밀 대강해"},{time:"[00:19:25]",secs:1165,title:"실시간 상정 세션 (슬라이도 나눔) — 전 성도가 스마트폰으로 동시 접속하여 돈, 건강, 외로움, 소원해진 가족 관계, 고부 갈등, 직장과 신앙의 한계 등 각자가 겪고 있는 '인생의 겨울과 아픔'의 소리를 정직하게 스크린에 띄워 하나님 앞에 상정하는 쌍방향 치유 시간"},{time:"[00:24:50]",secs:1490,title:"설교 2 — 아픔의 응어리를 단단함으로 바꾸시는 주님의 전략 강의, '시련을 통과한 순전함'을 뜻하는 원어 '도키미온(δοκίμιον)'의 확실한 믿음 선포, 고난을 견뎌내는 동기부여가 되는 두 가지 영적 기둥(\"나는 낙원의 주인으로 선택되었다\", \"추위가 길수록 확실한 주인이 된다\") 해설"},{time:"[00:30:38]",secs:1838,title:"예배 중 찬양 — 교회를 떠나는 순간 믿음을 두고 내리는 위선적 예배를 타파하고 온전한 삶을 주께 드리기로 결단하는 전 성도 합심 합창: 《나의 삶을 거룩한 산 제사로 드리리 / 삶의 예배》"},{time:"[00:34:14]",secs:2054,title:"설교 3 — 고난을 압도하는 확실한 하늘 보상의 영광 선포, 가슴앓이의 고통 속에서도 자녀들을 먹여 살리기 위해 머리에 넥타이를 묶고 꾸역꾸역 일어나 헌신하셨던 우리 시대 어머니들의 숭고한 사랑을 빗댄 감동적 복음 권면, 작가 사역자의 성화 해설 및 구원의 자존감 회복을 선포하는 마침 축복 기도"}]},
-{index:7,year:"2026",id:"ZVLGiyIPmmU",title:"2026년 2월 22일 영화설교 — 삼킬 자를 찾는 사탄",date:"2026-02-22",month:"2월",categoryKo:"영화설교",scripture:"베드로전서 5장 8~9절",situation:"분노용서",summary:"작은 씨앗인 우리가 거목으로 자라나기 위한 유일한 방법은 땅속에 온전히 심긴 채 싹이 날 때까지 묵묵히 '인내의 기간'을 기다리는 것입니다. 영화 〈라이즈〉의 야니스 가족이 불법 체류라는 척박한 현실 속에서도 자람의 시기를 견뎌냈던 것처럼 신앙의 성숙에도 기다림이 필수적입니다. 사탄은 이 거룩한 기다림을 견디지 못하게 방해하고자 본질은 그대로 둔 채 겉모습만 광명의 천사로 바꾸어 다가오는 '메타스케마티조(μετασχηματίζω)' 기법을 사용합니다. 영화 속 '파코'가 불법 체류자 신분을 미끼 삼아 노예 계약을 들이밀며 영혼을 결박하려 하듯 사탄은 달콤한 유혹으로 다가옵니다. 성도는 눈앞의 위장된 천사에게 현혹되지 않도록 영안을 밝히 뜨고 깨어 근신함으로 마귀의 궤계를 굳건히 대적해야 합니다.  주요 키워드: #영화설교 #삼킬자를찾는사탄 #베드로전서5장 #메타스케마티조 #영안  정밀 인덱싱 타임라인:  [00:00] 준비찬양  [04:11] 성경 봉독 [베드로전서 5:8-9]  [05:04] 설교 1 (영화설교 도입, 생명의 씨앗이 거목으로 자라나기 위해 필수적인 흙 속의 인내와 기다림의 법칙 강해, 그리스 최고 농구 선수 야니스 아데토쿤보 가족의 실화 배경 소개)  [12:14] 영상 1 [파코의 훼방] (불법 체류자 약점을 무기 삼아 다른 구단과의 계약을 차단하고 야니스 가족의 출구와 성장을 가로막는 브로커의 훼방 영상 시청)  [13:34] 설교 2 (겉모습만 광명의 천사로 가장하여 접근하는 사탄의 영적 속임수 '메타스케마티조' 원어 대강해, 영안이 흐려진 성도가 당장 눈앞의 유혹에 빠져 사탄의 노예 계약에 묶이게 되는 영적 메커니즘 고발)  [32:44] 시 낭송 [기적의 열쇠 — 김형종]  [35:06] 설교 3 (유혹의 미끼 뒤에 숨겨진 사망의 덫을 분별하는 영적 근신 촉구, 시련을 딛고 농구계의 거목으로 우뚝 서게 하시는 하나님의 반전 섭리)  [43:02] 영상 2 [거절당한 파코] (달콤한 미끼를 과감히 거절하고 온전한 믿음의 인내로 승리를 쟁취하는 결단의 순간 시청)  [43:58] 설교 4 (마귀를 대적하여 약속의 자리에 굳건히 심기기를 당부하는 결단 권면 및 축복 기도 마무리)",notes:"💡 주요 키워드: #영화설교 #삼킬자를찾는사탄 #베드로전서5장 #메타스케마티조 #영안  정밀 인덱싱 타임라인:  [00:00] 준비찬양  [04:11] 성경 봉독 [베드로전서 5:8-9]  [05:04] 설교 1 (영화설교 도입, 생명의 씨앗이 거목으로 자라나기 위해 필수적인 흙 속의 인내와 기다림의 법칙 강해, 그리스 최고 농구 선수 야니스 아데토쿤보 가족의 실화 배경 소개)  [12:14] 영상 1 [파코의 훼방] (불법 체류자 약점을 무기 삼아 다른 구단과의 계약을 차단하고 야니스 가족의 출구와 성장을 가로막는 브로커의 훼방 영상 시청)  [13:34] 설교 2 (겉모습만 광명의 천사로 가장하여 접근하는 사탄의 영적 속임수 '메타스케마티조' 원어 대강해, 영안이 흐려진 성도가 당장 눈앞의 유혹에 빠져 사탄의 노예 계약에 묶이게 되는 영적 메커니즘 고발)  [32:44] 시 낭송 [기적의 열쇠 — 김형종]  [35:06] 설교 3 (유혹의 미끼 뒤에 숨겨진 사망의 덫을 분별하는 영적 근신 촉구, 시련을 딛고 농구계의 거목으로 우뚝 서게 하시는 하나님의 반전 섭리)  [43:02] 영상 2 [거절당한 파코] (달콤한 미끼를 과감히 거절하고 온전한 믿음의 인내로 승리를 쟁취하는 결단의 순간 시청)  [43:58] 설교 4 (마귀를 대적하여 약속의 자리에 굳건히 심기기를 당부하는 결단 권면 및 축복 기도 마무리)",timeline:[{time:"[00:00:00]",secs:0,title:"준비찬양"},{time:"[00:04:11]",secs:251,title:"성경 봉독 [베드로전서 5:8-9]"},{time:"[00:05:04]",secs:304,title:"설교 1 (영화설교 도입, 생명의 씨앗이 거목으로 자라나기 위해 필수적인 흙 속의 인내와 기다림의 법칙 강해, 그리스 최고 농구 선수 야니스 아데토쿤보 가족의 실화 배경 소개)"},{time:"[00:12:14]",secs:734,title:"영상 1 [파코의 훼방] (불법 체류자 약점을 무기 삼아 다른 구단과의 계약을 차단하고 야니스 가족의 출구와 성장을 가로막는 브로커의 훼방 영상 시청)"},{time:"[00:13:34]",secs:814,title:"설교 2 (겉모습만 광명의 천사로 가장하여 접근하는 사탄의 영적 속임수 '메타스케마티조' 원어 대강해, 영안이 흐려진 성도가 당장 눈앞의 유혹에 빠져 사탄의 노예 계약에 묶이게 되는 영적 메커니즘 고발)"},{time:"[00:32:44]",secs:1964,title:"시 낭송 [기적의 열쇠 — 김형종]"},{time:"[00:35:06]",secs:2106,title:"설교 3 (유혹의 미끼 뒤에 숨겨진 사망의 덫을 분별하는 영적 근신 촉구, 시련을 딛고 농구계의 거목으로 우뚝 서게 하시는 하나님의 반전 섭리)"},{time:"[00:43:02]",secs:2582,title:"영상 2 [거절당한 파코] (달콤한 미끼를 과감히 거절하고 온전한 믿음의 인내로 승리를 쟁취하는 결단의 순간 시청)"},{time:"[00:43:58]",secs:2638,title:"설교 4 (마귀를 대적하여 약속의 자리에 굳건히 심기기를 당부하는 결단 권면 및 축복 기도 마무리)"}]},
-{index:8,year:"2026",id:"nQW_wcxVSus",title:"2026년 3월 1일 나눔설교 — 영원한 동행 보혜사",date:"2026-03-01",month:"3월",categoryKo:"통합설교",scripture:"요한복음 14장 16절",situation:"우울불안",summary:"세상 모든 종교는 인간이 자신의 정성과 노력으로 신이나 진리를 찾아 올라가는 '상향식 신앙'이지만, 기독교는 전능하신 신이 직접 육신을 입고 죄인 된 인간을 찾아 내려오시는 거룩한 '하향식 은혜'입니다. 잃어버린 자녀를 끝까지 찾아내시는 하나님의 사랑은 예수 그리스도가 떠나시며 보내주신 '또 다른 보혜사 성령님'의 영원한 동행을 통해 확증됩니다. 보혜사를 영접한 성도는 과거의 허물과 죄를 들추며 참소하는 사탄의 결박에서 벗어나, 더 이상 죄의 종이 아니라 하나님의 유업을 온전히 이어받을 거룩한 '자녀이자 상속자'로 근원적인 정체성이 변화됩니다(갈 4:6-7, 로마서 8:17). 보혜사와 동행할 때 우리는 하나님의 선하신 뜻과 계획을 명확히 분별하며 상속자의 권세를 누리게 됩니다.  주요 키워드: #나눔설교 #영원한동행보혜사 #요한복음14장16절 #하향식은혜 #상속자의신분  정밀 인덱싱 타임라인:  [00:00] 준비찬양  [05:02] 성경 봉독 [요한복음 14:16]  [05:34] 설교 1 (3월 나눔 주일 오프닝, 인간의 노력을 강조하는 타 종교의 상향식 신앙과 신이 죄인을 친히 찾아오시는 기독교의 '하향식 은혜'의 본질 비교, 갈라디아서 4:6-7에 담긴 종의 신분에서 아들과 상속자로의 완전한 신분 복권 선포)  [25:18] 시 낭송 [삼월의 기억 — 김형종]  [27:30] 설교 2 (보혜사 성령님을 만난 상속자들의 삶의 태도, 정죄와 참소로 종의 두려움에 묶어두려는 사탄의 음성을 물리치는 방법 강해, 로마서 8:17a에 기초한 영적 자존감 확립, 고린도전서 2:10의 말씀 적용 및 영원한 동행을 구하는 마무리 축복 기도)",notes:"💡 주요 키워드: #나눔설교 #영원한동행보혜사 #요한복음14장16절 #하향식은혜 #상속자의신분  정밀 인덱싱 타임라인:  [00:00] 준비찬양  [05:02] 성경 봉독 [요한복음 14:16]  [05:34] 설교 1 (3월 나눔 주일 오프닝, 인간의 노력을 강조하는 타 종교의 상향식 신앙과 신이 죄인을 친히 찾아오시는 기독교의 '하향식 은혜'의 본질 비교, 갈라디아서 4:6-7에 담긴 종의 신분에서 아들과 상속자로의 완전한 신분 복권 선포)  [25:18] 시 낭송 [삼월의 기억 — 김형종]  [27:30] 설교 2 (보혜사 성령님을 만난 상속자들의 삶의 태도, 정죄와 참소로 종의 두려움에 묶어두려는 사탄의 음성을 물리치는 방법 강해, 로마서 8:17a에 기초한 영적 자존감 확립, 고린도전서 2:10의 말씀 적용 및 영원한 동행을 구하는 마무리 축복 기도)",timeline:[{time:"[00:00:00]",secs:0,title:"준비찬양"},{time:"[00:05:02]",secs:302,title:"성경 봉독 [요한복음 14:16]"},{time:"[00:05:34]",secs:334,title:"설교 1 (3월 나눔 주일 오프닝, 인간의 노력을 강조하는 타 종교의 상향식 신앙과 신이 죄인을 친히 찾아오시는 기독교의 '하향식 은혜'의 본질 비교, 갈라디아서 4:6-7에 담긴 종의 신분에서 아들과 상속자로의 완전한 신분 복권 선포)"},{time:"[00:25:18]",secs:1518,title:"시 낭송 [삼월의 기억 — 김형종]"},{time:"[00:27:30]",secs:1650,title:"설교 2 (보혜사 성령님을 만난 상속자들의 삶의 태도, 정죄와 참소로 종의 두려움에 묶어두려는 사탄의 음성을 물리치는 방법 강해, 로마서 8:17a에 기초한 영적 자존감 확립, 고린도전서 2:10의 말씀 적용 및 영원한 동행을 구하는 마무리 축복 기도)"}]},
-{index:9,year:"2026",id:"uq0NMAyinuM",title:"2026년 3월 8일 통합설교 (음악설교) — 내 마음 깊은 곳에",date:"2026-03-08",month:"3월",categoryKo:"음악설교",scripture:"누가복음 5장 4절",situation:"상처치유",summary:"우리는 흔히 인생의 막다른 골목에 이르러서야 초라한 항복을 하며 하나님을 찾는 사람을 봅니다. 베드로는 자신의 성실함과 어부로서의 전문성을 내려놓고, 밤새 허탈하게 헛그물질을 했던 절망의 바다에서 오직 \"말씀에 의지하여 그물을 내리리이다\"라는 영적 항복을 선포했습니다. 말씀대로 순종하여 그물이 찢어질 듯한 만선의 기적을 체험했을 때, 그는 축제가 아닌 주님 앞에 엎드려 \"주여 나를 떠나소서 나는 죄인입니다\"라는 내면의 정직한 고백을 드렸습니다. 고통의 시기를 지나며 상처로 인해 인성의 출구가 막혔던 이들이 선입견을 벗어버리고 주님을 심령의 가장 깊은 곳에 모실 때, 세상의 평판에 흔들리지 않고 남은 모든 인생을 예수와 함께 걷는 위대한 복음의 증인으로 거듭나게 됩니다.  주요 키워드: #음악설교 #내마음깊은곳에 #누가복음5장4절 #베드로의고백 #말씀에의지하여  정밀 인덱싱 타임라인:  [00:00] 성경 봉독 [누가복음 5:4~6]  [00:54] 설교 1 (인생의 골목에서 만나는 하나님의 부르심, 주님의 애제자 베드로가 단 한 번의 청종에 응답한 사건 해설, 자연 확성의 원리를 이용해 선입견을 벗기신 배 위의 예수님 소개)  [05:24] 찬양 [베드로의 고백 — 디소드(D.Sword) 작사·작곡 / 찬양 장용진 장로] (배와 그물을 버리고 주를 따르는 결단과 \"네가 나를 사랑하느냐\"는 물음에 눈물로 고백하는 성찰의 특송)  [10:31] 설교 2 (베테랑 어부의 기술을 뛰어넘는 말씀 순종의 역사 강해, 기적 앞에 만선 축제를 벌이지 않고 무릎을 꿇은 베드로의 참된 회개 고찰, 상처로 막혀버린 인성의 출구를 깨뜨리고 예수와 동행하는 높은 차원의 삶의 위상 선포)  [31:41] 시 낭송 [내려오신 길 — 김형종]  [34:50] 설교 3 (지우고 싶은 과거와 단점을 주님 안에서 극복하는 결단, 작가 사역자의 빛의 캔버스 성화 그림 해설 및 중심 심령 회복을 위한 온 성도의 통성 축복 기도)",notes:"💡 주요 키워드: #나눔설교 #영원한동행보혜사 #요한복음14장16절 #하향식은혜 #상속자의신분  정밀 인덱싱 타임라인:  [00:00] 준비찬양  [05:02] 성경 봉독 [요한복음 14:16]  [05:34] 설교 1 (3월 나눔 주일 오프닝, 인간의 노력을 강조하는 타 종교의 상향식 신앙과 신이 죄인을 친히 찾아오시는 기독교의 '하향식 은혜'의 본질 비교, 갈라디아서 4:6-7에 담긴 종의 신분에서 아들과 상속자로의 완전한 신분 복권 선포)  [25:18] 시 낭송 [삼월의 기억 — 김형종]  [27:30] 설교 2 (보혜사 성령님을 만난 상속자들의 삶의 태도, 정죄와 참소로 종의 두려움에 묶어두려는 사탄의 음성을 물리치는 방법 강해, 로마서 8:17a에 기초한 영적 자존감 확립, 고린도전서 2:10의 말씀 적용 및 영원한 동행을 구하는 마무리 축복 기도)",timeline:[{time:"[00:00:00]",secs:0,title:"성경 봉독 [누가복음 5:4~6]"},{time:"[00:00:54]",secs:54,title:"설교 1 (인생의 골목에서 만나는 하나님의 부르심, 주님의 애제자 베드로가 단 한 번의 청종에 응답한 사건 해설, 자연 확성의 원리를 이용해 선입견을 벗기신 배 위의 예수님 소개)"},{time:"[00:05:24]",secs:324,title:"찬양 [베드로의 고백 — 디소드(D.Sword) 작사·작곡 / 찬양 장용진 장로] (배와 그물을 버리고 주를 따르는 결단과 \"네가 나를 사랑하느냐\"는 물음에 눈물로 고백하는 성찰의 특송)"},{time:"[00:10:31]",secs:631,title:"설교 2 (베테랑 어부의 기술을 뛰어넘는 말씀 순종의 역사 강해, 기적 앞에 만선 축제를 벌이지 않고 무릎을 꿇은 베드로의 참된 회개 고찰, 상처로 막혀버린 인성의 출구를 깨뜨리고 예수와 동행하는 높은 차원의 삶의 위상 선포)"},{time:"[00:31:41]",secs:1901,title:"시 낭송 [내려오신 길 — 김형종]"},{time:"[00:34:50]",secs:2090,title:"설교 3 (지우고 싶은 과거와 단점을 주님 안에서 극복하는 결단, 작가 사역자의 빛의 캔버스 성화 그림 해설 및 중심 심령 회복을 위한 온 성도의 통성 축복 기도)"}]},
-{index:10,year:"2026",id:"3PZmfraM2gk",title:"2026년 3월 15일 비전설교 — 약점이 걸작된다",date:"2026-03-15",month:"3월",categoryKo:"비전설교",scripture:"에베소서 2장 10절",situation:"상처치유",summary:"피렌체 성당 마당에 40년간 방치되었던 결함투성이 대리석 '두초(Duccio)'는 너무 가늘고 중간에 치명적인 구멍이 뚫려 있어 모든 거장에게 버림받은 실패작이었습니다. 그러나 26세의 청년 미켈란젤로는 그 돌 속에서 천사를 보았고, 돌의 약점과 구멍을 피해 무게중심을 뒤로 보내 한쪽 다리에 힘을 싣는 신비로운 신체 뒤틀림 기법인 '콘트라포스토(Contrapposto)'를 활용하여 인류 역사상 가장 위대한 명작 '다비드 상'을 조각해 냈습니다. 이처럼 지우고 싶은 수치의 구멍, 척박한 결핍, 모난 기질을 가진 우리의 깨진 인생일지라도 토기장이이신 하나님의 손길에 맡겨지면, 약점은 우리 인생에만 존재하는 가장 독창적이고 아름다운 예술적 곡선이자 극상품의 '걸작(포이에마)'으로 승화됩니다.  주요 키워드: #비전설교 #약점이걸작된다 #에베소서2장10절 #미켈란젤로와두초 #콘트라포스토  정밀 인덱싱 타임라인:  [00:00] 예배 시작 (3월 약속의 달 예배 선포, 실내보다 바깥이 포근하듯 나물지 않은 내면의 상처를 만지시는 주님의 평안 임재)  [04:22] 대표 기도 (시한부 생명에서 보혜사 성령을 통해 영원한 생명 유업을 약속하신 하나님의 은혜에 감사하며 육적 치유와 영적 회복을 구하는 장로·권사 대표 헌신 기도)  [07:33] 성경 봉독 [에베소서 2:10]  [08:10] 시 낭송 [굽은 나무 — 김형종] (곧은 나무는 왕궁과 가구로 베여갔으나 굽은 나무는 동산 지킴이가 되었다는 치유의 메시지)  [10:37] 설교 1 (미켈란젤로가 마당에 버려진 거대 대리석 '두초'를 선택하여 세계적인 명작 다비드 상을 잉태시킨 역사적 배경 설명, 인생의 구멍과 결핍으로 절망하는 성도들을 향한 약점 재해석 강론)  [40:00] 영상 1 [다비드 상] (돌의 치명적인 결함 덕분에 탄생한 역사상 가장 생동감 넘치는 역동적 근육미 감상)  [41:19] 설교 2 (전반부 — 대리석의 좁은 결을 극복한 '콘트라포스토' 기법의 미술사적 의미และ 하나님의 신성한 성품 훈련 연결)  [44:10] 찬양 (상처를 걸작으로 바꾸시는 주님께 영광 돌리는 합심 찬양 고백)  [48:24] 설교 2 (후반부 — 약점이 없었다면 우리는 평범한 돌에 불과했을 것임을 선언, 상처를 안고 동굴에 갇히지 말고 주님의 손끝에서 빚어지는 유일무이한 걸작으로 승리할 것을 당부, 작가 사역자의 다윗 성화 해설 및 축복 기도 마무리)",notes:"💡 주요 키워드: #비전설교 #약점이걸작된다 #에베소서2장10절 #미켈란젤로와두초 #콘트라포스토  정밀 인덱싱 타임라인:  [00:00] 예배 시작 (3월 약속의 달 예배 선포, 실내보다 바깥이 포근하듯 나물지 않은 내면의 상처를 만지시는 주님의 평안 임재)  [04:22] 대표 기도 (시한부 생명에서 보혜사 성령을 통해 영원한 생명 유업을 약속하신 하나님의 은혜에 감사하며 육적 치유와 영적 회복을 구하는 장로·권사 대표 헌신 기도)  [07:33] 성경 봉독 [에베소서 2:10]  [08:10] 시 낭송 [굽은 나무 — 김형종] (곧은 나무는 왕궁과 가구로 베여갔으나 굽은 나무는 동산 지킴이가 되었다는 치유의 메시지)  [10:37] 설교 1 (미켈란젤로가 마당에 버려진 거대 대리석 '두초'를 선택하여 세계적인 명작 다비드 상을 잉태시킨 역사적 배경 설명, 인생의 구멍과 결핍으로 절망하는 성도들을 향한 약점 재해석 강론)  [40:00] 영상 1 [다비드 상] (돌의 치명적인 결함 덕분에 탄생한 역사상 가장 생동감 넘치는 역동적 근육미 감상)  [41:19] 설교 2 (전반부 — 대리석의 좁은 결을 극복한 '콘트라포스토' 기법의 미술사적 의미และ 하나님의 신성한 성품 훈련 연결)  [44:10] 찬양 (상처를 걸작으로 바꾸시는 주님께 영광 돌리는 합심 찬양 고백)  [48:24] 설교 2 (후반부 — 약점이 없었다면 우리는 평범한 돌에 불과했을 것임을 선언, 상처를 안고 동굴에 갇히지 말고 주님의 손끝에서 빚어지는 유일무이한 걸작으로 승리할 것을 당부, 작가 사역자의 다윗 성화 해설 및 축복 기도 마무리)",timeline:[{time:"[00:00:00]",secs:0,title:"예배 시작 (3월 약속의 달 예배 선포, 실내보다 바깥이 포근하듯 나물지 않은 내면의 상처를 만지시는 주님의 평안 임재)"},{time:"[00:04:22]",secs:262,title:"대표 기도 (시한부 생명에서 보혜사 성령을 통해 영원한 생명 유업을 약속하신 하나님의 은혜에 감사하며 육적 치유와 영적 회복을 구하는 장로·권사 대표 헌신 기도)"},{time:"[00:07:33]",secs:453,title:"성경 봉독 [에베소서 2:10]"},{time:"[00:08:10]",secs:490,title:"시 낭송 [굽은 나무 — 김형종] (곧은 나무는 왕궁과 가구로 베여갔으나 굽은 나무는 동산 지킴이가 되었다는 치유의 메시지)"},{time:"[00:10:37]",secs:637,title:"설교 1 (미켈란젤로가 마당에 버려진 거대 대리석 '두초'를 선택하여 세계적인 명작 다비드 상을 잉태시킨 역사적 배경 설명, 인생의 구멍과 결핍으로 절망하는 성도들을 향한 약점 재해석 강론)"},{time:"[00:40:00]",secs:2400,title:"영상 1 [다비드 상] (돌의 치명적인 결함 덕분에 탄생한 역사상 가장 생동감 넘치는 역동적 근육미 감상)"},{time:"[00:41:19]",secs:2479,title:"설교 2 (전반부 — 대리석의 좁은 결을 극복한 '콘트라포스토' 기법의 미술사적 의미และ 하나님의 신성한 성품 훈련 연결)"},{time:"[00:44:10]",secs:2650,title:"찬양 (상처를 걸작으로 바꾸시는 주님께 영광 돌리는 합심 찬양 고백)"},{time:"[00:48:24]",secs:2904,title:"설교 2 (후반부 — 약점이 없었다면 우리는 평범한 돌에 불과했을 것임을 선언, 상처를 안고 동굴에 갇히지 말고 주님의 손끝에서 빚어지는 유일무이한 걸작으로 승리할 것을 당부, 작가 사역자의 다윗 성화 해설 및 축복 기도 마무리)"}]},
-{index:11,year:"2026",id:"CrIX1tdxEIw",title:"2026년 3월 22일 영화설교 — 하늘의 도우심",date:"2026-03-22",month:"3월",categoryKo:"영화설교",scripture:"시편 121편 1~2절",situation:"실패결핍",summary:"인생을 살아가다 마주하는 '덩케르크 해안의 고립'과 같은 절체절명의 순간은 버려진 재앙이 아니라, 하나님께서 우리를 친히 만나러 오시겠다는 강력한 '영적 조기 신호'입니다. 사방이 막혀 인간의 힘과 노력이 무력화될 때, 조급함으로 무너지지 않고 약속을 신뢰하는 세 가지 에너지(인내, 명분, 확신)를 품고 기도의 시스템 버튼을 눌러야 합니다. 하나님께서는 거대한 군함이 들어올 수 없는 얕은 해안일지라도 비린내 나는 민간의 작은 고기잡이 배를 동원해서라도 당신의 백성을 반드시 건져내십니다. 하늘이 돕는 사람은 결코 이길 수 없으며, 하나님이 붙드신 성도는 절대로 망하지 않습니다.  주요 키워드: #영화설교 #하나님의도우심 #시편121편 #덩케르크고립 #영적반전  정밀 인덱싱 타임라인:  [00:00] 찬양 (설교 전 예배 오프닝 회중 찬양: 《십자가를 질 수 있나》)  [06:11] 성경 봉독 [시편 121:1-2]  [06:56] 영상 1 [고립] (영화 〈덩케르크〉 속 얕은 해안가에 고립된 연합군 40만 명의 절박한 사면초가 시각 자료 시청)  [08:07] 설교 1 (인생의 덩케르크 고립 상황 직시, 인간의 한계 끝에서 작동하는 기도의 엘리베이터 버튼 시스템 설명, 광야 로뎀나무 아래 고립되었던 엘리야 선지자를 천사를 통해 만나주신 위로 강해)  [28:54] 시 낭송 [눈부시게 찬란한 희망 — 김형종]  [31:17] 설교 2 (기다림을 승리로 이끄는 3가지 영적 에너지 '인내·명분·확신' 정의, 방치와 포기를 넘어서는 전능자 신뢰의 법칙)  [33:17] 영상 2 [독일군 공격] (구조 군함마저 어뢰에 침몰당하는 한계 상황 영상 시청)  [34:05] 설교 3 (시련의 연속 속에서도 흔들리지 않는 하나님의 자녀 멘탈 관리 및 동역자의 영적 중요성)  [39:37] 영상 3 [구출] (영국 민간 어선들이 거친 바다를 뚫고 전원 구조를 위해 몰려오는 극적인 반전 명장면 시청)  [41:26] 설교 4 (하늘이 돕고 하나님이 붙드신 인생의 결말 선언, 작가 사역자의 캔버스 돗배 그림 해설 및 고립에서 만나주시는 하나님을 향한 합심 간구 축복 기도)",notes:"💡 주요 키워드: #영화설교 #하나님의도우심 #시편121편 #덩케르크고립 #영적반전  정밀 인덱싱 타임라인:  [00:00] 찬양 (설교 전 예배 오프닝 회중 찬양: 《십자가를 질 수 있나》)  [06:11] 성경 봉독 [시편 121:1-2]  [06:56] 영상 1 [고립] (영화 〈덩케르크〉 속 얕은 해안가에 고립된 연합군 40만 명의 절박한 사면초가 시각 자료 시청)  [08:07] 설교 1 (인생의 덩케르크 고립 상황 직시, 인간의 한계 끝에서 작동하는 기도의 엘리베이터 버튼 시스템 설명, 광야 로뎀나무 아래 고립되었던 엘리야 선지자를 천사를 통해 만나주신 위로 강해)  [28:54] 시 낭송 [눈부시게 찬란한 희망 — 김형종]  [31:17] 설교 2 (기다림을 승리로 이끄는 3가지 영적 에너지 '인내·명분·확신' 정의, 방치와 포기를 넘어서는 전능자 신뢰의 법칙)  [33:17] 영상 2 [독일군 공격] (구조 군함마저 어뢰에 침몰당하는 한계 상황 영상 시청)  [34:05] 설교 3 (시련의 연속 속에서도 흔들리지 않는 하나님의 자녀 멘탈 관리 및 동역자의 영적 중요성)  [39:37] 영상 3 [구출] (영국 민간 어선들이 거친 바다를 뚫고 전원 구조를 위해 몰려오는 극적인 반전 명장면 시청)  [41:26] 설교 4 (하늘이 돕고 하나님이 붙드신 인생의 결말 선언, 작가 사역자의 캔버스 돗배 그림 해설 및 고립에서 만나주시는 하나님을 향한 합심 간구 축복 기도)",timeline:[{time:"[00:00:00]",secs:0,title:"찬양 (설교 전 예배 오프닝 회중 찬양: 《십자가를 질 수 있나》)"},{time:"[00:06:11]",secs:371,title:"성경 봉독 [시편 121:1-2]"},{time:"[00:06:56]",secs:416,title:"영상 1 [고립] (영화 〈덩케르크〉 속 얕은 해안가에 고립된 연합군 40만 명의 절박한 사면초가 시각 자료 시청)"},{time:"[00:08:07]",secs:487,title:"설교 1 (인생의 덩케르크 고립 상황 직시, 인간의 한계 끝에서 작동하는 기도의 엘리베이터 버튼 시스템 설명, 광야 로뎀나무 아래 고립되었던 엘리야 선지자를 천사를 통해 만나주신 위로 강해)"},{time:"[00:28:54]",secs:1734,title:"시 낭송 [눈부시게 찬란한 희망 — 김형종]"},{time:"[00:31:17]",secs:1877,title:"설교 2 (기다림을 승리로 이끄는 3가지 영적 에너지 '인내·명분·확신' 정의, 방치와 포기를 넘어서는 전능자 신뢰의 법칙)"},{time:"[00:33:17]",secs:1997,title:"영상 2 [독일군 공격] (구조 군함마저 어뢰에 침몰당하는 한계 상황 영상 시청)"},{time:"[00:34:05]",secs:2045,title:"설교 3 (시련의 연속 속에서도 흔들리지 않는 하나님의 자녀 멘탈 관리 및 동역자의 영적 중요성)"},{time:"[00:39:37]",secs:2377,title:"영상 3 [구출] (영국 민간 어선들이 거친 바다를 뚫고 전원 구조를 위해 몰려오는 극적인 반전 명장면 시청)"},{time:"[00:41:26]",secs:2486,title:"설교 4 (하늘이 돕고 하나님이 붙드신 인생의 결말 선언, 작가 사역자의 캔버스 돗배 그림 해설 및 고립에서 만나주시는 하나님을 향한 합심 간구 축복 기도)"}]},
-{index:12,year:"2026",id:"L73gXY7g5xs",title:"2026년 3월 29일 문학설교 (종려주일) — 대속과 상속자",date:"2026-03-29",month:"3월",categoryKo:"문학설교",scripture:"히브리서 2장 14~15절",situation:"분노용서",summary:"평생 돈과 탐욕만을 좇으며 형식적인 신앙생활을 하던 이기적인 상인 바실리는 혹독한 겨울 눈보라 속 죽음의 문턱에서 주님의 음성을 마주하고 영적 대반전을 이룹니다. 그는 자신의 부의 상징이자 자존심이었던 모피 코트를 활짝 펼쳐 얼어 죽어가던 하인 니키타를 감싸 안으며, 생전 누려보지 못한 하늘의 신비한 평온과 환희를 체험합니다. 톨스토이가 표현한 이 거룩한 충격은 창자가 끊어지는 듯한 깊은 복음적 긍휼인 '스플랑크니조마이(σπλαγχνίζομαι)'입니다. 종려주일에 십자가를 지신 주님의 보혈은 우리를 한평생 죽음의 공포 아래 매여 종 노릇 하던 자리에서 완전히 해방하셨으며, 하늘의 모든 유업을 이어받을 영광스러운 '상속자'의 신분을 확증해 주셨습니다.  주요 키워드: #종려주일 #문학설교 #대속과상속자 #주인과하인 #스플랑크니조마이  정밀 인덱싱 타임라인:  [00:00] 시그널 영상 및 종려주일 선포 (더 클래식 고전이 묻고 성경이 답하다 오프닝, 레프 톨스토이의 임종관을 다룬 소설 〈세 죽음〉을 통한 부와 명예의 허무함 고찰)  [00:40] 설교 1 (평생 \"인간은 어떻게 살아야 하는가\"를 권뇌하며 죽음을 묵상했던 톨스토이의 기독교적 가치관 및 문학적 신앙 지침 소개)  [05:20] 성경 봉독 [히브리서 2:14~15]  [05:50] 설교 2 (성육신하셔서 마귀의 죽음 세력을 멸하시고 종 노릇 하던 우리를 건지신 예수 그리스도의 대속의 신비 선포)  [08:22] 영상 1 [바실라와 리키타] (러시아 혹독한 겨울 눈보라 속 고립된 탐욕스러운 주인 바실리와 선량한 하인 니키타의 인공지능 요약 영상 시청)  [11:26] 설교 3 (주인의 영혼을 깨운 주님의 음성 \"네 코트는 누구를 위한 것이냐\", 창자가 끊어지는 아픔인 원어 '스플랑크니조마이'의 영적 대강해, 하인을 살리고 죽어가며 천국의 문을 바라본 바실리의 환희 해설 및 성도들의 거룩한 영적 대반전 권면)  [36:37] 결단의 찬양 (막스 브루흐의 콜 니드라이 배경음악 연주 및 예수의 보혈을 영접하는 마침 결단 찬양: 《나에게 예수를 주시오》 합창, 작가 사역자의 성화 그림 해설 및 상속자의 축복 기도 마무리)",notes:"💡 주요 키워드: #종려주일 #문학설교 #대속과상속자 #주인과하인 #스플랑크니조마이  정밀 인덱싱 타임라인:  [00:00] 시그널 영상 및 종려주일 선포 (더 클래식 고전이 묻고 성경이 답하다 오프닝, 레프 톨스토이의 임종관을 다룬 소설 〈세 죽음〉을 통한 부와 명예의 허무함 고찰)  [00:40] 설교 1 (평생 \"인간은 어떻게 살아야 하는가\"를 권뇌하며 죽음을 묵상했던 톨스토이의 기독교적 가치관 및 문학적 신앙 지침 소개)  [05:20] 성경 봉독 [히브리서 2:14~15]  [05:50] 설교 2 (성육신하셔서 마귀의 죽음 세력을 멸하시고 종 노릇 하던 우리를 건지신 예수 그리스도의 대속의 신비 선포)  [08:22] 영상 1 [바실라와 리키타] (러시아 혹독한 겨울 눈보라 속 고립된 탐욕스러운 주인 바실리와 선량한 하인 니키타의 인공지능 요약 영상 시청)  [11:26] 설교 3 (주인의 영혼을 깨운 주님의 음성 \"네 코트는 누구를 위한 것이냐\", 창자가 끊어지는 아픔인 원어 '스플랑크니조마이'의 영적 대강해, 하인을 살리고 죽어가며 천국의 문을 바라본 바실리의 환희 해설 및 성도들의 거룩한 영적 대반전 권면)  [36:37] 결단의 찬양 (막스 브루흐의 콜 니드라이 배경음악 연주 및 예수의 보혈을 영접하는 마침 결단 찬양: 《나에게 예수를 주시오》 합창, 작가 사역자의 성화 그림 해설 및 상속자의 축복 기도 마무리)",timeline:[{time:"[00:00:00]",secs:0,title:"시그널 영상 및 종려주일 선포 (더 클래식 고전이 묻고 성경이 답하다 오프닝, 레프 톨스토이의 임종관을 다룬 소설 〈세 죽음〉을 통한 부와 명예의 허무함 고찰)"},{time:"[00:00:40]",secs:40,title:"설교 1 (평생 \"인간은 어떻게 살아야 하는가\"를 권뇌하며 죽음을 묵상했던 톨스토이의 기독교적 가치관 및 문학적 신앙 지침 소개)"},{time:"[00:05:20]",secs:320,title:"성경 봉독 [히브리서 2:14~15]"},{time:"[00:05:50]",secs:350,title:"설교 2 (성육신하셔서 마귀의 죽음 세력을 멸하시고 종 노릇 하던 우리를 건지신 예수 그리스도의 대속의 신비 선포)"},{time:"[00:08:22]",secs:502,title:"영상 1 [바실라와 리키타] (러시아 혹독한 겨울 눈보라 속 고립된 탐욕스러운 주인 바실리와 선량한 하인 니키타의 인공지능 요약 영상 시청)"},{time:"[00:11:26]",secs:686,title:"설교 3 (주인의 영혼을 깨운 주님의 음성 \"네 코트는 누구를 위한 것이냐\", 창자가 끊어지는 아픔인 원어 '스플랑크니조마이'의 영적 대강해, 하인을 살리고 죽어가며 천국의 문을 바라본 바실리의 환희 해설 및 성도들의 거룩한 영적 대반전 권면)"},{time:"[00:36:37]",secs:2197,title:"결단의 찬양 (막스 브루흐의 콜 니드라이 배경음악 연주 및 예수의 보혈을 영접하는 마침 결단 찬양: 《나에게 예수를 주시오》 합창, 작가 사역자의 성화 그림 해설 및 상속자의 축복 기도 마무리)"}]},
-{index:13,year:"2026",id:"zPIEWb_tWB4",title:"2026년 4월 5일 부활주일 새벽예배 — 부활의 정석",date:"2026-04-05",month:"4월",categoryKo:"주일예배",scripture:"누가복음 24장 1~5절",situation:"고난시련",summary:"인간의 상식과 유한한 이성으로는 죽은 자가 살아나는 부활을 온전히 믿기 어렵습니다. 그렇기에 하나님께서는 '믿음'이라는 거룩한 도구를 통해 마치 부모가 어린아이를 설득하듯 우리를 이해시키고 순종의 마음을 부어주십니다. 무덤으로 향하던 여인들은 인류가 오랜 시간 학습해 온 '인생의 정석'에 따라 밤새 정성껏 향품(장례 용품)을 준비했으나, 이는 부활을 기대한 것이 아니라 예수의 죽음을 확정 지으려는 인간적 한계였습니다. 하나님은 이 인간의 정석을 깨뜨리고 '거룩한 하늘 계산법'과 '첫 열매의 법칙'을 발동하셨습니다. 예수께서 우리 죄를 짊어지고 사망을 당하셨으나, 스스로 죄가 없으시기에 사망의 권세가 깨어지고 다시 살아나셨습니다. 첫 사과나무 열매가 맺히면 그 뒤를 따르는 나무들도 자연스럽게 열매를 맺듯, 첫 열매 되신 예수의 부활은 성도의 구원과 부활을 자연 법칙처럼 실현하는 인류 역사의 대혁명입니다. 일상 속에서 의심하고 쓰러질지라도 다시 믿음으로 일어나는 '긴 호흡의 신앙'을 가질 때, 우리는 두 번째 사망과 상관없는 '첫째 부활'의 확실한 주인공이 됩니다.  주요 키워드: #부활새벽 #부활의정석 #누가복음24장 #첫열매의법칙 #거룩한하늘계산  정밀 인덱싱 타임라인:  [00:00] 부활 새벽 전 찬양 (성도들과 함께 기쁨으로 외치는 부활 찬양 경배: 《구세주 나 항상 섬기네 / 예수 예수 내 구세주 내 마음에 살아 계시네》 합창)  [03:34] 성경 봉독 및 설교 전 고백 기도 (누가복음 24:1~5 본문 합독. 유한한 육성과 이성으로는 깨닫기 힘든 부활의 신비를 '믿음'이라는 거룩한 도구로 설득해 주심에 감사하며, 내 뜻을 버리고 순종할 때 우리 마음에 믿음이 불같이 일어날 수 있도록 도우시는 은혜를 구하는 개회 기도 인도)  [06:15] 설교 1: 인류가 학습한 '인생의 정석'과 향품의 한계 (사회적 규범과 기본 윤리로 여겨지는 인간 세상의 '정석' 강해. 2천 년 전 새벽 무덤으로 향하던 여인들이 준비한 향품은 부활을 기대한 축복의 예물이 아니라, 선생님의 죽음을 온전히 받아들이고 장례를 잘 지내드리려는 철저한 '인간적 정석'이자 슬픈 예식이었음을 직시)  [10:25] 설교 2: 인류의 정석을 깨뜨리는 대속의 '거룩한 하늘 계산법' (세상의 질서와 사망의 정석을 완전히 전복시키는 십자가 대속 강해 (로마서 6:23 연계). 예수께서 우리 죄를 대신 짊어지심으로 실제로 죄인의 신분이 되어 완벽하게 사망의 값을 치르셨음을 선포)  [17:04] 설교 3: 성도의 운명을 바꾸는 '첫 열매의 법칙' (고린도전서 15:20에 기초한 부활의 규칙성과 질서 강해. 사과나무에 첫 열매가 딱 맺히면 농부가 수확의 때를 알고 그 뒤를 따르는 모든 나무에 열매 맺는 법칙이 자연스럽게 적용되듯, 예수 그리스도의 부활은 개인의 신비로운 이적에 그치는 것이 아니라 우리 인류의 종착역을 무덤에서 하늘로 바꾸어 버린 '대혁명의 역사적 법칙'임을 증거)  [21:54] 설교 4: 요한복음 11:25의 약속과 '긴 호흡의 신앙' (\"나는 부활이요 생명이니 나를 믿는 자는 죽어도 살겠고\" 말씀 해설. 이 약속이 나의 것이 되었기에 세상적인 손해나 삶의 모자람에 지치지 말고 의연히 넘어갈 수 있는 부활 성도의 대범한 평안 선포. 비록 세상에 나가면 인간적인 상식 앞에 픽픽 쓰러질지라도, 낙심하지 않고 다시 일어나는 '쓰러짐의 인터벌을 길게 가져가는 긴 호흡의 신앙' 당부)  [31:01] 마침 기도 (우주의 가장 위대한 영광인 부활의 주인공으로 나와 우리를 삼아주신 파격적인 복에 감사하는 기도. 현실적인 고난과 고통까지도 이 기쁨과 감격으로 이겨내며 영광스러운 부활의 아침까지 완주하게 해달라는 마무리 축복 기도)",notes:"💡 주요 키워드: #부활새벽 #부활의정석 #누가복음24장 #첫열매의법칙 #거룩한하늘계산  정밀 인덱싱 타임라인:  [00:00] 부활 새벽 전 찬양 (성도들과 함께 기쁨으로 외치는 부활 찬양 경배: 《구세주 나 항상 섬기네 / 예수 예수 내 구세주 내 마음에 살아 계시네》 합창)  [03:34] 성경 봉독 및 설교 전 고백 기도 (누가복음 24:1~5 본문 합독. 유한한 육성과 이성으로는 깨닫기 힘든 부활의 신비를 '믿음'이라는 거룩한 도구로 설득해 주심에 감사하며, 내 뜻을 버리고 순종할 때 우리 마음에 믿음이 불같이 일어날 수 있도록 도우시는 은혜를 구하는 개회 기도 인도)  [06:15] 설교 1: 인류가 학습한 '인생의 정석'과 향품의 한계 (사회적 규범과 기본 윤리로 여겨지는 인간 세상의 '정석' 강해. 2천 년 전 새벽 무덤으로 향하던 여인들이 준비한 향품은 부활을 기대한 축복의 예물이 아니라, 선생님의 죽음을 온전히 받아들이고 장례를 잘 지내드리려는 철저한 '인간적 정석'이자 슬픈 예식이었음을 직시)  [10:25] 설교 2: 인류의 정석을 깨뜨리는 대속의 '거룩한 하늘 계산법' (세상의 질서와 사망의 정석을 완전히 전복시키는 십자가 대속 강해 (로마서 6:23 연계). 예수께서 우리 죄를 대신 짊어지심으로 실제로 죄인의 신분이 되어 완벽하게 사망의 값을 치르셨음을 선포)  [17:04] 설교 3: 성도의 운명을 바꾸는 '첫 열매의 법칙' (고린도전서 15:20에 기초한 부활의 규칙성과 질서 강해. 사과나무에 첫 열매가 딱 맺히면 농부가 수확의 때를 알고 그 뒤를 따르는 모든 나무에 열매 맺는 법칙이 자연스럽게 적용되듯, 예수 그리스도의 부활은 개인의 신비로운 이적에 그치는 것이 아니라 우리 인류의 종착역을 무덤에서 하늘로 바꾸어 버린 '대혁명의 역사적 법칙'임을 증거)  [21:54] 설교 4: 요한복음 11:25의 약속과 '긴 호흡의 신앙' (\"나는 부활이요 생명이니 나를 믿는 자는 죽어도 살겠고\" 말씀 해설. 이 약속이 나의 것이 되었기에 세상적인 손해나 삶의 모자람에 지치지 말고 의연히 넘어갈 수 있는 부활 성도의 대범한 평안 선포. 비록 세상에 나가면 인간적인 상식 앞에 픽픽 쓰러질지라도, 낙심하지 않고 다시 일어나는 '쓰러짐의 인터벌을 길게 가져가는 긴 호흡의 신앙' 당부)  [31:01] 마침 기도 (우주의 가장 위대한 영광인 부활의 주인공으로 나와 우리를 삼아주신 파격적인 복에 감사하는 기도. 현실적인 고난과 고통까지도 이 기쁨과 감격으로 이겨내며 영광스러운 부활의 아침까지 완주하게 해달라는 마무리 축복 기도)",timeline:[{time:"[00:00:00]",secs:0,title:"부활 새벽 전 찬양 (성도들과 함께 기쁨으로 외치는 부활 찬양 경배: 《구세주 나 항상 섬기네 / 예수 예수 내 구세주 내 마음에 살아 계시네》 합창)"},{time:"[00:03:34]",secs:214,title:"성경 봉독 및 설교 전 고백 기도 (누가복음 24:1~5 본문 합독. 유한한 육성과 이성으로는 깨닫기 힘든 부활의 신비를 '믿음'이라는 거룩한 도구로 설득해 주심에 감사하며, 내 뜻을 버리고 순종할 때 우리 마음에 믿음이 불같이 일어날 수 있도록 도우시는 은혜를 구하는 개회 기도 인도)"},{time:"[00:06:15]",secs:375,title:"설교 1: 인류가 학습한 '인생의 정석'과 향품의 한계 (사회적 규범과 기본 윤리로 여겨지는 인간 세상의 '정석' 강해. 2천 년 전 새벽 무덤으로 향하던 여인들이 준비한 향품은 부활을 기대한 축복의 예물이 아니라, 선생님의 죽음을 온전히 받아들이고 장례를 잘 지내드리려는 철저한 '인간적 정석'이자 슬픈 예식이었음을 직시)"},{time:"[00:10:25]",secs:625,title:"설교 2: 인류의 정석을 깨뜨리는 대속의 '거룩한 하늘 계산법' (세상의 질서와 사망의 정석을 완전히 전복시키는 십자가 대속 강해 (로마서 6:23 연계). 예수께서 우리 죄를 대신 짊어지심으로 실제로 죄인의 신분이 되어 완벽하게 사망의 값을 치르셨음을 선포)"},{time:"[00:17:04]",secs:1024,title:"설교 3: 성도의 운명을 바꾸는 '첫 열매의 법칙' (고린도전서 15:20에 기초한 부활의 규칙성과 질서 강해. 사과나무에 첫 열매가 딱 맺히면 농부가 수확의 때를 알고 그 뒤를 따르는 모든 나무에 열매 맺는 법칙이 자연스럽게 적용되듯, 예수 그리스도의 부활은 개인의 신비로운 이적에 그치는 것이 아니라 우리 인류의 종착역을 무덤에서 하늘로 바꾸어 버린 '대혁명의 역사적 법칙'임을 증거)"},{time:"[00:21:54]",secs:1314,title:"설교 4: 요한복음 11:25의 약속과 '긴 호흡의 신앙' (\"나는 부활이요 생명이니 나를 믿는 자는 죽어도 살겠고\" 말씀 해설. 이 약속이 나의 것이 되었기에 세상적인 손해나 삶의 모자람에 지치지 말고 의연히 넘어갈 수 있는 부활 성도의 대범한 평안 선포. 비록 세상에 나가면 인간적인 상식 앞에 픽픽 쓰러질지라도, 낙심하지 않고 다시 일어나는 '쓰러짐의 인터벌을 길게 가져가는 긴 호흡의 신앙' 당부)"},{time:"[00:31:01]",secs:1861,title:"마침 기도 (우주의 가장 위대한 영광인 부활의 주인공으로 나와 우리를 삼아주신 파격적인 복에 감사하는 기도. 현실적인 고난과 고통까지도 이 기쁨과 감격으로 이겨내며 영광스러운 부활의 아침까지 완주하게 해달라는 마무리 축복 기도)"}]},
-{index:14,year:"2026",id:"KfpqMWMFJsE",title:"2026년 4월 5일 부활주일 통합설교 (낮 예배) — 부활을 보는 시력",date:"2026-04-05",month:"4월",categoryKo:"주일예배",scripture:"요한복음 14장 16~17절; 26절",situation:"고난시련",summary:"부활의 신비는 무덤 밖에서 안을 들여다보는 세상의 방식인 '구경꾼의 눈'이나 '관찰자의 시각'으로는 결코 볼 수 없습니다. 관찰자의 눈으로 보면 예수님의 시신이 누웠던 '차가운 돌침대'만 보일 뿐입니다. 성도는 절망의 무덤 속으로 직접 들어가 내 죄 때문에 하나님의 아들이 누우셨던 자리, 그러나 이제는 부활의 온기가 배어있는 자리를 믿음으로 만져보아야 합니다. 우리가 들어가야 할 현대의 무덤은 내 힘으로 살아보려 몸부림치던 삶을 내려놓는 '세상의 끝자락'과 '하늘의 시작점'이 만나는 거룩한 접점인 '영적 기수역(은혜의 자리, 영적인 골방, 교회)'입니다. 그곳에서 보혜사 성령의 인도를 받아 '깨달음의 시력'을 선물로 얻고, 예수님의 부활을 통해 우리 자신의 부활을 확증하며(로마서 6:4) 영광스러운 첫째 부활에 참여해야 합니다.  주요 키워드: #부활주일 #부활을보는시력 #요한복음14장19절 #영적기수역 #깨달음의눈  정밀 인덱싱 타임라인:  [00:00] 예배 시작 / 찬양 (죄의 저주를 끊으시고 승리하신 예수 그리스도를 찬양하는 연합 찬양대 합창: 《주 예수 나의 산 소망》)  [05:14] 성경 봉독 [요한복음 14:19]  [05:50] 영상 1 [무덤 속으로] (제자들이 무덤으로 달려가 세마포와 수건을 확인하는 복음서 편집 성극 영상 시청)  [08:53] 설교 1 (부활을 분별하는 '시력' 강의, 무덤 밖 구경꾼과 관찰자 시각의 한계 폭로, 요한복음 20:8과 누가복음 24:3을 바탕으로 직접 무덤 속으로 들어가 부활의 온기를 만져보는 '깨달음의 눈' 강조)  [24:49] 시 낭송 [약속 — 김형종]  [27:36] 설교 2 (인간 중심적 삶의 한계인 세상 끝자리와 하늘의 접점 '영적 기수역' 해설, 로마서 6:4에 기초한 우리 자신의 부활 확증 및 보혜사 성령의 인도를 통한 첫째 부활 참여 선포, 작가 사역자의 캔버스 성화 그림 해설 및 마무리 축복 기도)",notes:"💡 주요 키워드: #부활주일 #부활을보는시력 #요한복음14장19절 #영적기수역 #깨달음의눈  정밀 인덱싱 타임라인:  [00:00] 예배 시작 / 찬양 (죄의 저주를 끊으시고 승리하신 예수 그리스도를 찬양하는 연합 찬양대 합창: 《주 예수 나의 산 소망》)  [05:14] 성경 봉독 [요한복음 14:19]  [05:50] 영상 1 [무덤 속으로] (제자들이 무덤으로 달려가 세마포와 수건을 확인하는 복음서 편집 성극 영상 시청)  [08:53] 설교 1 (부활을 분별하는 '시력' 강의, 무덤 밖 구경꾼과 관찰자 시각의 한계 폭로, 요한복음 20:8과 누가복음 24:3을 바탕으로 직접 무덤 속으로 들어가 부활의 온기를 만져보는 '깨달음의 눈' 강조)  [24:49] 시 낭송 [약속 — 김형종]  [27:36] 설교 2 (인간 중심적 삶의 한계인 세상 끝자리와 하늘의 접점 '영적 기수역' 해설, 로마서 6:4에 기초한 우리 자신의 부활 확증 및 보혜사 성령의 인도를 통한 첫째 부활 참여 선포, 작가 사역자의 캔버스 성화 그림 해설 및 마무리 축복 기도)",timeline:[{time:"[00:00:00]",secs:0,title:"예배 시작 / 찬양 (죄의 저주를 끊으시고 승리하신 예수 그리스도를 찬양하는 연합 찬양대 합창: 《주 예수 나의 산 소망》)"},{time:"[00:05:14]",secs:314,title:"성경 봉독 [요한복음 14:19]"},{time:"[00:05:50]",secs:350,title:"영상 1 [무덤 속으로] (제자들이 무덤으로 달려가 세마포와 수건을 확인하는 복음서 편집 성극 영상 시청)"},{time:"[00:08:53]",secs:533,title:"설교 1 (부활을 분별하는 '시력' 강의, 무덤 밖 구경꾼과 관찰자 시각의 한계 폭로, 요한복음 20:8과 누가복음 24:3을 바탕으로 직접 무덤 속으로 들어가 부활의 온기를 만져보는 '깨달음의 눈' 강조)"},{time:"[00:24:49]",secs:1489,title:"시 낭송 [약속 — 김형종]"},{time:"[00:27:36]",secs:1656,title:"설교 2 (인간 중심적 삶의 한계인 세상 끝자리와 하늘의 접점 '영적 기수역' 해설, 로마서 6:4에 기초한 우리 자신의 부활 확증 및 보혜사 성령의 인도를 통한 첫째 부활 참여 선포, 작가 사역자의 캔버스 성화 그림 해설 및 마무리 축복 기도)"}]},
-{index:15,year:"2026",id:"8aAdRX2LTDM",title:"2026년 4월 12일 음악설교 — 믿을 수 없는 중에도",date:"2026-04-12",month:"4월",categoryKo:"음악설교",scripture:"로마서 4장 18~19절",situation:"조급인내",summary:"인생의 겨울 고난을 지날 때 가장 괴로운 것은 아무런 힘도 없이 한없이 초라해진 자신을 바라보는 참담함과 고난의 명확한 이유를 알지 못한다는 사실입니다. 맹자의 고전적 통찰처럼 하늘이 큰 임무를 맡기기 전에 그릇을 넓히고 성품을 다듬기 위해 시련을 주시듯, 성경 역시 이러한 연단의 과정을 통과한 뒤 하나님 나라의 상속자라는 거대한 영광을 예비하심을 가르칩니다. 고난을 돌파하는 핵심적인 무기는 현재 눈앞의 처참한 상황을 바라보지 않고 오직 약속을 성취하실 주님을 믿음으로 대면하는 적극적인 신앙의 태도입니다. 바랄 수 없고 믿을 수 없는 최악의 환경일지라도 하나님이 함께 하신다면 영안이 열려 삶의 미래를 혼란 없이 찾아가게 되며, 약속을 따라 일하시는 주님의 새 일을 경험하게 됩니다.  주요 키워드: #음악설교 #믿을수없는중에도 #로마서4장18_19절 #바랄수없는중에바라고 #영안  정밀 인덱싱 타임라인:  [00:00] 성경 봉독 [로마서 4:18~19]  [00:50] 설교 1 (겨울 우울과도 같은 인생 고난의 현실 직면, 맹자의 가르침을 빌린 시련의 유익과 고난을 극복하기 위해 성도가 지녀야 할 무기의 필요성 강해)  [04:59] 찬양 [바랄 수 없는 중에 바라고 — 이손 작사·작곡, 찬양 김명희] (현재 상황을 보지 않고 오직 주님이 이루실 일과 약속을 전적으로 신뢰하며 순종할 것을 선포하는 특송)  [08:37] 설교 2 (바랄 수 없는 중에 바라는 역설적 믿음의 진정한 가치, 하나님이 함께 하실 때 열리는 영안의 신비와 시련을 극복하는 적극적인 신앙의 돌파 공식 강해)  [29:45] 시 낭송 [이 길 끝에서 — 김형종]  [32:46] 설교 3 (하나님 나라의 상속자로서 온전한 영광을 준비하는 믿음의 인내와 최종적인 영적 결단 권면)",notes:"💡 주요 키워드: #음악설교 #믿을수없는중에도 #로마서4장18_19절 #바랄수없는중에바라고 #영안  정밀 인덱싱 타임라인:  [00:00] 성경 봉독 [로마서 4:18~19]  [00:50] 설교 1 (겨울 우울과도 같은 인생 고난의 현실 직면, 맹자의 가르침을 빌린 시련의 유익과 고난을 극복하기 위해 성도가 지녀야 할 무기의 필요성 강해)  [04:59] 찬양 [바랄 수 없는 중에 바라고 — 이손 작사·작곡, 찬양 김명희] (현재 상황을 보지 않고 오직 주님이 이루실 일과 약속을 전적으로 신뢰하며 순종할 것을 선포하는 특송)  [08:37] 설교 2 (바랄 수 없는 중에 바라는 역설적 믿음의 진정한 가치, 하나님이 함께 하실 때 열리는 영안의 신비와 시련을 극복하는 적극적인 신앙의 돌파 공식 강해)  [29:45] 시 낭송 [이 길 끝에서 — 김형종]  [32:46] 설교 3 (하나님 나라의 상속자로서 온전한 영광을 준비하는 믿음의 인내와 최종적인 영적 결단 권면)",timeline:[{time:"[00:00:00]",secs:0,title:"성경 봉독 [로마서 4:18~19]"},{time:"[00:00:50]",secs:50,title:"설교 1 (겨울 우울과도 같은 인생 고난의 현실 직면, 맹자의 가르침을 빌린 시련의 유익과 고난을 극복하기 위해 성도가 지녀야 할 무기의 필요성 강해)"},{time:"[00:04:59]",secs:299,title:"찬양 [바랄 수 없는 중에 바라고 — 이손 작사·작곡, 찬양 김명희] (현재 상황을 보지 않고 오직 주님이 이루실 일과 약속을 전적으로 신뢰하며 순종할 것을 선포하는 특송)"},{time:"[00:08:37]",secs:517,title:"설교 2 (바랄 수 없는 중에 바라는 역설적 믿음의 진정한 가치, 하나님이 함께 하실 때 열리는 영안의 신비와 시련을 극복하는 적극적인 신앙의 돌파 공식 강해)"},{time:"[00:29:45]",secs:1785,title:"시 낭송 [이 길 끝에서 — 김형종]"},{time:"[00:32:46]",secs:1966,title:"설교 3 (하나님 나라의 상속자로서 온전한 영광을 준비하는 믿음의 인내와 최종적인 영적 결단 권면)"}]},
-{index:16,year:"2026",id:"Nq7786Ru8rc",title:"2026년 4월 19일 비전설교 — 성공적인 실패",date:"2026-04-19",month:"4월",categoryKo:"비전설교",scripture:"고린도후서 4장 8~10절",situation:"실패결핍",summary:"사방으로 욱여쌈을 당하고 답답하여 우묵한 구덩이 속에 갇힌 것 같은 절망의 순간일지라도 성도가 낙심하지 않고 소망을 품을 수 있는 이유는, 인간의 끝이 곧 하나님의 시작이며 인간의 궁지가 곧 하나님의 기회이기 때문입니다. 실제 남극 대륙 횡단이라는 원대한 꿈을 안고 인내라는 뜻의 배를 타고 출발했으나 얼음에 갇혀 조난당했던 어니스트 섀클턴과 28명 대원들의 역사적 실화처럼, 감당하기 어려운 극심한 한계 상황은 대책 없는 아픔이 아니라 새로운 생명의 탄생을 준비하는 어머니의 아기집과 같은 신비로운 약속의 장소입니다. 항상 예수의 죽음을 몸에 짊어지며 성령의 역사 울타리 안에서 끝까지 인내할 때, 사방의 박해는 무력화되고 예수의 생명이 우리 삶 속에 강력하게 피어나는 성공적인 대반전의 승리를 얻게 됩니다.  주요 키워드: #비전설교 #성공적인실패 #고린도후서4장8_10절 #섀클턴 #인듀런스호  정밀 인덱싱 타임라인:  [00:00] 예배 시작 (4월 생명의 달 비전 설교 주일 오프닝, 새싹 속에 거대한 영광을 심어 두신 하나님의 약속 묵상)  [01:16] 성시 교독 (교독 16번 — 시편 28편 여호와께 부르짖는 간구와 확신의 고백)  [02:48] 신앙고백 (온 성도의 사도신경 복창)  [03:55] 대표 기도 [장용진 장로] (성령님의 역사 울타리 안에서 구원의 인도자 되시는 하나님의 말씀에 의지하여 예수로만 걸어갈 것을 다짐하는 헌신)  [06:37] 성경 봉독 [고린도후서 4:8~10]  [07:28] 시 낭송 [절망의 끝에서 — 김형종]  [10:26] 영상 1 (남극 차가운 바다에 고립되었던 인듀런스 호의 도전과 어니스트 섀클턴의 기적 같은 역사적 탐험 실화 소개 영상 시청)  [11:20] 설교 1 (절망 구덩이의 영적 패러다임 전환 선포, 섀클턴의 대륙 횡단 도전 과정에 담긴 고난과 한계 상황에서의 리더십 분석)  [34:53] 예배 중 찬양 (고난을 넘어서는 하나님의 사랑과 소망을 마음에 품는 온 성도의 합심 고백 찬양)  [38:14] 설교 2 (사방으로 욱여쌈을 당하여도 결단코 망하지 않는 성도의 구원의 요새 선포, 약속을 믿고 끝까지 인내하여 완전한 생환을 이루는 대반전의 영적 결합 선언)",notes:"💡 주요 키워드: #음악설교 #믿을수없는중에도 #로마서4장18_19절 #바랄수없는중에바라고 #영안  정밀 인덱싱 타임라인:  [00:00] 성경 봉독 [로마서 4:18~19]  [00:50] 설교 1 (겨울 우울과도 같은 인생 고난의 현실 직면, 맹자의 가르침을 빌린 시련의 유익과 고난을 극복하기 위해 성도가 지녀야 할 무기의 필요성 강해)  [04:59] 찬양 [바랄 수 없는 중에 바라고 — 이손 작사·작곡, 찬양 김명희] (현재 상황을 보지 않고 오직 주님이 이루실 일과 약속을 전적으로 신뢰하며 순종할 것을 선포하는 특송)  [08:37] 설교 2 (바랄 수 없는 중에 바라는 역설적 믿음의 진정한 가치, 하나님이 함께 하실 때 열리는 영안의 신비와 시련을 극복하는 적극적인 신앙의 돌파 공식 강해)  [29:45] 시 낭송 [이 길 끝에서 — 김형종]  [32:46] 설교 3 (하나님 나라의 상속자로서 온전한 영광을 준비하는 믿음의 인내와 최종적인 영적 결단 권면)",timeline:[{time:"[00:00:00]",secs:0,title:"예배 시작 (4월 생명의 달 비전 설교 주일 오프닝, 새싹 속에 거대한 영광을 심어 두신 하나님의 약속 묵상)"},{time:"[00:01:16]",secs:76,title:"성시 교독 (교독 16번 — 시편 28편 여호와께 부르짖는 간구와 확신의 고백)"},{time:"[00:02:48]",secs:168,title:"신앙고백 (온 성도의 사도신경 복창)"},{time:"[00:03:55]",secs:235,title:"대표 기도 [장용진 장로] (성령님의 역사 울타리 안에서 구원의 인도자 되시는 하나님의 말씀에 의지하여 예수로만 걸어갈 것을 다짐하는 헌신)"},{time:"[00:06:37]",secs:397,title:"성경 봉독 [고린도후서 4:8~10]"},{time:"[00:07:28]",secs:448,title:"시 낭송 [절망의 끝에서 — 김형종]"},{time:"[00:10:26]",secs:626,title:"영상 1 (남극 차가운 바다에 고립되었던 인듀런스 호의 도전과 어니스트 섀클턴의 기적 같은 역사적 탐험 실화 소개 영상 시청)"},{time:"[00:11:20]",secs:680,title:"설교 1 (절망 구덩이의 영적 패러다임 전환 선포, 섀클턴의 대륙 횡단 도전 과정에 담긴 고난과 한계 상황에서의 리더십 분석)"},{time:"[00:34:53]",secs:2093,title:"예배 중 찬양 (고난을 넘어서는 하나님의 사랑과 소망을 마음에 품는 온 성도의 합심 고백 찬양)"},{time:"[00:38:14]",secs:2294,title:"설교 2 (사방으로 욱여쌈을 당하여도 결단코 망하지 않는 성도의 구원의 요새 선포, 약속을 믿고 끝까지 인내하여 완전한 생환을 이루는 대반전의 영적 결합 선언)"}]},
-{index:17,year:"2026",id:"wDKeWx2ls-s",title:"2026년 4월 26일 영화설교 — 자라게 하시는 하나님",date:"2026-04-26",month:"4월",categoryKo:"영화설교",scripture:"고린도전서 3장 6~7절",situation:"조급인내",summary:"인생의 밭에 뿌려진 말씀의 씨앗이 언제 싹이 나고 자랄지 인간의 눈으로는 도무지 측량할 수 없습니다. 당장의 눈에 보이는 가시적 결과에 조급해하며 내 힘으로 억지로 잡아당기지 않고, 보이지 않는 땅속에서 밤낮 자고 깨는 사이 은밀히 일하시는 하나님의 주권적 성장 능력을 온전히 신뢰해야 합니다. 심는 이나 물 주는 사람의 애씀보다, 사람이 스스로 제어할 수 없는 생명의 성장 타이밍을 쥐고 계시는 하나님 앞에 겸손히 모든 미래를 맡길 때 삶은 마침내 풍성한 결실을 맺게 됩니다.  주요 키워드: #영화설교 #씨앗의성장 #고린도전서3장 #은밀한섭리 #자라게하시는하나님  정밀 인덱싱 타임라인:  [00:00] 찬양대 찬양  [04:52] 성경 봉독 [고린도전서 3:6~7]  [05:46] 설교 1 (영화설교 도입, 자연의 생명력 속에 감추어진 하나님의 신비로운 성장 법칙 제시)  [10:46] 영상 1 (인간의 힘으로 제어할 수 없는 생명의 시간과 인내의 당위성을 보여주는 영화 장면 시청)  [13:08] 설교 2 (밤낮 자고 깨는 사이에 씨가 자라나는 영적 자람의 본질과 인간의 영적 조급증 지적)  [24:30] 영상 2 (당장 눈앞에 가시적인 변화가 없어도 낙심하지 않아야 하는 영적 농부의 태도 설명)  [26:23] 설교 3 (자녀와 가정이 당장 변하지 않아도 말씀의 물을 꾸준히 주는 인내의 중요성 강해)  [33:40] 시 낭송 [땅속의 숨소리 — 김형종]  [35:47] 설교 4 (오직 자라게 하시는 이는 하나님뿐이심을 고백하는 철저한 겸손의 회복 촉구)  [47:06] 영상 3 (눈물로 씨를 뿌리는 자는 반드시 기쁨으로 단을 거두리라는 확신의 시각적 증거 확인)  [48:30] 설교 5 (성장의 타이밍을 온전히 주님께 맡기고 평강을 누리는 마침 축복 기도)",notes:"💡 주요 키워드: #영화설교 #씨앗의성장 #고린도전서3장 #은밀한섭리 #자라게하시는하나님  정밀 인덱싱 타임라인:  [00:00] 찬양대 찬양  [04:52] 성경 봉독 [고린도전서 3:6~7]  [05:46] 설교 1 (영화설교 도입, 자연의 생명력 속에 감추어진 하나님의 신비로운 성장 법칙 제시)  [10:46] 영상 1 (인간의 힘으로 제어할 수 없는 생명의 시간과 인내의 당위성을 보여주는 영화 장면 시청)  [13:08] 설교 2 (밤낮 자고 깨는 사이에 씨가 자라나는 영적 자람의 본질과 인간의 영적 조급증 지적)  [24:30] 영상 2 (당장 눈앞에 가시적인 변화가 없어도 낙심하지 않아야 하는 영적 농부의 태도 설명)  [26:23] 설교 3 (자녀와 가정이 당장 변하지 않아도 말씀의 물을 꾸준히 주는 인내의 중요성 강해)  [33:40] 시 낭송 [땅속의 숨소리 — 김형종]  [35:47] 설교 4 (오직 자라게 하시는 이는 하나님뿐이심을 고백하는 철저한 겸손의 회복 촉구)  [47:06] 영상 3 (눈물로 씨를 뿌리는 자는 반드시 기쁨으로 단을 거두리라는 확신의 시각적 증거 확인)  [48:30] 설교 5 (성장의 타이밍을 온전히 주님께 맡기고 평강을 누리는 마침 축복 기도)",timeline:[{time:"[00:00:00]",secs:0,title:"찬양대 찬양"},{time:"[00:04:52]",secs:292,title:"성경 봉독 [고린도전서 3:6~7]"},{time:"[00:05:46]",secs:346,title:"설교 1 (영화설교 도입, 자연의 생명력 속에 감추어진 하나님의 신비로운 성장 법칙 제시)"},{time:"[00:10:46]",secs:646,title:"영상 1 (인간의 힘으로 제어할 수 없는 생명의 시간과 인내의 당위성을 보여주는 영화 장면 시청)"},{time:"[00:13:08]",secs:788,title:"설교 2 (밤낮 자고 깨는 사이에 씨가 자라나는 영적 자람의 본질과 인간의 영적 조급증 지적)"},{time:"[00:24:30]",secs:1470,title:"영상 2 (당장 눈앞에 가시적인 변화가 없어도 낙심하지 않아야 하는 영적 농부의 태도 설명)"},{time:"[00:26:23]",secs:1583,title:"설교 3 (자녀와 가정이 당장 변하지 않아도 말씀의 물을 꾸준히 주는 인내의 중요성 강해)"},{time:"[00:33:40]",secs:2020,title:"시 낭송 [땅속의 숨소리 — 김형종]"},{time:"[00:35:47]",secs:2147,title:"설교 4 (오직 자라게 하시는 이는 하나님뿐이심을 고백하는 철저한 겸손의 회복 촉구)"},{time:"[00:47:06]",secs:2826,title:"영상 3 (눈물로 씨를 뿌리는 자는 반드시 기쁨으로 단을 거두리라는 확신의 시각적 증거 확인)"},{time:"[00:48:30]",secs:2910,title:"설교 5 (성장의 타이밍을 온전히 주님께 맡기고 평강을 누리는 마침 축복 기도)"}]},
-{index:18,year:"2026",id:"9qAKUU8oeCo",title:"2026년 5월 3일 통합설교 (나눔주일 / 부모자녀주일) — 선한말 용서의 말",date:"2026-05-03",month:"5월",categoryKo:"주일예배",scripture:"에베소서 4장 29절, 32절",situation:"가정가족",summary:"5월 가정의 달을 맞아 선포된 언어의 강력한 영적 권세입니다. 사람의 죽고 사는 것이 혀의 힘에 달렸으니, 가장 편안해야 할 가정 안에서 칼로 찌르는 듯한 날카로운 말과 대화 습관을 과감히 종식해야 합니다. 부부간, 혹은 부모와 자녀 간에 무심코 던지는 가시 돋친 대화를 필터링하고, 상처를 싸매는 선한 말과 하나님의 용서에 기반한 무조건적인 용서의 언어(‘베라카’)를 심어야 합니다. 서로를 불쌍히 여기며 축복의 씨앗을 뿌릴 때, 가정은 비로소 사탄의 공격으로부터 보호받는 천국의 쉼터로 견고히 세워집니다.  주요 키워드: #부모자녀주일 #나눔주일 #선한말 #용서의언어 #에베소서4장  정밀 인덱싱 타임라인:  [00:00] 찬양대 찬양 [식탁의 기도] (어린이 주일 및 부모자녀주일 예배 선포)  [03:52] 성경 봉독 [에베소서 4:29;32]  [04:46] 설교 1 (말 한마디가 자녀의 인생에 미치는 파괴력과 복원의 힘 비교, 용서와 축복의 언어 '베라카'가 지닌 영적 보호막 강해, 부부간 대화 습관을 교정하는 일상 필터링 방안 제시)  [34:53] 시 낭송 [가정 — 김형종]  [36:28] 설교 2 (자녀를 노엽게 하지 않고 주의 교훈으로 양육하는 부모의 태도, 보혈로 상처를 덮고 서로를 안아주는 패밀리 허그 시간, 천국 소통을 위한 결단 기도 마무리)",notes:"💡 주요 키워드: #부모자녀주일 #나눔주일 #선한말 #용서의언어 #에베소서4장  정밀 인덱싱 타임라인:  [00:00] 찬양대 찬양 [식탁의 기도] (어린이 주일 및 부모자녀주일 예배 선포)  [03:52] 성경 봉독 [에베소서 4:29;32]  [04:46] 설교 1 (말 한마디가 자녀의 인생에 미치는 파괴력과 복원의 힘 비교, 용서와 축복의 언어 '베라카'가 지닌 영적 보호막 강해, 부부간 대화 습관을 교정하는 일상 필터링 방안 제시)  [34:53] 시 낭송 [가정 — 김형종]  [36:28] 설교 2 (자녀를 노엽게 하지 않고 주의 교훈으로 양육하는 부모의 태도, 보혈로 상처를 덮고 서로를 안아주는 패밀리 허그 시간, 천국 소통을 위한 결단 기도 마무리)",timeline:[{time:"[00:00:00]",secs:0,title:"찬양대 찬양 [식탁의 기도] (어린이 주일 및 부모자녀주일 예배 선포)"},{time:"[00:03:52]",secs:232,title:"성경 봉독 [에베소서 4:29;32]"},{time:"[00:04:46]",secs:286,title:"설교 1 (말 한마디가 자녀의 인생에 미치는 파괴력과 복원의 힘 비교, 용서와 축복의 언어 '베라카'가 지닌 영적 보호막 강해, 부부간 대화 습관을 교정하는 일상 필터링 방안 제시)"},{time:"[00:34:53]",secs:2093,title:"시 낭송 [가정 — 김형종]"},{time:"[00:36:28]",secs:2188,title:"설교 2 (자녀를 노엽게 하지 않고 주의 교훈으로 양육하는 부모의 태도, 보혈로 상처를 덮고 서로를 안아주는 패밀리 허그 시간, 천국 소통을 위한 결단 기도 마무리)"}]},
-{index:19,year:"2026",id:"48wBdYza01U",title:"2026년 5월 10일 통합설교 (음악설교) — 끝까지 지켜야 할 가정과 교회",date:"2026-05-10",month:"5월",categoryKo:"음악설교",scripture:"요한복음 6장 67~68절",situation:"가정가족",summary:"거친 세상을 살아가면서 성도가 결단코 타협하거나 원수에게 빼앗기지 말아야 할 두 가지 절대적 기둥은 바로 '가정'과 '교회'입니다. 교회는 세상에서 입은 모든 상처와 피로를 씻어내고 영생의 말씀 전고를 통해 하늘의 무한한 힘을 공급받는 '영적 유조 탱크'입니다. 가정은 그 공급받은 에너지를 바탕으로 다시 안식하며 영적 숨을 쉴 수 있는 '사랑의 둥지'입니다. 사방에서 멸시하는 눈으로 쳐다보아도 나 혼자서라도 예배 자리를 파수하고 말씀의 초석 위에 가정을 세울 때, 어떤 환난의 풍파에도 결코 망하지 않는 보호의 약속이 성취됩니다.  주요 키워드: #음악설교 #가정과교회 #요한복음6장 #에너지탱크 #안식의둥지  정밀 인덱싱 타임라인:  [00:00] 성경 봉독 [요한복음 6:67~68]  [01:08] 설교 1 (음악설교 시작, 영생의 말씀이 주께 있사오니 누구에게로 가겠냐는 결연한 신앙 확신 선포, 우리의 호흡인 예배와 교회의 상생 법칙 강해)  [09:18] 찬양 [아무도 예배하지 않고 — 이오늘 작사·작곡 / 찬양 김주윤] (사방이 무너져도 나 홀로 주 앞에 무릎 꿇는 확신의 용기를 노래)  [14:43] 설교 2 (짐이 무거워 쓰러져가는 위기의 가정을 향해 주의 음성을 기다리라는 해답 제시, 의인 한 사람이 서 있으면 그 집은 망하지 않는다는 보호의 약속 잠언 12:7 강해)  [24:58] 시 낭송 [확신과 믿음 — 김형종]  [27:40] 설교 3 (서로를 빛나게 하는 가족 간 소통의 약속, 하늘 에너지를 충전하는 유조 탱크로서의 교회의 본질, 작가 사역자의 시온성 향하는 믿음의 가족 그림 해설 및 축복 기도)",notes:"💡 주요 키워드: #부모자녀주일 #나눔주일 #선한말 #용서의언어 #에베소서4장  정밀 인덱싱 타임라인:  [00:00] 찬양대 찬양 [식탁의 기도] (어린이 주일 및 부모자녀주일 예배 선포)  [03:52] 성경 봉독 [에베소서 4:29;32]  [04:46] 설교 1 (말 한마디가 자녀의 인생에 미치는 파괴력과 복원의 힘 비교, 용서와 축복의 언어 '베라카'가 지닌 영적 보호막 강해, 부부간 대화 습관을 교정하는 일상 필터링 방안 제시)  [34:53] 시 낭송 [가정 — 김형종]  [36:28] 설교 2 (자녀를 노엽게 하지 않고 주의 교훈으로 양육하는 부모의 태도, 보혈로 상처를 덮고 서로를 안아주는 패밀리 허그 시간, 천국 소통을 위한 결단 기도 마무리)",timeline:[{time:"[00:00:00]",secs:0,title:"성경 봉독 [요한복음 6:67~68]"},{time:"[00:01:08]",secs:68,title:"설교 1 (음악설교 시작, 영생의 말씀이 주께 있사오니 누구에게로 가겠냐는 결연한 신앙 확신 선포, 우리의 호흡인 예배와 교회의 상생 법칙 강해)"},{time:"[00:09:18]",secs:558,title:"찬양 [아무도 예배하지 않고 — 이오늘 작사·작곡 / 찬양 김주윤] (사방이 무너져도 나 홀로 주 앞에 무릎 꿇는 확신의 용기를 노래)"},{time:"[00:14:43]",secs:883,title:"설교 2 (짐이 무거워 쓰러져가는 위기의 가정을 향해 주의 음성을 기다리라는 해답 제시, 의인 한 사람이 서 있으면 그 집은 망하지 않는다는 보호의 약속 잠언 12:7 강해)"},{time:"[00:24:58]",secs:1498,title:"시 낭송 [확신과 믿음 — 김형종]"},{time:"[00:27:40]",secs:1660,title:"설교 3 (서로를 빛나게 하는 가족 간 소통의 약속, 하늘 에너지를 충전하는 유조 탱크로서의 교회의 본질, 작가 사역자의 시온성 향하는 믿음의 가족 그림 해설 및 축복 기도)"}]},
-{index:20,year:"2026",id:"hJIV5WnqxuM",title:"2026년 5월 17일 비전설교 — 가시 사랑",date:"2026-05-17",month:"5월",categoryKo:"비전설교",scripture:"에베소서 4장 2절",situation:"상처치유",summary:"인간관계의 비극은 가장 가까운 가족 공동체(부부, 부모자녀) 안에서 서로에게 체면을 버린 채 날카로운 말의 가시를 세워 상처를 입히는 쇼펜하우어의 '고슴도치 딜레마'에서 시작됩니다. 더 나아가 성도들은 기도가 응답되지 않을 때 '서운함의 가시'를, 뜻대로 일이 풀리지 않을 때 '냉소의 가시'를, 성령의 지시가 나의 욕망과 상충할 때 '거부의 가시'를 세워 하나님을 찌르곤 합니다. 잠깐의 세상 유익을 위한 이기적 원리를 내려놓고, 영원한 삶에 적용되는 주님의 말씀에 순종하여 내 안의 가시를 기꺼이 눕히고 사랑으로 서로를 용납하는 법을 배워야 합니다.  주요 키워드: #비전설교 #가시사랑 #에베소서4장2절 #고슴도치딜레마 #가시눕히기  정밀 인덱싱 타임라인:  [00:00] 예배 시작 (5월 가정의 달 비전 주일 오프닝, 시편 33편 성시 교독 및 사도신경 신앙고백)  [07:24] 시 낭송 [고슴도치 사랑 — 김형종]  [10:27] 설교 1 (쇼펜하우어의 고슴도치 딜레마 비유, 세상에서 가장 사랑하는 가족 사이에서 오히려 입에 담기 어려운 끔찍한 말의 가시로 서로를 찌르는 현대 부부·가족의 대화 실태 고찰)  [33:05] 찬양 [나는 아버지를 닮았네]  [37:23] 설교 2 (기도 미응답 시 세우는 서운함의 가시, 내 뜻대로 안 될 때 찌르는 냉소의 가시, 성령의 감동을 무시하는 거부의 가시 고발 및 영육간의 속사람 회복을 위한 온전한 순종과 결단 권면)",notes:"💡 주요 키워드: #비전설교 #가시사랑 #에베소서4장2절 #고슴도치딜레마 #가시눕히기  정밀 인덱싱 타임라인:  [00:00] 예배 시작 (5월 가정의 달 비전 주일 오프닝, 시편 33편 성시 교독 및 사도신경 신앙고백)  [07:24] 시 낭송 [고슴도치 사랑 — 김형종]  [10:27] 설교 1 (쇼펜하우어의 고슴도치 딜레마 비유, 세상에서 가장 사랑하는 가족 사이에서 오히려 입에 담기 어려운 끔찍한 말의 가시로 서로를 찌르는 현대 부부·가족의 대화 실태 고찰)  [33:05] 찬양 [나는 아버지를 닮았네]  [37:23] 설교 2 (기도 미응답 시 세우는 서운함의 가시, 내 뜻대로 안 될 때 찌르는 냉소의 가시, 성령의 감동을 무시하는 거부의 가시 고발 및 영육간의 속사람 회복을 위한 온전한 순종과 결단 권면)",timeline:[{time:"[00:00:00]",secs:0,title:"예배 시작 (5월 가정의 달 비전 주일 오프닝, 시편 33편 성시 교독 및 사도신경 신앙고백)"},{time:"[00:07:24]",secs:444,title:"시 낭송 [고슴도치 사랑 — 김형종]"},{time:"[00:10:27]",secs:627,title:"설교 1 (쇼펜하우어의 고슴도치 딜레마 비유, 세상에서 가장 사랑하는 가족 사이에서 오히려 입에 담기 어려운 끔찍한 말의 가시로 서로를 찌르는 현대 부부·가족의 대화 실태 고찰)"},{time:"[00:33:05]",secs:1985,title:"찬양 [나는 아버지를 닮았네]"},{time:"[00:37:23]",secs:2243,title:"설교 2 (기도 미응답 시 세우는 서운함의 가시, 내 뜻대로 안 될 때 찌르는 냉소의 가시, 성령의 감동을 무시하는 거부의 가시 고발 및 영육간의 속사람 회복을 위한 온전한 순종과 결단 권면)"}]},
-{index:21,year:"2026",id:"glwIPMh7eI4",title:"2026년 5월 24일 영화설교 — 내 아이에게 주신 길",date:"2026-05-24",month:"5월",categoryKo:"영화설교",scripture:"에베소서 6장 4절",situation:"가정가족",summary:"하나님께서 세우신 최초의 공동체인 가정이 바르게 세워지지 못하면 가족 전체가 피해자가 되며, 심령의 상처는 사회적 비극의 씨앗이 됩니다. 역사 속 영조와 사도세자(이선)의 비극처럼 부모의 일방적이고 폭압적인 교육과 이에 격렬히 저항하는 자녀의 태도는 서로에게 파괴적인 균열을 냅니다. 부모는 힘과 경험의 우위를 남용해 자녀에게 대리 만족을 강요하거나 모멸감을 주는 언어폭력으로 아이를 노엽게(‘파로기조’) 만드는 행위를 철저히 회개해야 합니다. 부모의 욕심대로 힘으로 끌어당기지 않고, 자녀의 개성과 성품을 존중하며 아이에게 마땅히 행할 고유의 길(‘알 피 다르코’)을 유심히 발견하여 낮은 자세에서 경청(‘휘파쿠어’)으로 품어주어야 합니다.  주요 키워드: #영화설교 #내아이에게주신길 #에베소서6장4절 #영조와사도세자 #알피다르코  정밀 인덱싱 타임라인:  [00:00] 찬양대 찬양 (연합 찬양대 특송: 《저 멀리 뵈는 나의 시온성》)  [05:37] 성경 봉독 [에베소서 6:4]  [06:05] 설교 1 (영화설교 도입, 조선 왕조 역사 속 영조와 사도세자의 독단적이고 폭압적인 가정 교육 방식 고발 및 가정 붕괴가 사회적 비극으로 연결되는 실태 분석)  [14:46] 영상 1 (영화 〈사도〉 속 핵심 명장면 시청: 뒤주에 갇혀 죽어가는 아들과 아비로서 대화하는 가슴 아픈 독백, 따뜻한 눈길과 다정한 말 한마디를 바랐던 세자의 절규)  [16:49] 설교 2 (부모가 이루지 못한 꿈을 자녀에게 강요하는 결과 중심적 삶 비판, 오늘 당장 자녀의 어깨를 두드리며 \"괜찮아\"라고 위로하는 사랑의 소통 방식 제안)  [35:52] 시 낭송 [어른들이 모르는 세계 — 김형종]  [38:08] 설교 3 (히브리어 '알 피 다르코' 및 자녀를 노엽게 하는 '파로기조'의 영적 자성, 아래에서 귀 기울여 경청하는 '휘파쿠어'의 부모 권면, 주제 성화 해설 및 마무리 축복 기도)",notes:"💡 주요 키워드: #비전설교 #가시사랑 #에베소서4장2절 #고슴도치딜레마 #가시눕히기  정밀 인덱싱 타임라인:  [00:00] 예배 시작 (5월 가정의 달 비전 주일 오프닝, 시편 33편 성시 교독 및 사도신경 신앙고백)  [07:24] 시 낭송 [고슴도치 사랑 — 김형종]  [10:27] 설교 1 (쇼펜하우어의 고슴도치 딜레마 비유, 세상에서 가장 사랑하는 가족 사이에서 오히려 입에 담기 어려운 끔찍한 말의 가시로 서로를 찌르는 현대 부부·가족의 대화 실태 고찰)  [33:05] 찬양 [나는 아버지를 닮았네]  [37:23] 설교 2 (기도 미응답 시 세우는 서운함의 가시, 내 뜻대로 안 될 때 찌르는 냉소의 가시, 성령의 감동을 무시하는 거부의 가시 고발 및 영육간의 속사람 회복을 위한 온전한 순종과 결단 권면)",timeline:[{time:"[00:00:00]",secs:0,title:"찬양대 찬양 (연합 찬양대 특송: 《저 멀리 뵈는 나의 시온성》)"},{time:"[00:05:37]",secs:337,title:"성경 봉독 [에베소서 6:4]"},{time:"[00:06:05]",secs:365,title:"설교 1 (영화설교 도입, 조선 왕조 역사 속 영조와 사도세자의 독단적이고 폭압적인 가정 교육 방식 고발 및 가정 붕괴가 사회적 비극으로 연결되는 실태 분석)"},{time:"[00:14:46]",secs:886,title:"영상 1 (영화 〈사도〉 속 핵심 명장면 시청: 뒤주에 갇혀 죽어가는 아들과 아비로서 대화하는 가슴 아픈 독백, 따뜻한 눈길과 다정한 말 한마디를 바랐던 세자의 절규)"},{time:"[00:16:49]",secs:1009,title:"설교 2 (부모가 이루지 못한 꿈을 자녀에게 강요하는 결과 중심적 삶 비판, 오늘 당장 자녀의 어깨를 두드리며 \"괜찮아\"라고 위로하는 사랑의 소통 방식 제안)"},{time:"[00:35:52]",secs:2152,title:"시 낭송 [어른들이 모르는 세계 — 김형종]"},{time:"[00:38:08]",secs:2288,title:"설교 3 (히브리어 '알 피 다르코' 및 자녀를 노엽게 하는 '파로기조'의 영적 자성, 아래에서 귀 기울여 경청하는 '휘파쿠어'의 부모 권면, 주제 성화 해설 및 마무리 축복 기도)"}]},
-{index:22,year:"2026",id:"V6ghXSRj-ZQ",title:"2026년 5월 31일 문학설교 — 용서와 건강한 약속",date:"2026-05-31",month:"5월",categoryKo:"문학설교",scripture:"마태복음 18장 21~22절",situation:"분노용서",summary:"사소한 오해와 감정의 변화로 지펴진 미움의 작은 불씨를 초기에 다스리지 못하면, 온 인생과 공동체를 순식간에 불태우는 전소의 비극으로 이어집니다. 톨스토이의 고전 문학 〈불을 놓아두면 끄지 못한다〉 속 이반 and 가브릴로가 달걀 하나 때문에 분노하여 7년간 전재산과 영혼을 탕진한 것처럼, 복수심은 마귀에게 마음의 발판(‘토포스’)을 내어주게 만듭니다. 불은 불로 끌 수 없으며, 상대의 죄를 하나님의 시선으로 깨끗이 덮고 내면에 아무런 앙금도 남기지 않은 채 내보내는 완전한 용서(‘아피에미’)를 선포할 때 비로소 미움의 불씨가 꺼지고 건강한 평화의 열매를 맺게 됩니다.  주요 키워드: #문학설교 #용서와건강한약속 #마태복음18장21_22절 #톨스토이 #아피에미  정밀 인덱싱 타임라인:  [00:00] 설교 1 (문학설교 더 클래식 오프닝, 나이 50세에 죽음 앞에 권뇌하다 신에게 귀의한 레프 톨스토이의 만년 단편 소설 〈불을 놓아두면 끄지 못한다(1885)〉 배경 및 미움과 용서의 핵심 가치 소개)  [02:23] 영상 (달걀 하나로 시작된 두 이웃의 사소한 갈등이 소송, 폭행, 태형을 거쳐 전재산을 탕진하는 파멸로 치닫는 애니메이션 요약 영상 시청 및 지혜로운 아버지가 남긴 복음적 잠언 제시)  [05:20] 설교 2 (가브릴로가 지핀 짚더미의 작은 불씨를 즉시 끄는 대신 도망치는 범인을 쫓아가다 온 마을을 전소시킨 이반의 복수심 섞인 파멸적 심리 분석 및 '불은 불로 끌 수 없다'는 교훈 강해)  [12:50] 성경 봉독 [마태복음 18:21~22]  [13:25] 설교 3 (베드로의 일곱 번 제안을 일흔 번까지라도 용서하라 하신 예수님의 끝없는 사랑 대답, 산찌꺼기가 남지 않도록 내보내는 완전한 용서 '아피에미' 강해 및 분노를 품어 사탄에게 발판을 내어주는 '토포스' 위험성 경고, 로마서 12:19의 영적 신뢰 강조)  [35:29] 클래식 (음악 감상 시간: 더블베이스 거장 게리 카가 연주하는 토마소 알비노니의 〈아다지오 G단조〉 깊은 저음 선율 묵상)  [37:39] 설교 4 (방화범의 죄을 숨겨주어 비극의 불꽃을 완전히 끄라는 아버지의 위대한 유언과 이반의 바보 같은 복종, 온 마을에 찾아온 평화의 열매 및 약속의 말씀 선포)  [46:40] 찬양 (설교 후 성도들의 결단 합창 찬양: 《사랑의 종소리》)  [52:50] 마침기도 (마음속 미움의 불씨를 끄고 하나님의 사랑을 회복하기 위한 마무리 축복 기도)",notes:"💡 주요 키워드: #문학설교 #용서와건강한약속 #마태복음18장21_22절 #톨스토이 #아피에미  정밀 인덱싱 타임라인:  [00:00] 설교 1 (문학설교 더 클래식 오프닝, 나이 50세에 죽음 앞에 권뇌하다 신에게 귀의한 레프 톨스토이의 만년 단편 소설 〈불을 놓아두면 끄지 못한다(1885)〉 배경 및 미움과 용서의 핵심 가치 소개)  [02:23] 영상 (달걀 하나로 시작된 두 이웃의 사소한 갈등이 소송, 폭행, 태형을 거쳐 전재산을 탕진하는 파멸로 치닫는 애니메이션 요약 영상 시청 및 지혜로운 아버지가 남긴 복음적 잠언 제시)  [05:20] 설교 2 (가브릴로가 지핀 짚더미의 작은 불씨를 즉시 끄는 대신 도망치는 범인을 쫓아가다 온 마을을 전소시킨 이반의 복수심 섞인 파멸적 심리 분석 및 '불은 불로 끌 수 없다'는 교훈 강해)  [12:50] 성경 봉독 [마태복음 18:21~22]  [13:25] 설교 3 (베드로의 일곱 번 제안을 일흔 번까지라도 용서하라 하신 예수님의 끝없는 사랑 대답, 산찌꺼기가 남지 않도록 내보내는 완전한 용서 '아피에미' 강해 및 분노를 품어 사탄에게 발판을 내어주는 '토포스' 위험성 경고, 로마서 12:19의 영적 신뢰 강조)  [35:29] 클래식 (음악 감상 시간: 더블베이스 거장 게리 카가 연주하는 토마소 알비노니의 〈아다지오 G단조〉 깊은 저음 선율 묵상)  [37:39] 설교 4 (방화범의 죄을 숨겨주어 비극의 불꽃을 완전히 끄라는 아버지의 위대한 유언과 이반의 바보 같은 복종, 온 마을에 찾아온 평화의 열매 및 약속의 말씀 선포)  [46:40] 찬양 (설교 후 성도들의 결단 합창 찬양: 《사랑의 종소리》)  [52:50] 마침기도 (마음속 미움의 불씨를 끄고 하나님의 사랑을 회복하기 위한 마무리 축복 기도)",timeline:[{time:"[00:00:00]",secs:0,title:"설교 1 (문학설교 더 클래식 오프닝, 나이 50세에 죽음 앞에 권뇌하다 신에게 귀의한 레프 톨스토이의 만년 단편 소설 〈불을 놓아두면 끄지 못한다(1885)〉 배경 및 미움과 용서의 핵심 가치 소개)"},{time:"[00:00:38]",secs:38,title:"설교 1 (6월 음악 설교 주일 오프닝, 신앙생활 중 직면하는 가슴 답답한 순간의 영적 해석과 구원의 때 분별)"},{time:"[00:02:23]",secs:143,title:"영상 (달걀 하나로 시작된 두 이웃의 사소한 갈등이 소송, 폭행, 태형을 거쳐 전재산을 탕진하는 파멸로 치닫는 애니메이션 요약 영상 시청 및 지혜로운 아버지가 남긴 복음적 잠언 제시)"},{time:"[00:04:22]",secs:262,title:"성경 봉독 [창세기 2:18 ; 21~23]"},{time:"[00:05:20]",secs:320,title:"설교 2 (가브릴로가 지핀 짚더미의 작은 불씨를 즉시 끄는 대신 도망치는 범인을 쫓아가다 온 마을을 전소시킨 이반의 복수심 섞인 파멸적 심리 분석 및 '불은 불로 끌 수 없다'는 교훈 강해)"},{time:"[00:05:28]",secs:328,title:"설교 1 (성격 차이와 황혼이혼의 통계적 실태 직시, 혼자 사는 상태인 '레밧도'의 고립을 깨뜨리시는 하나님의 완벽한 설계)"},{time:"[00:06:03]",secs:363,title:"찬양 (《짙은 고난에 지칠지라도》 — 이영 작사, 김민지 작곡 / 반주 김윤정, 찬양 신희정·이인하·장신영)"},{time:"[00:11:33]",secs:693,title:"설교 2 (특송 가사 속 '험한 시간에 두셨더라도'의 타동사적 섭리 강해, 고난에 담긴 주님의 선한 의도와 예레미야 29:11 평안의 약속)"},{time:"[00:12:50]",secs:770,title:"성경 봉독 [마태복음 18:21~22]"},{time:"[00:13:25]",secs:805,title:"설교 3 (베드로의 일곱 번 제안을 일흔 번까지라도 용서하라 하신 예수님의 끝없는 사랑 대답, 산찌꺼기가 남지 않도록 내보내는 완전한 용서 '아피에미' 강해 및 분노를 품어 사탄에게 발판을 내어주는 '토포스' 위험성 경고, 로마서 12:19의 영적 신뢰 강조)"},{time:"[00:19:45]",secs:1185,title:"시 낭송 [하나의 이름을 마주하고 — 김형종]"},{time:"[00:21:59]",secs:1319,title:"시 낭송 [숨 쉴 여유공간 — 김형종]"},{time:"[00:22:43]",secs:1363,title:"설교 2 (에제르와 네게드의 참된 언어적 의미 강해, 사탄의 가정 파괴 작전에 대응하는 세대별 부부의 위로 대화 지침 및 10초 대문 기도법 적용)"},{time:"[00:24:28]",secs:1468,title:"설교 3 (새로운 가치관 형성 시기에 찾아오는 사탄의 공격, 창세기 2:7을 통해 가장 낮은 곳까지 밀착하여 생기를 불어넣으시는 하나님의 지극하신 보살핌 선포)"},{time:"[00:35:29]",secs:2129,title:"클래식 (음악 감상 시간: 더블베이스 거장 게리 카가 연주하는 토마소 알비노니의 〈아다지오 G단조〉 깊은 저음 선율 묵상)"},{time:"[00:37:39]",secs:2259,title:"설교 4 (방화범의 죄을 숨겨주어 비극의 불꽃을 완전히 끄라는 아버지의 위대한 유언과 이반의 바보 같은 복종, 온 마을에 찾아온 평화의 열매 및 약속의 말씀 선포)"},{time:"[00:46:40]",secs:2800,title:"찬양 (설교 후 성도들의 결단 합창 찬양: 《사랑의 종소리》)"},{time:"[00:52:50]",secs:3170,title:"마침기도 (마음속 미움의 불씨를 끄고 하나님의 사랑을 회복하기 위한 마무리 축복 기도)"}]},
-{index:23,year:"2026",id:"wrmRpng3laQ",title:"2026년 6월 7일 통합설교 (부부주일) — 돕는 배필",date:"2026-06-07",month:"6월",categoryKo:"주일예배",scripture:"이사야 61장 1절",situation:"가정가족",summary:"하나님께서 성도에게 성령의 기름을 부으신('마샤흐') 목적은 ======================================== 랑을 회복하기 위한 마무리 축복 기도)ko.srt]",notes:"💡 주요 키워드: #부부주일 #돕는배필 #에제르 #네게드 #창조의신비   정밀 인덱싱 타임라인:   [00:00] 설교 전 찬양 / 강성복, 이인하 부부   [04:22] 성경 봉독 [창세기 2:18 ; 21~23]    [05:28] 설교 1 (성격 차이와 황혼이혼의 통계적 실태 직시, 혼자 사는 상태인 '레밧도'의 고립을 깨뜨리시는 하나님의 완벽한 설계)    [19:45] 시 낭송 [하나의 이름을 마주하고 — 김형종]    [22:43] 설교 2 (에제르와 네게드의 참된 언어적 의미 강해, 사탄의 가정 파괴 작전에 대응하는 세대별 부부의 위로 대화 지침 및 10초 대문 기도법 적용)",timeline:[{time:"[00:00:00]",secs:0,title:"설교 전 찬양 / 강성복, 이인하 부부"},{time:"[00:04:22]",secs:262,title:"성경 봉독 [창세기 2:18 ; 21~23]"},{time:"[00:05:28]",secs:328,title:"설교 1 (성격 차이와 황혼이혼의 통계적 실태 직시, 혼자 사는 상태인 '레밧도'의 고립을 깨뜨리시는 하나님의 완벽한 설계)"},{time:"[00:19:45]",secs:1185,title:"시 낭송 [하나의 이름을 마주하고 — 김형종]"},{time:"[00:22:43]",secs:1363,title:"설교 2 (에제르와 네게드의 참된 언어적 의미 강해, 사탄의 가정 파괴 작전에 대응하는 세대별 부부의 위로 대화 지침 및 10초 대문 기도법 적용)"}]},
-{index:24,year:"2026",id:"aH_n7Fnby30",title:"2026년 6월 14일 통합설교 (음악설교) — 하나님의 시간",date:"2026-06-14",month:"6월",categoryKo:"음악설교",scripture:"로마서 13장 11절",situation:"조급인내",summary:"성도의 삶에 찾아오는 원인 모를 답답함과 숨 막히는 절박함은 개인의 실수나 재앙이 아닙니다. 우리를 구원받기에 합당한 자녀로 빚으시려는 '하나님의 의도적인 시간표(성장의 시간)'입니다. 고난의 험한 시간에 우리를 일부러 '두셨다'는 것은 평안과 미래를 예비하시는 주님의 철저한 계획이며 , 가장 낮아진 위기의 순간에 하나님께서는 아담에게 생기를 불어넣으시듯 우리와 가장 가까이 영적으로 밀착하여 보호하십니다.  주요 키워드: #음악설교 #하나님의시간 #로마서13장11절 #험한시간 #영적밀착  정밀 인덱싱 타임라인:  [00:00] 성경 봉독 [로마서 13:11]  [00:38] 설교 1 (6월 음악 설교 주일 오프닝, 신앙생활 중 직면하는 가슴 답답한 순간의 영적 해석과 구원의 때 분별)  [06:03] 찬양 (《짙은 고난에 지칠지라도》 — 이영 작사, 김민지 작곡 / 반주 김윤정, 찬양 신희정·이인하·장신영)  [11:33] 설교 2 (특송 가사 속 '험한 시간에 두셨더라도'의 타동사적 섭리 강해, 고난에 담긴 주님의 선한 의도와 예레미야 29:11 평안의 약속)  [21:59] 시 낭송 [숨 쉴 여유공간 — 김형종]  [24:28] 설교 3 (새로운 가치관 형성 시기에 찾아오는 사탄의 공격, 창세기 2:7을 통해 가장 낮은 곳까지 밀착하여 생기를 불어넣으시는 하나님의 지극하신 보살핌 선포) text Original line 3: 중심 성경 구절: 잠언 11장 24~25절 — \"흩어 구제하여도 더욱 부하게 되는 일이 있나니 과도히 아껴도 가난하게 될 뿐이니라 구제를 좋아하는 자는 풍족하여질 것이요 남을 윤택하게 하는 자는 자기도 윤택하여지리라.\" Original line 13: 아무런 자격과 소망도 없는 죄인 된 나를 위해 독생자의 보혈을 흘려주시고 자녀라 불러주신 주님의 크신 사랑을 높이는 신년 감사 오프닝 찬양 고백ko.srt]. Original line 17: [잠언 11:24~25] 본문 봉독 Original line 21: 영화 〈아름다운 세상을 위하여〉 중에서 주인공 '트레버의 생각' 예화 영상 시청 (세상을 윤택하게 바꾸는 한 소년의 순전한 나눔의 아이디어 직시)ko.srt]. text Line 31: 《역설적 부유 — 김형종》 묵상 Line 37: 다른 사람을 복되게 할 때 고봉인심으로 갚아주시는 하나님의 재창조 복의 약속 선포, 작가 사역자의 신년 주제 성화 그림 해설 및 순종하는 성도들을 위한 간절한 마침 축복 통성 기도 인도 Line 42: 중심 성경 구절: 이사야 61장 1절 — \"주 여호와의 영이 내게 내리셨으니 이는 여호와께서 내게 기름을 부으사 가난한 자에게 아름다운 소식을 전하게 하려 하심이라 나를 보내사 마음이 상한 자를 고치며 포로된 자에게 자유를, 갇힌 자에게 놓임을 선포하며.\" Line 46: 주요 키워드: #음악설교 #기름부음 #마샤흐 #상한마음치유 #페카코아흐, 유튜브 내용 정리(2026년) Line 50: [00:00] 성경 봉독 — 이사야 61장 1절 봉독 Line 52: [00:53] 영상 시청 — 작은 씨앗 안에 거대한 나무의 가능성을 현실로 피워내시는 하나님의 신비로운 창조 섭리 타임랩스 영상 묵상, 유튜브 내용 정리(2026년) Line 54: [02:03] 설교 1 — 하늘을 향해 온몸으로 손을 흔드는 잎사귀처럼 하나님의 말씀에 즉각 청종하는 순종의 자세 강의, 나를 부르시고 사명자로 준비시키시는 주님의 신년 계획 서두 해설, 유튜브 내용 정리(2026년) Line 56: [06:10] 찬양 / 기름 부으심 — [신상우 작사·작곡, 찬양 장용진 장로] 신년 첫 주 영혼의 갈급함을 채우는 거룩한 음악설교 특별 찬양 세션, 유튜브 내용 정리(2026년) Line 58: [11:49] 설교 2 — 세속에서 떼어내어 하나님 편으로 신분을 옮기시는 은혜인 원어 '마샤흐(מָשַׁח)' 대강해, 깨지고 파쇄된 속마음 상태와 일상 소통의 참상 진단, 갇힌 문을 여는 영적 구출 역사인 '페카코아흐(פְּקַח־קוֹחַ)'의 권능 선포 및 요한일서 2:11 안목의 결함 경계, 유튜브 내용 정리(2026년) Line 60: [35:46] 시 낭송 — [그를 사랑하게 하소서 — 김형종], 유튜브 내용 정리(2026년) Line 62: [37:52] 설교 3 — 가족 공동체 안에서 숨쉴 구멍을 만들어주는 효도 전화 통화 권면, 허리 굽은 자들을 자존감으로 세우시는 하나님의 사랑(시편 146:7~8) 확증, 작가 사역자의 주제 성화 그림 해설 및 세상 속 빛의 통로로 파송하는 간절한 마침 축복 기도, 유튜브 내용 정리(2026년) Line 67: 중심 성경 구절: 시편 147편 3절 — \"상심한 자들을 고치시며 그들의 상처를 싸매시는도다.\" Line 71: 주요 키워드: #비전주일 #킨츠기공법 #샤바르레브 #하바쉬 #여호와라파, 유튜브 내용 정리(2026년) Line 75: [00:00] 예배 시작 / 준비찬양 — 1월 비전 주일 예배 오프닝 선포, 시편 4편(교독 3번) 성시 교독, 온 회중의 사도신경 신앙고백 및 김순자 권사의 구원의 자존감 회복을 위한 대표 기도 진행, 유튜브 내용 정리(2026년) Line 77: [07:44] 성경 봉독 — 시편 147편 3절 봉독 Line 79: [08:11] 시 낭송 / 삶의 묵상 — [흉터 — 김형종] 감상, 유튜브 내용 정리(2026년) Line 81: [10:42] 설교 1 — 아시카가 요시마사 장군의 깨진 찻잔 예화를 통해 본 일본의 '킨츠기(Kintsugi)' 복원 공법 소개, 깨진 가정·우울증·정신적 고뇌의 파편들을 숨기지 않고 전능자 앞에 직시해야 하는 필연성 역설, 슬라이도(Slido) 무기명 양방향 아픔 고백 및 연민의 소통 진행 Line 83: [33:36] 비전특송 찬양 — 《말이라는 씨앗》 [정용진 장로 반주] (언어의 영적 동력과 위로를 노래하는 특송 세션), 유튜브 내용 정리(2026년) Line 85: [37:03] 설교 2 — 그릇이 부러진 극한의 상태 원어 '샤바르 레브(נִשְׁבְּרֵי לֵב)' 강해, 상처를 원래보다 온전하게 고치시는 '라파(רָפָא)'의 재창조 권능 선포, 붕대로 감싸 묶으시는 하나님의 '하바쉬(חָבַשׁ)' 치유법, 바울의 육체 가시 속에서 완전함에 도달하는 '텔레이오타이(τελειούται)'의 신비 강론, 두 번째 슬라이도 확신의 위로 나눔, 작가 사역자의 성화 해설, 가시를 면류관으로 바꾸는 결단 통성 기도 및 최영순 집사의 애찬 마침 기도 Line 93: 영적 본질: 가난과 결핍 속에서 방황하던 난민 소년 야니스가 그의 숨겨진 신체적 강점을 발견해 준 아마추어 감독들을 만나 프로 무대로 나아갈 막힌 길을 뚫어냈듯이, 성령님은 우리 인생의 한계 장벽을 허물고 새로운 피할 길을 여시는 참된 인생의 영적 감독이십니다 헬라어 원어로 '파라클레토스(παράκλητος)'인 보혜사 성령님은 어떠한 대가도 바라지 않고 우리를 무조건 지지하시며, 하늘의 거대한 법정에서 성도들의 모든 죄를 변호해 무죄 방면을 이끌어내시는 완벽한 조력자이십니다 인생의 자욱한 안개로 앞이 보이지 않는 혹독한 순간일지라도, 신호를 음성으로 바꾸어 소리로 끝까지 길을 인도하시는 성령님의 세미한 음성에 주파수를 맞추어야 합니다 성도 역시 공동체와 직장에서 타인의 단점 대신 숨은 재능을 찾아 칭찬하는 '발견의 언어(카리스마)'를 선포하고, 지친 가족의 아픔 곁에 말없이 머무는 '공감의 사랑(메노)'을 실천함으로써 영혼 구원의 방주인 가정과 교회를 천국 안전지대로 수호해야 합니다. Line 99: [00:00] 예배 시작 / 준비찬양 (세상의 조건적인 정죄와 한계를 부수고 자녀라 불러주시는 주님의 보혈의 능력을 높이는 회중 찬양)ko.srt] text Line 101: [03:55] 성경 봉독 [요한복음 14:16~17;26] Line 103: [05:05] 영상 1 [아마추어 감독님] (싹부터 대단한 생명은 없듯 가난한 난민 소년 야니스가 아마추어 감독의 지도로 인생의 공을 쥐고 성장해가는 영화 장면 시청) Line 105: [06:27] 설교 1 (보혜사의 어원적 속성 강의, 짙은 환경의 안개 속에서 불빛 대신 '소리'로 신호를 바꾸어 객차를 건져내는 등대의 비유를 통한 성도의 영적 안테나 예리함 강조, 거대한 법정에서 성도의 죄악을 탄원하고 의롭다 하시는 무죄 변호 복음 선포)ko.srt] Line 107: [29:06] 영상 2 [재능을 알아보다] (야니스의 신체적 강점을 한눈에 파악하여 그리스 성인 3부 리그 연습생 프로 계약으로 가문의 첫 외식을 선물하는 감독의 결정적 추천 장면 시청)ko.srt] Line 109: [29:58] 설교 2 (만남을 통해 피할 길과 탈출구를 여시는 히브리·헬라어 거룩한 '크바시스(έκβασις)' 공식 대강해, 직장과 공동체 안에서 이웃의 은사이자 재능을 뜻하는 '카리스마(χάρισμα)'를 찾아 전하는 칭찬 매뉴얼 적용) Line 111: [36:06] 시 낭송 [선생님 — 김형종] Line 113: [38:29] 설교 3 (어떠한 대가도 없이 성도의 삶이 되어지도록 은혜를 연결하시는 주님의 무조건적인 지지 확증, 공부와 직장에 지친 가족을 섣불리 가르치려 들기보다 조용히 머무는 '메노(μένω)'의 안식 사랑을 통한 가족 전도 비결 강론) Line 115: [49:05] 영상 3 [마지막 천사] (야니스가 꿈의 NBA 구단에 안착하기까지 밤잠 설치며 그의 가치를 역으로 증명해낸 수많은 무명의 천사·이름 없는 감독들의 조력 실화 시청) Line 117: [50:02] 설교 4 (우리를 끝까지 고아와 같이 버려두지 않고 최종 낙원까지 호위하시는 주님의 성령의 사람 인도법 해설, 작가 사역자의 성화 그림 해설 및 복된 은혜의 약속 전달자가 되기 위한 합심 마침 결단 기도) Line 130: [00:00] [성경봉독] — 이사야 43:19 ; 21 봉독 Line 132: [00:45] [설교 1] — 차가운 2월 겨울 공기 속에 숨겨진 땅 밑 봄의 생명 태동 조명, 실패라 느끼는 긴 겨울의 상황 속에서 문제를 기쁨으로 맞닥뜨려 이겨내는 성도의 영적 '견디는 실력' 도입 강해 Line 134: [03:08] [찬양] — 《그곳에서 시작되네》 (박은지 작사, 김민지 작곡 / 반주 신희정, 찬양 최유지 특송 세션) Line 136: [08:00] [설교 2] — 인간이 한계에 부딪혀 끝이라 생각하는 지점에서 시작되는 주님의 초자연적 역동성 분석, 저무는 달과 돋아나는 태양이 교차하는 십자가적 섭리 고찰 Line 138: [13:45] 찬양. 1연 — 찬양 가사의 거룩한 의미 묵상 (\"끝이라고 생각했던 그곳에서 시작되네, 완전하신 주의 계획 이제 깨닫네\") Line 140: [14:16] [설교 3] — 사람의 예상을 무한히 뛰어넘는 하나님의 거룩한 지혜와 모략 원어 '에차(עֵצָה)' 영해 강론, 새로운 대안의 문을 열어두시기 위해 현재 유익이라 여겼던 문들을 여지없이 폐쇄하시는 주님의 깊은 반전 추동력 고찰 Line 142: [20:53] [시 낭송] — 《성령의 바람 — 김형종》 Line 144: [23:20] [설교 4] — 시간과 세월의 흐름에 따라 성도의 영혼에 촘촘하고 강하게 조각되는 영적 나이테 해설, 노년과 백발의 지점까지 반드시 업고 품어 건져내시겠다는 이사야 46:4 신실한 초석 선포 Line 146: [29:25] 찬양. 2연 — 노래 가사 묵상 중창 (\"겨울 지나 봄이 오듯 인생의 계절 지날 때, 나의 믿음 깊어지고 내 기도는 노래가 되네\") Line 148: [29:58] [설교 5] — 다가올 노후에 대한 인간적 조급함과 두려움을 믿음으로 격파하고, 내면의 깊은 성숙을 거쳐 삶의 모든 호흡을 찬송으로 바꾸어내는 황혼 성도의 평안 권면 Line 150: [40:24] 찬양.",notes:"💡 주요 키워드: #부부주일 #돕는배필 #에제르 #네게드 #창조의신비   정밀 인덱싱 타임라인:   [00:00] 설교 전 찬양 / 강성복, 이인하 부부   [04:22] 성경 봉독 [창세기 2:18 ; 21~23]    [05:28] 설교 1 (성격 차이와 황혼이혼의 통계적 실태 직시, 혼자 사는 상태인 '레밧도'의 고립을 깨뜨리시는 하나님의 완벽한 설계)    [19:45] 시 낭송 [하나의 이름을 마주하고 — 김형종]    [22:43] 설교 2 (에제르와 네게드의 참된 언어적 의미 강해, 사탄의 가정 파괴 작전에 대응하는 세대별 부부의 위로 대화 지침 및 10초 대문 기도법 적용)",timeline:[{time:"[00:00:00]",secs:0,title:"성경 봉독 [로마서 13:11]"},{time:"[00:00:38]",secs:38,title:"설교 1 (6월 음악 설교 주일 오프닝, 신앙생활 중 직면하는 가슴 답답한 순간의 영적 해석과 구원의 때 분별)"},{time:"[00:00:45]",secs:45,title:"[설교 1] — 차가운 2월 겨울 공기 속에 숨겨진 땅 밑 봄의 생명 태동 조명, 실패라 느끼는 긴 겨울의 상황 속에서 문제를 기쁨으로 맞닥뜨려 이겨내는 성도의 영적 '견디는 실력' 도입 강해"},{time:"[00:00:53]",secs:53,title:"영상 시청 — 작은 씨앗 안에 거대한 나무의 가능성을 현실로 피워내시는 하나님의 신비로운 창조 섭리 타임랩스 영상 묵상, 유튜브 내용 정리(2026년)"},{time:"[00:02:03]",secs:123,title:"설교 1 — 하늘을 향해 온몸으로 손을 흔드는 잎사귀처럼 하나님의 말씀에 즉각 청종하는 순종의 자세 강의, 나를 부르시고 사명자로 준비시키시는 주님의 신년 계획 서두 해설, 유튜브 내용 정리(2026년)"},{time:"[00:03:08]",secs:188,title:"[찬양] — 《그곳에서 시작되네》 (박은지 작사, 김민지 작곡 / 반주 신희정, 찬양 최유지 특송 세션)"},{time:"[00:03:55]",secs:235,title:"성경 봉독 [요한복음 14:16~17;26]"},{time:"[00:05:05]",secs:305,title:"영상 1 [아마추어 감독님] (싹부터 대단한 생명은 없듯 가난한 난민 소년 야니스가 아마추어 감독의 지도로 인생의 공을 쥐고 성장해가는 영화 장면 시청)"},{time:"[00:06:03]",secs:363,title:"찬양 (《짙은 고난에 지칠지라도》 — 이영 작사, 김민지 작곡 / 반주 김윤정, 찬양 신희정·이인하·장신영)"},{time:"[00:06:10]",secs:370,title:"찬양 / 기름 부으심 — [신상우 작사·작곡, 찬양 장용진 장로] 신년 첫 주 영혼의 갈급함을 채우는 거룩한 음악설교 특별 찬양 세션, 유튜브 내용 정리(2026년)"},{time:"[00:06:27]",secs:387,title:"설교 1 (보혜사의 어원적 속성 강의, 짙은 환경의 안개 속에서 불빛 대신 '소리'로 신호를 바꾸어 객차를 건져내는 등대의 비유를 통한 성도의 영적 안테나 예리함 강조, 거대한 법정에서 성도의 죄악을 탄원하고 의롭다 하시는 무죄 변호 복음 선포)ko.srt]"},{time:"[00:07:44]",secs:464,title:"성경 봉독 — 시편 147편 3절 봉독"},{time:"[00:08:00]",secs:480,title:"[설교 2] — 인간이 한계에 부딪혀 끝이라 생각하는 지점에서 시작되는 주님의 초자연적 역동성 분석, 저무는 달과 돋아나는 태양이 교차하는 십자가적 섭리 고찰"},{time:"[00:08:11]",secs:491,title:"시 낭송 / 삶의 묵상 — [흉터 — 김형종] 감상, 유튜브 내용 정리(2026년)"},{time:"[00:10:42]",secs:642,title:"설교 1 — 아시카가 요시마사 장군의 깨진 찻잔 예화를 통해 본 일본의 '킨츠기(Kintsugi)' 복원 공법 소개, 깨진 가정·우울증·정신적 고뇌의 파편들을 숨기지 않고 전능자 앞에 직시해야 하는 필연성 역설, 슬라이도(Slido) 무기명 양방향 아픔 고백 및 연민의 소통 진행"},{time:"[00:11:33]",secs:693,title:"설교 2 (특송 가사 속 '험한 시간에 두셨더라도'의 타동사적 섭리 강해, 고난에 담긴 주님의 선한 의도와 예레미야 29:11 평안의 약속)"},{time:"[00:11:49]",secs:709,title:"설교 2 — 세속에서 떼어내어 하나님 편으로 신분을 옮기시는 은혜인 원어 '마샤흐(מָשַׁח)' 대강해, 깨지고 파쇄된 속마음 상태와 일상 소통의 참상 진단, 갇힌 문을 여는 영적 구출 역사인 '페카코아흐(פְּקַח־קוֹחַ)'의 권능 선포 및 요한일서 2:11 안목의 결함 경계, 유튜브 내용 정리(2026년)"},{time:"[00:13:45]",secs:825,title:"찬양. 1연 — 찬양 가사의 거룩한 의미 묵상 (\"끝이라고 생각했던 그곳에서 시작되네, 완전하신 주의 계획 이제 깨닫네\")"},{time:"[00:14:16]",secs:856,title:"[설교 3] — 사람의 예상을 무한히 뛰어넘는 하나님의 거룩한 지혜와 모략 원어 '에차(עֵצָה)' 영해 강론, 새로운 대안의 문을 열어두시기 위해 현재 유익이라 여겼던 문들을 여지없이 폐쇄하시는 주님의 깊은 반전 추동력 고찰"},{time:"[00:20:53]",secs:1253,title:"[시 낭송] — 《성령의 바람 — 김형종》"},{time:"[00:21:59]",secs:1319,title:"시 낭송 [숨 쉴 여유공간 — 김형종]"},{time:"[00:23:20]",secs:1400,title:"[설교 4] — 시간과 세월의 흐름에 따라 성도의 영혼에 촘촘하고 강하게 조각되는 영적 나이테 해설, 노년과 백발의 지점까지 반드시 업고 품어 건져내시겠다는 이사야 46:4 신실한 초석 선포"},{time:"[00:24:28]",secs:1468,title:"설교 3 (새로운 가치관 형성 시기에 찾아오는 사탄의 공격, 창세기 2:7을 통해 가장 낮은 곳까지 밀착하여 생기를 불어넣으시는 하나님의 지극하신 보살핌 선포)"},{time:"[00:29:06]",secs:1746,title:"영상 2 [재능을 알아보다] (야니스의 신체적 강점을 한눈에 파악하여 그리스 성인 3부 리그 연습생 프로 계약으로 가문의 첫 외식을 선물하는 감독의 결정적 추천 장면 시청)ko.srt]"},{time:"[00:29:25]",secs:1765,title:"찬양. 2연 — 노래 가사 묵상 중창 (\"겨울 지나 봄이 오듯 인생의 계절 지날 때, 나의 믿음 깊어지고 내 기도는 노래가 되네\")"},{time:"[00:29:58]",secs:1798,title:"설교 2 (만남을 통해 피할 길과 탈출구를 여시는 히브리·헬라어 거룩한 '크바시스(έκβασις)' 공식 대강해, 직장과 공동체 안에서 이웃의 은사이자 재능을 뜻하는 '카리스마(χάρισμα)'를 찾아 전하는 칭찬 매뉴얼 적용)"},{time:"[00:33:36]",secs:2016,title:"비전특송 찬양 — 《말이라는 씨앗》 [정용진 장로 반주] (언어의 영적 동력과 위로를 노래하는 특송 세션), 유튜브 내용 정리(2026년)"},{time:"[00:35:46]",secs:2146,title:"시 낭송 — [그를 사랑하게 하소서 — 김형종], 유튜브 내용 정리(2026년)"},{time:"[00:36:06]",secs:2166,title:"시 낭송 [선생님 — 김형종]"},{time:"[00:37:03]",secs:2223,title:"설교 2 — 그릇이 부러진 극한의 상태 원어 '샤바르 레브(נִשְׁבְּרֵי לֵב)' 강해, 상처를 원래보다 온전하게 고치시는 '라파(רָפָא)'의 재창조 권능 선포, 붕대로 감싸 묶으시는 하나님의 '하바쉬(חָבַשׁ)' 치유법, 바울의 육체 가시 속에서 완전함에 도달하는 '텔레이오타이(τελειούται)'의 신비 강론, 두 번째 슬라이도 확신의 위로 나눔, 작가 사역자의 성화 해설, 가시를 면류관으로 바꾸는 결단 통성 기도 및 최영순 집사의 애찬 마침 기도"},{time:"[00:37:52]",secs:2272,title:"설교 3 — 가족 공동체 안에서 숨쉴 구멍을 만들어주는 효도 전화 통화 권면, 허리 굽은 자들을 자존감으로 세우시는 하나님의 사랑(시편 146:7~8) 확증, 작가 사역자의 주제 성화 그림 해설 및 세상 속 빛의 통로로 파송하는 간절한 마침 축복 기도, 유튜브 내용 정리(2026년)"},{time:"[00:38:29]",secs:2309,title:"설교 3 (어떠한 대가도 없이 성도의 삶이 되어지도록 은혜를 연결하시는 주님의 무조건적인 지지 확증, 공부와 직장에 지친 가족을 섣불리 가르치려 들기보다 조용히 머무는 '메노(μένω)'의 안식 사랑을 통한 가족 전도 비결 강론)"},{time:"[00:49:05]",secs:2945,title:"영상 3 [마지막 천사] (야니스가 꿈의 NBA 구단에 안착하기까지 밤잠 설치며 그의 가치를 역으로 증명해낸 수많은 무명의 천사·이름 없는 감독들의 조력 실화 시청)"},{time:"[00:50:02]",secs:3002,title:"설교 4 (우리를 끝까지 고아와 같이 버려두지 않고 최종 낙원까지 호위하시는 주님의 성령의 사람 인도법 해설, 작가 사역자의 성화 그림 해설 및 복된 은혜의 약속 전달자가 되기 위한 합심 마침 결단 기도)"}]}
+{index:5,year:"2026",id:"BoutY9Rmn6Y",title:"2026년 2월 8일 통합설교 (음악설교) — 지금부터 영원까지",date:"2026-02-08",month:"2월",categoryKo:"음악설교",scripture:"이사야 43장 19절",situation:"고난시련",summary:"인간이 자신의 유한한 계산법으로 \"내 인생은 실패작이며 모든 가능성의 문이 완전히 끝났다\"고 선언하며 주저앉는 바로 그 척박한 겨울의 중심에서 하나님의 위대한 새 일은 비로소 태동합니다. 찬양 가사 속 성도를 향한 하나님의 완전하신 '계획'은 히브리어 원어로 '에차(עֵצָה)'인데, 이는 가벼운 처세술이나 임기응변이 아닌 하나님의 거대한 모략과 깊은 지혜를 의미합니다. 하나님께서는 우리에게 더 선한 영적 도약을 주시려고 때로 안주하던 기득권의 문을 과감히 닫으시며, 거친 폭풍을 통과하게 하심으로써 인생에 더 깊고 조밀한 신앙의 나이테를 새겨 넣으십니다. 백발이 되고 노년에 이르기까지 당신의 지으신 백성을 기어이 안고 업어 구원해 내시겠다는 신실한 약속(사 46:4)을 전적으로 신뢰하며, 조급한 염려를 물리치고 내면의 성숙함을 통해 기도를 찬송으로 바꾸어 내는 '기다림의 실력'을 완비해야 합니다.  주요 키워드: #음악설교 #지금부터영원까지 #이사야43장19절 #에차 #기다림의실력  정밀 인덱싱 타임라인:  [00:00] [성경봉독] — 이사야 43:19 ; 21 봉독  [00:45] [설교 1] — 차가운 2월 겨울 공기 속에 숨겨진 땅 밑 봄의 생명 태동 조명, 실패라 느끼는 긴 겨울의 상황 속에서 문제를 기쁨으로 맞닥뜨려 이겨내는 성도의 영적 '견디는 실력' 도입 강해  [03:08] [찬양] — 《그곳에서 시작되네》 (박은지 작사, 김민지 작곡 / 반주 신희정, 찬양 최유지 특송 세션)  [08:00] [설교 2] — 인간이 한계에 부딪혀 끝이라 생각하는 지점에서 시작되는 주님의 초자연적 역동성 분석, 저무는 달과 돋아나는 태양이 교차하는 십자가적 섭리 고찰  [13:45] 찬양. 1연 — 찬양 가사의 거룩한 의미 묵상 (\"끝이라고 생각했던 그곳에서 시작되네, 완전하신 주의 계획 이제 깨닫네\")  [14:16] [설교 3] — 사람의 예상을 무한히 뛰어넘는 하나님의 거룩한 지혜와 모략 원어 '에차(עֵצָה)' 영해 강론, 새로운 대안의 문을 열어두시기 위해 현재 유익이라 여겼던 문들을 여지없이 폐쇄하시는 주님의 깊은 반전 추동력 고찰  [20:53] [시 낭송] — 《성령의 바람 — 김형종》  [23:20] [설교 4] — 시간과 세월의 흐름에 따라 성도의 영혼에 촘촘하고 강하게 조각되는 영적 나이테 해설, 노년과 백발의 지점까지 반드시 업고 품어 건져내시겠다는 이사야 46:4 신실한 초석 선포  [29:25] 찬양. 2연 — 노래 가사 묵상 중창 (\"겨울 지나 봄이 오듯 인생의 계절 지날 때, 나의 믿음 깊어지고 내 기도는 노래가 되네\")  [29:58] [설교 5] — 다가올 노후에 대한 인간적 조급함과 두려움을 믿음으로 격파하고, 내면의 깊은 성숙을 거쳐 삶의 모든 호흡을 찬송으로 바꾸어내는 황혼 성도의 평안 권면  [40:24] 찬양. 3연 — 전 회중과 사역자가 주님의 신실한 보호를 찬미하는 결단 마침 중창  [41:00] [설교 6] — 광야와 사막에 기어이 길과 강을 내시는 주님의 약속을 온전히 가슴에 새기고, 삶의 거친 꼬인 환경을 넉넉히 통과해 완주하도록 선포하는 영적 회복의 전 성도 마침 통성 축복 기도",notes:"💡 주요 키워드: #음악설교",timeline:[{time:"[00:00:00]",secs:0,title:"[성경봉독] — 이사야 43:19 ; 21 봉독"},{time:"[00:00:45]",secs:45,title:"[설교 1] — 차가운 2월 겨울 공기 속에 숨겨진 땅 밑 봄의 생명 태동 조명, 실패라 느끼는 긴 겨울의 상황 속에서 문제를 기쁨으로 맞닥뜨려 이겨내는 성도의 영적 '견디는 실력' 도입 강해"},{time:"[00:03:08]",secs:188,title:"[찬양] — 《그곳에서 시작되네》 (박은지 작사, 김민지 작곡 / 반주 신희정, 찬양 최유지 특송 세션)"},{time:"[00:08:00]",secs:480,title:"[설교 2] — 인간이 한계에 부딪혀 끝이라 생각하는 지점에서 시작되는 주님의 초자연적 역동성 분석, 저무는 달과 돋아나는 태양이 교차하는 십자가적 섭리 고찰"},{time:"[00:13:45]",secs:825,title:"찬양. 1연 — 찬양 가사의 거룩한 의미 묵상 (\"끝이라고 생각했던 그곳에서 시작되네, 완전하신 주의 계획 이제 깨닫네\")"},{time:"[00:14:16]",secs:856,title:"[설교 3] — 사람의 예상을 무한히 뛰어넘는 하나님의 거룩한 지혜와 모략 원어 '에차(עֵצָה)' 영해 강론, 새로운 대안의 문을 열어두시기 위해 현재 유익이라 여겼던 문들을 여지없이 폐쇄하시는 주님의 깊은 반전 추동력 고찰"},{time:"[00:20:53]",secs:1253,title:"[시 낭송] — 《성령의 바람 — 김형종》"},{time:"[00:23:20]",secs:1400,title:"[설교 4] — 시간과 세월의 흐름에 따라 성도의 영혼에 촘촘하고 강하게 조각되는 영적 나이테 해설, 노년과 백발의 지점까지 반드시 업고 품어 건져내시겠다는 이사야 46:4 신실한 초석 선포"},{time:"[00:29:25]",secs:1765,title:"찬양. 2연 — 노래 가사 묵상 중창 (\"겨울 지나 봄이 오듯 인생의 계절 지날 때, 나의 믿음 깊어지고 내 기도는 노래가 되네\")"},{time:"[00:29:58]",secs:1798,title:"[설교 5] — 다가올 노후에 대한 인간적 조급함과 두려움을 믿음으로 격파하고, 내면의 깊은 성숙을 거쳐 삶의 모든 호흡을 찬송으로 바꾸어내는 황혼 성도의 평안 권면"},{time:"[00:40:24]",secs:2424,title:"찬양. 3연 — 전 회중과 사역자가 주님의 신실한 보호를 찬미하는 결단 마침 중창"},{time:"[00:41:00]",secs:2460,title:"[설교 6] — 광야와 사막에 기어이 길과 강을 내시는 주님의 약속을 온전히 가슴에 새기고, 삶의 거친 꼬인 환경을 넉넉히 통과해 완주하도록 선포하는 영적 회복의 전 성도 마침 통성 축복 기도"}]},
+{index:6,year:"2026",id:"eE-WT_kIb0o",title:"2026년 2월 15일 비전설교 — 고난을 압도하는 결과",date:"2026-02-15",month:"2월",categoryKo:"비전설교",scripture:"베드로전서 1장 7절",situation:"고난시련",summary:"인생에 예기치 않게 휘몰아치는 혹독한 찬바람과 긴 겨울은 우리를 파괴하는 재앙이 아니라, 회복될 에덴동산의 새로운 주인이자 '하늘의 상속자'로 우리를 빚어가시는 하나님의 필연적인 단련 과정입니다. 17세기 극심한 소빙하기의 혹한을 이겨내며 나이테가 매우 촘촘하고 단단해진 가문비나무가 마침내 310억 원 가치의 최고 명기인 '스트라디바리우스(Stradivarius)' 바이올린으로 재탄생하여 영롱한 울림을 낳듯, 고난을 통과한 성도의 삶에는 비교할 수 없는 영광의 울림이 깃듭니다. 본문 속 '확실함'의 헬라어 원어 '도키미온(δοκίμιον)'은 '시련을 통과하여 검증된 순전한 가치'를 의미합니다. 우리는 낙원의 새 주인으로 선택받았으며 추위가 모질고 길수록 확실한 주인이 되어간다는 확신을 품고, 세상의 물질과 출세 중심의 가치관을 깨뜨려 거룩한 산 제사의 삶을 완주해야 합니다.  주요 키워드: #비전설교 #고난을압도하는결과 #베드로전서1장7절 #스트라디바리우스 #도키미온  정밀 인덱싱 타임라인:  [00:00] 예배 시작 — 땅 밑에 온기가 차올라 봄을 준비하는 2월 비전 주일 오프닝, 동결심도까지 꽉 찬 냉기 속에서 사력을 다해 버텨내는 굳센 나무뿌리들의 인내 묵상  [01:11] 성시 교독 — 교독 7번(시편 13편) \"여호와여 어느 때까지니이까 나를 영원히 잊으시나이까\" 부르짖음과 오직 주의 인자하심을 의지하는 구원의 기쁨 합독  [02:30] 신앙고백 — 온 성도가 한목소리로 선포하는 사도신경 복창  [03:51] 대표 기도 [임향미 권사] — 약속의 말씀이 우리의 완벽한 짝이자 미래임을 고백하고, 인생의 겨울 장벽 앞에서 절망했던 연약함을 회개하며 다친 문은 새 계획의 시작임을 믿고 설 명절 가족 간의 화해와 세대 간의 이해를 구하는 대표 기도  [08:16] 성경 봉독 — [베드로전서 1:7] 봉독  [08:56] 시 낭송 — 《기쁨에 찬 노동요 — 김형종》  [10:58] 설교 1 — 초청한 적 없는 인생의 참바람이 부는 이유 재해석, 알프스 소빙하기의 극한 추위 속에서 세포가 촘촘해져 단단한 강질이 된 가문비나무로 제작된 명기 '스트라디바리우스'의 신비로운 나이테 비밀 대강해  [19:25] 실시간 상정 세션 (슬라이도 나눔) — 전 성도가 스마트폰으로 동시 접속하여 돈, 건강, 외로움, 소원해진 가족 관계, 고부 갈등, 직장과 신앙의 한계 등 각자가 겪고 있는 '인생의 겨울과 아픔'의 소리를 정직하게 스크린에 띄워 하나님 앞에 상정하는 쌍방향 치유 시간  [24:50] 설교 2 — 아픔의 응어리를 단단함으로 바꾸시는 주님의 전략 강의, '시련을 통과한 순전함'을 뜻하는 원어 '도키미온(δοκίμιον)'의 확실한 믿음 선포, 고난을 견뎌내는 동기부여가 되는 두 가지 영적 기둥(\"나는 낙원의 주인으로 선택되었다\", \"추위가 길수록 확실한 주인이 된다\") 해설  [30:38] 예배 중 찬양 — 교회를 떠나는 순간 믿음을 두고 내리는 위선적 예배를 타파하고 온전한 삶을 주께 드리기로 결단하는 전 성도 합심 합창: 《나의 삶을 거룩한 산 제사로 드리리 / 삶의 예배》  [34:14] 설교 3 — 고난을 압도하는 확실한 하늘 보상의 영광 선포, 가슴앓이의 고통 속에서도 자녀들을 먹여 살리기 위해 머리에 넥타이를 묶고 꾸역꾸역 일어나 헌신하셨던 우리 시대 어머니들의 숭고한 사랑을 빗댄 감동적 복음 권면, 작가 사역자의 성화 해설 및 구원의 자존감 회복을 선포하는 마침 축복 기도",notes:"💡 주요 키워드: #비전설교",timeline:[{time:"[00:00:00]",secs:0,title:"예배 시작 — 땅 밑에 온기가 차올라 봄을 준비하는 2월 비전 주일 오프닝, 동결심도까지 꽉 찬 냉기 속에서 사력을 다해 버텨내는 굳센 나무뿌리들의 인내 묵상"},{time:"[00:01:11]",secs:71,title:"성시 교독 — 교독 7번(시편 13편) \"여호와여 어느 때까지니이까 나를 영원히 잊으시나이까\" 부르짖음과 오직 주의 인자하심을 의지하는 구원의 기쁨 합독"},{time:"[00:02:30]",secs:150,title:"신앙고백 — 온 성도가 한목소리로 선포하는 사도신경 복창"},{time:"[00:03:51]",secs:231,title:"대표 기도 [임향미 권사] — 약속의 말씀이 우리의 완벽한 짝이자 미래임을 고백하고, 인생의 겨울 장벽 앞에서 절망했던 연약함을 회개하며 다친 문은 새 계획의 시작임을 믿고 설 명절 가족 간의 화해와 세대 간의 이해를 구하는 대표 기도"},{time:"[00:08:16]",secs:496,title:"성경 봉독 — [베드로전서 1:7] 봉독"},{time:"[00:08:56]",secs:536,title:"시 낭송 — 《기쁨에 찬 노동요 — 김형종》"},{time:"[00:10:58]",secs:658,title:"설교 1 — 초청한 적 없는 인생의 참바람이 부는 이유 재해석, 알프스 소빙하기의 극한 추위 속에서 세포가 촘촘해져 단단한 강질이 된 가문비나무로 제작된 명기 '스트라디바리우스'의 신비로운 나이테 비밀 대강해"},{time:"[00:19:25]",secs:1165,title:"실시간 상정 세션 (슬라이도 나눔) — 전 성도가 스마트폰으로 동시 접속하여 돈, 건강, 외로움, 소원해진 가족 관계, 고부 갈등, 직장과 신앙의 한계 등 각자가 겪고 있는 '인생의 겨울과 아픔'의 소리를 정직하게 스크린에 띄워 하나님 앞에 상정하는 쌍방향 치유 시간"},{time:"[00:24:50]",secs:1490,title:"설교 2 — 아픔의 응어리를 단단함으로 바꾸시는 주님의 전략 강의, '시련을 통과한 순전함'을 뜻하는 원어 '도키미온(δοκίμιον)'의 확실한 믿음 선포, 고난을 견뎌내는 동기부여가 되는 두 가지 영적 기둥(\"나는 낙원의 주인으로 선택되었다\", \"추위가 길수록 확실한 주인이 된다\") 해설"},{time:"[00:30:38]",secs:1838,title:"예배 중 찬양 — 교회를 떠나는 순간 믿음을 두고 내리는 위선적 예배를 타파하고 온전한 삶을 주께 드리기로 결단하는 전 성도 합심 합창: 《나의 삶을 거룩한 산 제사로 드리리 / 삶의 예배》"},{time:"[00:34:14]",secs:2054,title:"설교 3 — 고난을 압도하는 확실한 하늘 보상의 영광 선포, 가슴앓이의 고통 속에서도 자녀들을 먹여 살리기 위해 머리에 넥타이를 묶고 꾸역꾸역 일어나 헌신하셨던 우리 시대 어머니들의 숭고한 사랑을 빗댄 감동적 복음 권면, 작가 사역자의 성화 해설 및 구원의 자존감 회복을 선포하는 마침 축복 기도"}]},
+{index:7,year:"2026",id:"ZVLGiyIPmmU",title:"2026년 2월 22일 영화설교 — 삼킬 자를 찾는 사탄",date:"2026-02-22",month:"2월",categoryKo:"영화설교",scripture:"베드로전서 5장 8~9절",situation:"분노용서",summary:"작은 씨앗인 우리가 거목으로 자라나기 위한 유일한 방법은 땅속에 온전히 심긴 채 싹이 날 때까지 묵묵히 '인내의 기간'을 기다리는 것입니다. 영화 〈라이즈〉의 야니스 가족이 불법 체류라는 척박한 현실 속에서도 자람의 시기를 견뎌냈던 것처럼 신앙의 성숙에도 기다림이 필수적입니다. 사탄은 이 거룩한 기다림을 견디지 못하게 방해하고자 본질은 그대로 둔 채 겉모습만 광명의 천사로 바꾸어 다가오는 '메타스케마티조(μετασχηματίζω)' 기법을 사용합니다. 영화 속 '파코'가 불법 체류자 신분을 미끼 삼아 노예 계약을 들이밀며 영혼을 결박하려 하듯 사탄은 달콤한 유혹으로 다가옵니다. 성도는 눈앞의 위장된 천사에게 현혹되지 않도록 영안을 밝히 뜨고 깨어 근신함으로 마귀의 궤계를 굳건히 대적해야 합니다.  주요 키워드: #영화설교 #삼킬자를찾는사탄 #베드로전서5장 #메타스케마티조 #영안  정밀 인덱싱 타임라인:  [00:00] 준비찬양  [04:11] 성경 봉독 [베드로전서 5:8-9]  [05:04] 설교 1 (영화설교 도입, 생명의 씨앗이 거목으로 자라나기 위해 필수적인 흙 속의 인내와 기다림의 법칙 강해, 그리스 최고 농구 선수 야니스 아데토쿤보 가족의 실화 배경 소개)  [12:14] 영상 1 [파코의 훼방] (불법 체류자 약점을 무기 삼아 다른 구단과의 계약을 차단하고 야니스 가족의 출구와 성장을 가로막는 브로커의 훼방 영상 시청)  [13:34] 설교 2 (겉모습만 광명의 천사로 가장하여 접근하는 사탄의 영적 속임수 '메타스케마티조' 원어 대강해, 영안이 흐려진 성도가 당장 눈앞의 유혹에 빠져 사탄의 노예 계약에 묶이게 되는 영적 메커니즘 고발)  [32:44] 시 낭송 [기적의 열쇠 — 김형종]  [35:06] 설교 3 (유혹의 미끼 뒤에 숨겨진 사망의 덫을 분별하는 영적 근신 촉구, 시련을 딛고 농구계의 거목으로 우뚝 서게 하시는 하나님의 반전 섭리)  [43:02] 영상 2 [거절당한 파코] (달콤한 미끼를 과감히 거절하고 온전한 믿음의 인내로 승리를 쟁취하는 결단의 순간 시청)  [43:58] 설교 4 (마귀를 대적하여 약속의 자리에 굳건히 심기기를 당부하는 결단 권면 및 축복 기도 마무리)",notes:"💡 주요 키워드: #영화설교",timeline:[{time:"[00:00:00]",secs:0,title:"준비찬양"},{time:"[00:04:11]",secs:251,title:"성경 봉독 [베드로전서 5:8-9]"},{time:"[00:05:04]",secs:304,title:"설교 1 (영화설교 도입, 생명의 씨앗이 거목으로 자라나기 위해 필수적인 흙 속의 인내와 기다림의 법칙 강해, 그리스 최고 농구 선수 야니스 아데토쿤보 가족의 실화 배경 소개)"},{time:"[00:12:14]",secs:734,title:"영상 1 [파코의 훼방] (불법 체류자 약점을 무기 삼아 다른 구단과의 계약을 차단하고 야니스 가족의 출구와 성장을 가로막는 브로커의 훼방 영상 시청)"},{time:"[00:13:34]",secs:814,title:"설교 2 (겉모습만 광명의 천사로 가장하여 접근하는 사탄의 영적 속임수 '메타스케마티조' 원어 대강해, 영안이 흐려진 성도가 당장 눈앞의 유혹에 빠져 사탄의 노예 계약에 묶이게 되는 영적 메커니즘 고발)"},{time:"[00:32:44]",secs:1964,title:"시 낭송 [기적의 열쇠 — 김형종]"},{time:"[00:35:06]",secs:2106,title:"설교 3 (유혹의 미끼 뒤에 숨겨진 사망의 덫을 분별하는 영적 근신 촉구, 시련을 딛고 농구계의 거목으로 우뚝 서게 하시는 하나님의 반전 섭리)"},{time:"[00:43:02]",secs:2582,title:"영상 2 [거절당한 파코] (달콤한 미끼를 과감히 거절하고 온전한 믿음의 인내로 승리를 쟁취하는 결단의 순간 시청)"},{time:"[00:43:58]",secs:2638,title:"설교 4 (마귀를 대적하여 약속의 자리에 굳건히 심기기를 당부하는 결단 권면 및 축복 기도 마무리)"}]},
+{index:8,year:"2026",id:"nQW_wcxVSus",title:"2026년 3월 1일 나눔설교 — 영원한 동행 보혜사",date:"2026-03-01",month:"3월",categoryKo:"통합설교",scripture:"요한복음 14장 16절",situation:"우울불안",summary:"세상 모든 종교는 인간이 자신의 정성과 노력으로 신이나 진리를 찾아 올라가는 '상향식 신앙'이지만, 기독교는 전능하신 신이 직접 육신을 입고 죄인 된 인간을 찾아 내려오시는 거룩한 '하향식 은혜'입니다. 잃어버린 자녀를 끝까지 찾아내시는 하나님의 사랑은 예수 그리스도가 떠나시며 보내주신 '또 다른 보혜사 성령님'의 영원한 동행을 통해 확증됩니다. 보혜사를 영접한 성도는 과거의 허물과 죄를 들추며 참소하는 사탄의 결박에서 벗어나, 더 이상 죄의 종이 아니라 하나님의 유업을 온전히 이어받을 거룩한 '자녀이자 상속자'로 근원적인 정체성이 변화됩니다(갈 4:6-7, 로마서 8:17). 보혜사와 동행할 때 우리는 하나님의 선하신 뜻과 계획을 명확히 분별하며 상속자의 권세를 누리게 됩니다.  주요 키워드: #나눔설교 #영원한동행보혜사 #요한복음14장16절 #하향식은혜 #상속자의신분  정밀 인덱싱 타임라인:  [00:00] 준비찬양  [05:02] 성경 봉독 [요한복음 14:16]  [05:34] 설교 1 (3월 나눔 주일 오프닝, 인간의 노력을 강조하는 타 종교의 상향식 신앙과 신이 죄인을 친히 찾아오시는 기독교의 '하향식 은혜'의 본질 비교, 갈라디아서 4:6-7에 담긴 종의 신분에서 아들과 상속자로의 완전한 신분 복권 선포)  [25:18] 시 낭송 [삼월의 기억 — 김형종]  [27:30] 설교 2 (보혜사 성령님을 만난 상속자들의 삶의 태도, 정죄와 참소로 종의 두려움에 묶어두려는 사탄의 음성을 물리치는 방법 강해, 로마서 8:17a에 기초한 영적 자존감 확립, 고린도전서 2:10의 말씀 적용 및 영원한 동행을 구하는 마무리 축복 기도)",notes:"💡 주요 키워드: #나눔설교",timeline:[{time:"[00:00:00]",secs:0,title:"준비찬양"},{time:"[00:05:02]",secs:302,title:"성경 봉독 [요한복음 14:16]"},{time:"[00:05:34]",secs:334,title:"설교 1 (3월 나눔 주일 오프닝, 인간의 노력을 강조하는 타 종교의 상향식 신앙과 신이 죄인을 친히 찾아오시는 기독교의 '하향식 은혜'의 본질 비교, 갈라디아서 4:6-7에 담긴 종의 신분에서 아들과 상속자로의 완전한 신분 복권 선포)"},{time:"[00:25:18]",secs:1518,title:"시 낭송 [삼월의 기억 — 김형종]"},{time:"[00:27:30]",secs:1650,title:"설교 2 (보혜사 성령님을 만난 상속자들의 삶의 태도, 정죄와 참소로 종의 두려움에 묶어두려는 사탄의 음성을 물리치는 방법 강해, 로마서 8:17a에 기초한 영적 자존감 확립, 고린도전서 2:10의 말씀 적용 및 영원한 동행을 구하는 마무리 축복 기도)"}]},
+{index:9,year:"2026",id:"uq0NMAyinuM",title:"2026년 3월 8일 통합설교 (음악설교) — 내 마음 깊은 곳에",date:"2026-03-08",month:"3월",categoryKo:"음악설교",scripture:"누가복음 5장 4절",situation:"상처치유",summary:"우리는 흔히 인생의 막다른 골목에 이르러서야 초라한 항복을 하며 하나님을 찾는 사람을 봅니다. 베드로는 자신의 성실함과 어부로서의 전문성을 내려놓고, 밤새 허탈하게 헛그물질을 했던 절망의 바다에서 오직 \"말씀에 의지하여 그물을 내리리이다\"라는 영적 항복을 선포했습니다. 말씀대로 순종하여 그물이 찢어질 듯한 만선의 기적을 체험했을 때, 그는 축제가 아닌 주님 앞에 엎드려 \"주여 나를 떠나소서 나는 죄인입니다\"라는 내면의 정직한 고백을 드렸습니다. 고통의 시기를 지나며 상처로 인해 인성의 출구가 막혔던 이들이 선입견을 벗어버리고 주님을 심령의 가장 깊은 곳에 모실 때, 세상의 평판에 흔들리지 않고 남은 모든 인생을 예수와 함께 걷는 위대한 복음의 증인으로 거듭나게 됩니다.  주요 키워드: #음악설교 #내마음깊은곳에 #누가복음5장4절 #베드로의고백 #말씀에의지하여  정밀 인덱싱 타임라인:  [00:00] 성경 봉독 [누가복음 5:4~6]  [00:54] 설교 1 (인생의 골목에서 만나는 하나님의 부르심, 주님의 애제자 베드로가 단 한 번의 청종에 응답한 사건 해설, 자연 확성의 원리를 이용해 선입견을 벗기신 배 위의 예수님 소개)  [05:24] 찬양 [베드로의 고백 — 디소드(D.Sword) 작사·작곡 / 찬양 장용진 장로] (배와 그물을 버리고 주를 따르는 결단과 \"네가 나를 사랑하느냐\"는 물음에 눈물로 고백하는 성찰의 특송)  [10:31] 설교 2 (베테랑 어부의 기술을 뛰어넘는 말씀 순종의 역사 강해, 기적 앞에 만선 축제를 벌이지 않고 무릎을 꿇은 베드로의 참된 회개 고찰, 상처로 막혀버린 인성의 출구를 깨뜨리고 예수와 동행하는 높은 차원의 삶의 위상 선포)  [31:41] 시 낭송 [내려오신 길 — 김형종]  [34:50] 설교 3 (지우고 싶은 과거와 단점을 주님 안에서 극복하는 결단, 작가 사역자의 빛의 캔버스 성화 그림 해설 및 중심 심령 회복을 위한 온 성도의 통성 축복 기도)",notes:"💡 주요 키워드: #나눔설교",timeline:[{time:"[00:00:00]",secs:0,title:"성경 봉독 [누가복음 5:4~6]"},{time:"[00:00:54]",secs:54,title:"설교 1 (인생의 골목에서 만나는 하나님의 부르심, 주님의 애제자 베드로가 단 한 번의 청종에 응답한 사건 해설, 자연 확성의 원리를 이용해 선입견을 벗기신 배 위의 예수님 소개)"},{time:"[00:05:24]",secs:324,title:"찬양 [베드로의 고백 — 디소드(D.Sword) 작사·작곡 / 찬양 장용진 장로] (배와 그물을 버리고 주를 따르는 결단과 \"네가 나를 사랑하느냐\"는 물음에 눈물로 고백하는 성찰의 특송)"},{time:"[00:10:31]",secs:631,title:"설교 2 (베테랑 어부의 기술을 뛰어넘는 말씀 순종의 역사 강해, 기적 앞에 만선 축제를 벌이지 않고 무릎을 꿇은 베드로의 참된 회개 고찰, 상처로 막혀버린 인성의 출구를 깨뜨리고 예수와 동행하는 높은 차원의 삶의 위상 선포)"},{time:"[00:31:41]",secs:1901,title:"시 낭송 [내려오신 길 — 김형종]"},{time:"[00:34:50]",secs:2090,title:"설교 3 (지우고 싶은 과거와 단점을 주님 안에서 극복하는 결단, 작가 사역자의 빛의 캔버스 성화 그림 해설 및 중심 심령 회복을 위한 온 성도의 통성 축복 기도)"}]},
+{index:10,year:"2026",id:"3PZmfraM2gk",title:"2026년 3월 15일 비전설교 — 약점이 걸작된다",date:"2026-03-15",month:"3월",categoryKo:"비전설교",scripture:"에베소서 2장 10절",situation:"상처치유",summary:"피렌체 성당 마당에 40년간 방치되었던 결함투성이 대리석 '두초(Duccio)'는 너무 가늘고 중간에 치명적인 구멍이 뚫려 있어 모든 거장에게 버림받은 실패작이었습니다. 그러나 26세의 청년 미켈란젤로는 그 돌 속에서 천사를 보았고, 돌의 약점과 구멍을 피해 무게중심을 뒤로 보내 한쪽 다리에 힘을 싣는 신비로운 신체 뒤틀림 기법인 '콘트라포스토(Contrapposto)'를 활용하여 인류 역사상 가장 위대한 명작 '다비드 상'을 조각해 냈습니다. 이처럼 지우고 싶은 수치의 구멍, 척박한 결핍, 모난 기질을 가진 우리의 깨진 인생일지라도 토기장이이신 하나님의 손길에 맡겨지면, 약점은 우리 인생에만 존재하는 가장 독창적이고 아름다운 예술적 곡선이자 극상품의 '걸작(포이에마)'으로 승화됩니다.  주요 키워드: #비전설교 #약점이걸작된다 #에베소서2장10절 #미켈란젤로와두초 #콘트라포스토  정밀 인덱싱 타임라인:  [00:00] 예배 시작 (3월 약속의 달 예배 선포, 실내보다 바깥이 포근하듯 나물지 않은 내면의 상처를 만지시는 주님의 평안 임재)  [04:22] 대표 기도 (시한부 생명에서 보혜사 성령을 통해 영원한 생명 유업을 약속하신 하나님의 은혜에 감사하며 육적 치유와 영적 회복을 구하는 장로·권사 대표 헌신 기도)  [07:33] 성경 봉독 [에베소서 2:10]  [08:10] 시 낭송 [굽은 나무 — 김형종] (곧은 나무는 왕궁과 가구로 베여갔으나 굽은 나무는 동산 지킴이가 되었다는 치유의 메시지)  [10:37] 설교 1 (미켈란젤로가 마당에 버려진 거대 대리석 '두초'를 선택하여 세계적인 명작 다비드 상을 잉태시킨 역사적 배경 설명, 인생의 구멍과 결핍으로 절망하는 성도들을 향한 약점 재해석 강론)  [40:00] 영상 1 [다비드 상] (돌의 치명적인 결함 덕분에 탄생한 역사상 가장 생동감 넘치는 역동적 근육미 감상)  [41:19] 설교 2 (전반부 — 대리석의 좁은 결을 극복한 '콘트라포스토' 기법의 미술사적 의미และ 하나님의 신성한 성품 훈련 연결)  [44:10] 찬양 (상처를 걸작으로 바꾸시는 주님께 영광 돌리는 합심 찬양 고백)  [48:24] 설교 2 (후반부 — 약점이 없었다면 우리는 평범한 돌에 불과했을 것임을 선언, 상처를 안고 동굴에 갇히지 말고 주님의 손끝에서 빚어지는 유일무이한 걸작으로 승리할 것을 당부, 작가 사역자의 다윗 성화 해설 및 축복 기도 마무리)",notes:"💡 주요 키워드: #비전설교",timeline:[{time:"[00:00:00]",secs:0,title:"예배 시작 (3월 약속의 달 예배 선포, 실내보다 바깥이 포근하듯 나물지 않은 내면의 상처를 만지시는 주님의 평안 임재)"},{time:"[00:04:22]",secs:262,title:"대표 기도 (시한부 생명에서 보혜사 성령을 통해 영원한 생명 유업을 약속하신 하나님의 은혜에 감사하며 육적 치유와 영적 회복을 구하는 장로·권사 대표 헌신 기도)"},{time:"[00:07:33]",secs:453,title:"성경 봉독 [에베소서 2:10]"},{time:"[00:08:10]",secs:490,title:"시 낭송 [굽은 나무 — 김형종] (곧은 나무는 왕궁과 가구로 베여갔으나 굽은 나무는 동산 지킴이가 되었다는 치유의 메시지)"},{time:"[00:10:37]",secs:637,title:"설교 1 (미켈란젤로가 마당에 버려진 거대 대리석 '두초'를 선택하여 세계적인 명작 다비드 상을 잉태시킨 역사적 배경 설명, 인생의 구멍과 결핍으로 절망하는 성도들을 향한 약점 재해석 강론)"},{time:"[00:40:00]",secs:2400,title:"영상 1 [다비드 상] (돌의 치명적인 결함 덕분에 탄생한 역사상 가장 생동감 넘치는 역동적 근육미 감상)"},{time:"[00:41:19]",secs:2479,title:"설교 2 (전반부 — 대리석의 좁은 결을 극복한 '콘트라포스토' 기법의 미술사적 의미และ 하나님의 신성한 성품 훈련 연결)"},{time:"[00:44:10]",secs:2650,title:"찬양 (상처를 걸작으로 바꾸시는 주님께 영광 돌리는 합심 찬양 고백)"},{time:"[00:48:24]",secs:2904,title:"설교 2 (후반부 — 약점이 없었다면 우리는 평범한 돌에 불과했을 것임을 선언, 상처를 안고 동굴에 갇히지 말고 주님의 손끝에서 빚어지는 유일무이한 걸작으로 승리할 것을 당부, 작가 사역자의 다윗 성화 해설 및 축복 기도 마무리)"}]},
+{index:11,year:"2026",id:"CrIX1tdxEIw",title:"2026년 3월 22일 영화설교 — 하늘의 도우심",date:"2026-03-22",month:"3월",categoryKo:"영화설교",scripture:"시편 121편 1~2절",situation:"실패결핍",summary:"인생을 살아가다 마주하는 '덩케르크 해안의 고립'과 같은 절체절명의 순간은 버려진 재앙이 아니라, 하나님께서 우리를 친히 만나러 오시겠다는 강력한 '영적 조기 신호'입니다. 사방이 막혀 인간의 힘과 노력이 무력화될 때, 조급함으로 무너지지 않고 약속을 신뢰하는 세 가지 에너지(인내, 명분, 확신)를 품고 기도의 시스템 버튼을 눌러야 합니다. 하나님께서는 거대한 군함이 들어올 수 없는 얕은 해안일지라도 비린내 나는 민간의 작은 고기잡이 배를 동원해서라도 당신의 백성을 반드시 건져내십니다. 하늘이 돕는 사람은 결코 이길 수 없으며, 하나님이 붙드신 성도는 절대로 망하지 않습니다.  주요 키워드: #영화설교 #하나님의도우심 #시편121편 #덩케르크고립 #영적반전  정밀 인덱싱 타임라인:  [00:00] 찬양 (설교 전 예배 오프닝 회중 찬양: 《십자가를 질 수 있나》)  [06:11] 성경 봉독 [시편 121:1-2]  [06:56] 영상 1 [고립] (영화 〈덩케르크〉 속 얕은 해안가에 고립된 연합군 40만 명의 절박한 사면초가 시각 자료 시청)  [08:07] 설교 1 (인생의 덩케르크 고립 상황 직시, 인간의 한계 끝에서 작동하는 기도의 엘리베이터 버튼 시스템 설명, 광야 로뎀나무 아래 고립되었던 엘리야 선지자를 천사를 통해 만나주신 위로 강해)  [28:54] 시 낭송 [눈부시게 찬란한 희망 — 김형종]  [31:17] 설교 2 (기다림을 승리로 이끄는 3가지 영적 에너지 '인내·명분·확신' 정의, 방치와 포기를 넘어서는 전능자 신뢰의 법칙)  [33:17] 영상 2 [독일군 공격] (구조 군함마저 어뢰에 침몰당하는 한계 상황 영상 시청)  [34:05] 설교 3 (시련의 연속 속에서도 흔들리지 않는 하나님의 자녀 멘탈 관리 및 동역자의 영적 중요성)  [39:37] 영상 3 [구출] (영국 민간 어선들이 거친 바다를 뚫고 전원 구조를 위해 몰려오는 극적인 반전 명장면 시청)  [41:26] 설교 4 (하늘이 돕고 하나님이 붙드신 인생의 결말 선언, 작가 사역자의 캔버스 돗배 그림 해설 및 고립에서 만나주시는 하나님을 향한 합심 간구 축복 기도)",notes:"💡 주요 키워드: #영화설교",timeline:[{time:"[00:00:00]",secs:0,title:"찬양 (설교 전 예배 오프닝 회중 찬양: 《십자가를 질 수 있나》)"},{time:"[00:06:11]",secs:371,title:"성경 봉독 [시편 121:1-2]"},{time:"[00:06:56]",secs:416,title:"영상 1 [고립] (영화 〈덩케르크〉 속 얕은 해안가에 고립된 연합군 40만 명의 절박한 사면초가 시각 자료 시청)"},{time:"[00:08:07]",secs:487,title:"설교 1 (인생의 덩케르크 고립 상황 직시, 인간의 한계 끝에서 작동하는 기도의 엘리베이터 버튼 시스템 설명, 광야 로뎀나무 아래 고립되었던 엘리야 선지자를 천사를 통해 만나주신 위로 강해)"},{time:"[00:28:54]",secs:1734,title:"시 낭송 [눈부시게 찬란한 희망 — 김형종]"},{time:"[00:31:17]",secs:1877,title:"설교 2 (기다림을 승리로 이끄는 3가지 영적 에너지 '인내·명분·확신' 정의, 방치와 포기를 넘어서는 전능자 신뢰의 법칙)"},{time:"[00:33:17]",secs:1997,title:"영상 2 [독일군 공격] (구조 군함마저 어뢰에 침몰당하는 한계 상황 영상 시청)"},{time:"[00:34:05]",secs:2045,title:"설교 3 (시련의 연속 속에서도 흔들리지 않는 하나님의 자녀 멘탈 관리 및 동역자의 영적 중요성)"},{time:"[00:39:37]",secs:2377,title:"영상 3 [구출] (영국 민간 어선들이 거친 바다를 뚫고 전원 구조를 위해 몰려오는 극적인 반전 명장면 시청)"},{time:"[00:41:26]",secs:2486,title:"설교 4 (하늘이 돕고 하나님이 붙드신 인생의 결말 선언, 작가 사역자의 캔버스 돗배 그림 해설 및 고립에서 만나주시는 하나님을 향한 합심 간구 축복 기도)"}]},
+{index:12,year:"2026",id:"L73gXY7g5xs",title:"2026년 3월 29일 문학설교 (종려주일) — 대속과 상속자",date:"2026-03-29",month:"3월",categoryKo:"문학설교",scripture:"히브리서 2장 14~15절",situation:"분노용서",summary:"평생 돈과 탐욕만을 좇으며 형식적인 신앙생활을 하던 이기적인 상인 바실리는 혹독한 겨울 눈보라 속 죽음의 문턱에서 주님의 음성을 마주하고 영적 대반전을 이룹니다. 그는 자신의 부의 상징이자 자존심이었던 모피 코트를 활짝 펼쳐 얼어 죽어가던 하인 니키타를 감싸 안으며, 생전 누려보지 못한 하늘의 신비한 평온과 환희를 체험합니다. 톨스토이가 표현한 이 거룩한 충격은 창자가 끊어지는 듯한 깊은 복음적 긍휼인 '스플랑크니조마이(σπλαγχνίζομαι)'입니다. 종려주일에 십자가를 지신 주님의 보혈은 우리를 한평생 죽음의 공포 아래 매여 종 노릇 하던 자리에서 완전히 해방하셨으며, 하늘의 모든 유업을 이어받을 영광스러운 '상속자'의 신분을 확증해 주셨습니다.  주요 키워드: #종려주일 #문학설교 #대속과상속자 #주인과하인 #스플랑크니조마이  정밀 인덱싱 타임라인:  [00:00] 시그널 영상 및 종려주일 선포 (더 클래식 고전이 묻고 성경이 답하다 오프닝, 레프 톨스토이의 임종관을 다룬 소설 〈세 죽음〉을 통한 부와 명예의 허무함 고찰)  [00:40] 설교 1 (평생 \"인간은 어떻게 살아야 하는가\"를 권뇌하며 죽음을 묵상했던 톨스토이의 기독교적 가치관 및 문학적 신앙 지침 소개)  [05:20] 성경 봉독 [히브리서 2:14~15]  [05:50] 설교 2 (성육신하셔서 마귀의 죽음 세력을 멸하시고 종 노릇 하던 우리를 건지신 예수 그리스도의 대속의 신비 선포)  [08:22] 영상 1 [바실라와 리키타] (러시아 혹독한 겨울 눈보라 속 고립된 탐욕스러운 주인 바실리와 선량한 하인 니키타의 인공지능 요약 영상 시청)  [11:26] 설교 3 (주인의 영혼을 깨운 주님의 음성 \"네 코트는 누구를 위한 것이냐\", 창자가 끊어지는 아픔인 원어 '스플랑크니조마이'의 영적 대강해, 하인을 살리고 죽어가며 천국의 문을 바라본 바실리의 환희 해설 및 성도들의 거룩한 영적 대반전 권면)  [36:37] 결단의 찬양 (막스 브루흐의 콜 니드라이 배경음악 연주 및 예수의 보혈을 영접하는 마침 결단 찬양: 《나에게 예수를 주시오》 합창, 작가 사역자의 성화 그림 해설 및 상속자의 축복 기도 마무리)",notes:"💡 주요 키워드: #종려주일",timeline:[{time:"[00:00:00]",secs:0,title:"시그널 영상 및 종려주일 선포 (더 클래식 고전이 묻고 성경이 답하다 오프닝, 레프 톨스토이의 임종관을 다룬 소설 〈세 죽음〉을 통한 부와 명예의 허무함 고찰)"},{time:"[00:00:40]",secs:40,title:"설교 1 (평생 \"인간은 어떻게 살아야 하는가\"를 권뇌하며 죽음을 묵상했던 톨스토이의 기독교적 가치관 및 문학적 신앙 지침 소개)"},{time:"[00:05:20]",secs:320,title:"성경 봉독 [히브리서 2:14~15]"},{time:"[00:05:50]",secs:350,title:"설교 2 (성육신하셔서 마귀의 죽음 세력을 멸하시고 종 노릇 하던 우리를 건지신 예수 그리스도의 대속의 신비 선포)"},{time:"[00:08:22]",secs:502,title:"영상 1 [바실라와 리키타] (러시아 혹독한 겨울 눈보라 속 고립된 탐욕스러운 주인 바실리와 선량한 하인 니키타의 인공지능 요약 영상 시청)"},{time:"[00:11:26]",secs:686,title:"설교 3 (주인의 영혼을 깨운 주님의 음성 \"네 코트는 누구를 위한 것이냐\", 창자가 끊어지는 아픔인 원어 '스플랑크니조마이'의 영적 대강해, 하인을 살리고 죽어가며 천국의 문을 바라본 바실리의 환희 해설 및 성도들의 거룩한 영적 대반전 권면)"},{time:"[00:36:37]",secs:2197,title:"결단의 찬양 (막스 브루흐의 콜 니드라이 배경음악 연주 및 예수의 보혈을 영접하는 마침 결단 찬양: 《나에게 예수를 주시오》 합창, 작가 사역자의 성화 그림 해설 및 상속자의 축복 기도 마무리)"}]},
+{index:13,year:"2026",id:"zPIEWb_tWB4",title:"2026년 4월 5일 부활주일 새벽예배 — 부활의 정석",date:"2026-04-05",month:"4월",categoryKo:"주일예배",scripture:"누가복음 24장 1~5절",situation:"고난시련",summary:"인간의 상식과 유한한 이성으로는 죽은 자가 살아나는 부활을 온전히 믿기 어렵습니다. 그렇기에 하나님께서는 '믿음'이라는 거룩한 도구를 통해 마치 부모가 어린아이를 설득하듯 우리를 이해시키고 순종의 마음을 부어주십니다. 무덤으로 향하던 여인들은 인류가 오랜 시간 학습해 온 '인생의 정석'에 따라 밤새 정성껏 향품(장례 용품)을 준비했으나, 이는 부활을 기대한 것이 아니라 예수의 죽음을 확정 지으려는 인간적 한계였습니다. 하나님은 이 인간의 정석을 깨뜨리고 '거룩한 하늘 계산법'과 '첫 열매의 법칙'을 발동하셨습니다. 예수께서 우리 죄를 짊어지고 사망을 당하셨으나, 스스로 죄가 없으시기에 사망의 권세가 깨어지고 다시 살아나셨습니다. 첫 사과나무 열매가 맺히면 그 뒤를 따르는 나무들도 자연스럽게 열매를 맺듯, 첫 열매 되신 예수의 부활은 성도의 구원과 부활을 자연 법칙처럼 실현하는 인류 역사의 대혁명입니다. 일상 속에서 의심하고 쓰러질지라도 다시 믿음으로 일어나는 '긴 호흡의 신앙'을 가질 때, 우리는 두 번째 사망과 상관없는 '첫째 부활'의 확실한 주인공이 됩니다.  주요 키워드: #부활새벽 #부활의정석 #누가복음24장 #첫열매의법칙 #거룩한하늘계산  정밀 인덱싱 타임라인:  [00:00] 부활 새벽 전 찬양 (성도들과 함께 기쁨으로 외치는 부활 찬양 경배: 《구세주 나 항상 섬기네 / 예수 예수 내 구세주 내 마음에 살아 계시네》 합창)  [03:34] 성경 봉독 및 설교 전 고백 기도 (누가복음 24:1~5 본문 합독. 유한한 육성과 이성으로는 깨닫기 힘든 부활의 신비를 '믿음'이라는 거룩한 도구로 설득해 주심에 감사하며, 내 뜻을 버리고 순종할 때 우리 마음에 믿음이 불같이 일어날 수 있도록 도우시는 은혜를 구하는 개회 기도 인도)  [06:15] 설교 1: 인류가 학습한 '인생의 정석'과 향품의 한계 (사회적 규범과 기본 윤리로 여겨지는 인간 세상의 '정석' 강해. 2천 년 전 새벽 무덤으로 향하던 여인들이 준비한 향품은 부활을 기대한 축복의 예물이 아니라, 선생님의 죽음을 온전히 받아들이고 장례를 잘 지내드리려는 철저한 '인간적 정석'이자 슬픈 예식이었음을 직시)  [10:25] 설교 2: 인류의 정석을 깨뜨리는 대속의 '거룩한 하늘 계산법' (세상의 질서와 사망의 정석을 완전히 전복시키는 십자가 대속 강해 (로마서 6:23 연계). 예수께서 우리 죄를 대신 짊어지심으로 실제로 죄인의 신분이 되어 완벽하게 사망의 값을 치르셨음을 선포)  [17:04] 설교 3: 성도의 운명을 바꾸는 '첫 열매의 법칙' (고린도전서 15:20에 기초한 부활의 규칙성과 질서 강해. 사과나무에 첫 열매가 딱 맺히면 농부가 수확의 때를 알고 그 뒤를 따르는 모든 나무에 열매 맺는 법칙이 자연스럽게 적용되듯, 예수 그리스도의 부활은 개인의 신비로운 이적에 그치는 것이 아니라 우리 인류의 종착역을 무덤에서 하늘로 바꾸어 버린 '대혁명의 역사적 법칙'임을 증거)  [21:54] 설교 4: 요한복음 11:25의 약속과 '긴 호흡의 신앙' (\"나는 부활이요 생명이니 나를 믿는 자는 죽어도 살겠고\" 말씀 해설. 이 약속이 나의 것이 되었기에 세상적인 손해나 삶의 모자람에 지치지 말고 의연히 넘어갈 수 있는 부활 성도의 대범한 평안 선포. 비록 세상에 나가면 인간적인 상식 앞에 픽픽 쓰러질지라도, 낙심하지 않고 다시 일어나는 '쓰러짐의 인터벌을 길게 가져가는 긴 호흡의 신앙' 당부)  [31:01] 마침 기도 (우주의 가장 위대한 영광인 부활의 주인공으로 나와 우리를 삼아주신 파격적인 복에 감사하는 기도. 현실적인 고난과 고통까지도 이 기쁨과 감격으로 이겨내며 영광스러운 부활의 아침까지 완주하게 해달라는 마무리 축복 기도)",notes:"💡 주요 키워드: #부활새벽",timeline:[{time:"[00:00:00]",secs:0,title:"부활 새벽 전 찬양 (성도들과 함께 기쁨으로 외치는 부활 찬양 경배: 《구세주 나 항상 섬기네 / 예수 예수 내 구세주 내 마음에 살아 계시네》 합창)"},{time:"[00:03:34]",secs:214,title:"성경 봉독 및 설교 전 고백 기도 (누가복음 24:1~5 본문 합독. 유한한 육성과 이성으로는 깨닫기 힘든 부활의 신비를 '믿음'이라는 거룩한 도구로 설득해 주심에 감사하며, 내 뜻을 버리고 순종할 때 우리 마음에 믿음이 불같이 일어날 수 있도록 도우시는 은혜를 구하는 개회 기도 인도)"},{time:"[00:06:15]",secs:375,title:"설교 1: 인류가 학습한 '인생의 정석'과 향품의 한계 (사회적 규범과 기본 윤리로 여겨지는 인간 세상의 '정석' 강해. 2천 년 전 새벽 무덤으로 향하던 여인들이 준비한 향품은 부활을 기대한 축복의 예물이 아니라, 선생님의 죽음을 온전히 받아들이고 장례를 잘 지내드리려는 철저한 '인간적 정석'이자 슬픈 예식이었음을 직시)"},{time:"[00:10:25]",secs:625,title:"설교 2: 인류의 정석을 깨뜨리는 대속의 '거룩한 하늘 계산법' (세상의 질서와 사망의 정석을 완전히 전복시키는 십자가 대속 강해 (로마서 6:23 연계). 예수께서 우리 죄를 대신 짊어지심으로 실제로 죄인의 신분이 되어 완벽하게 사망의 값을 치르셨음을 선포)"},{time:"[00:17:04]",secs:1024,title:"설교 3: 성도의 운명을 바꾸는 '첫 열매의 법칙' (고린도전서 15:20에 기초한 부활의 규칙성과 질서 강해. 사과나무에 첫 열매가 딱 맺히면 농부가 수확의 때를 알고 그 뒤를 따르는 모든 나무에 열매 맺는 법칙이 자연스럽게 적용되듯, 예수 그리스도의 부활은 개인의 신비로운 이적에 그치는 것이 아니라 우리 인류의 종착역을 무덤에서 하늘로 바꾸어 버린 '대혁명의 역사적 법칙'임을 증거)"},{time:"[00:21:54]",secs:1314,title:"설교 4: 요한복음 11:25의 약속과 '긴 호흡의 신앙' (\"나는 부활이요 생명이니 나를 믿는 자는 죽어도 살겠고\" 말씀 해설. 이 약속이 나의 것이 되었기에 세상적인 손해나 삶의 모자람에 지치지 말고 의연히 넘어갈 수 있는 부활 성도의 대범한 평안 선포. 비록 세상에 나가면 인간적인 상식 앞에 픽픽 쓰러질지라도, 낙심하지 않고 다시 일어나는 '쓰러짐의 인터벌을 길게 가져가는 긴 호흡의 신앙' 당부)"},{time:"[00:31:01]",secs:1861,title:"마침 기도 (우주의 가장 위대한 영광인 부활의 주인공으로 나와 우리를 삼아주신 파격적인 복에 감사하는 기도. 현실적인 고난과 고통까지도 이 기쁨과 감격으로 이겨내며 영광스러운 부활의 아침까지 완주하게 해달라는 마무리 축복 기도)"}]},
+{index:14,year:"2026",id:"KfpqMWMFJsE",title:"2026년 4월 5일 부활주일 통합설교 (낮 예배) — 부활을 보는 시력",date:"2026-04-05",month:"4월",categoryKo:"주일예배",scripture:"요한복음 14장 16~17절; 26절",situation:"고난시련",summary:"부활의 신비는 무덤 밖에서 안을 들여다보는 세상의 방식인 '구경꾼의 눈'이나 '관찰자의 시각'으로는 결코 볼 수 없습니다. 관찰자의 눈으로 보면 예수님의 시신이 누웠던 '차가운 돌침대'만 보일 뿐입니다. 성도는 절망의 무덤 속으로 직접 들어가 내 죄 때문에 하나님의 아들이 누우셨던 자리, 그러나 이제는 부활의 온기가 배어있는 자리를 믿음으로 만져보아야 합니다. 우리가 들어가야 할 현대의 무덤은 내 힘으로 살아보려 몸부림치던 삶을 내려놓는 '세상의 끝자락'과 '하늘의 시작점'이 만나는 거룩한 접점인 '영적 기수역(은혜의 자리, 영적인 골방, 교회)'입니다. 그곳에서 보혜사 성령의 인도를 받아 '깨달음의 시력'을 선물로 얻고, 예수님의 부활을 통해 우리 자신의 부활을 확증하며(로마서 6:4) 영광스러운 첫째 부활에 참여해야 합니다.  주요 키워드: #부활주일 #부활을보는시력 #요한복음14장19절 #영적기수역 #깨달음의눈  정밀 인덱싱 타임라인:  [00:00] 예배 시작 / 찬양 (죄의 저주를 끊으시고 승리하신 예수 그리스도를 찬양하는 연합 찬양대 합창: 《주 예수 나의 산 소망》)  [05:14] 성경 봉독 [요한복음 14:19]  [05:50] 영상 1 [무덤 속으로] (제자들이 무덤으로 달려가 세마포와 수건을 확인하는 복음서 편집 성극 영상 시청)  [08:53] 설교 1 (부활을 분별하는 '시력' 강의, 무덤 밖 구경꾼과 관찰자 시각의 한계 폭로, 요한복음 20:8과 누가복음 24:3을 바탕으로 직접 무덤 속으로 들어가 부활의 온기를 만져보는 '깨달음의 눈' 강조)  [24:49] 시 낭송 [약속 — 김형종]  [27:36] 설교 2 (인간 중심적 삶의 한계인 세상 끝자리와 하늘의 접점 '영적 기수역' 해설, 로마서 6:4에 기초한 우리 자신의 부활 확증 및 보혜사 성령의 인도를 통한 첫째 부활 참여 선포, 작가 사역자의 캔버스 성화 그림 해설 및 마무리 축복 기도)",notes:"💡 주요 키워드: #부활주일",timeline:[{time:"[00:00:00]",secs:0,title:"예배 시작 / 찬양 (죄의 저주를 끊으시고 승리하신 예수 그리스도를 찬양하는 연합 찬양대 합창: 《주 예수 나의 산 소망》)"},{time:"[00:05:14]",secs:314,title:"성경 봉독 [요한복음 14:19]"},{time:"[00:05:50]",secs:350,title:"영상 1 [무덤 속으로] (제자들이 무덤으로 달려가 세마포와 수건을 확인하는 복음서 편집 성극 영상 시청)"},{time:"[00:08:53]",secs:533,title:"설교 1 (부활을 분별하는 '시력' 강의, 무덤 밖 구경꾼과 관찰자 시각의 한계 폭로, 요한복음 20:8과 누가복음 24:3을 바탕으로 직접 무덤 속으로 들어가 부활의 온기를 만져보는 '깨달음의 눈' 강조)"},{time:"[00:24:49]",secs:1489,title:"시 낭송 [약속 — 김형종]"},{time:"[00:27:36]",secs:1656,title:"설교 2 (인간 중심적 삶의 한계인 세상 끝자리와 하늘의 접점 '영적 기수역' 해설, 로마서 6:4에 기초한 우리 자신의 부활 확증 및 보혜사 성령의 인도를 통한 첫째 부활 참여 선포, 작가 사역자의 캔버스 성화 그림 해설 및 마무리 축복 기도)"}]},
+{index:15,year:"2026",id:"8aAdRX2LTDM",title:"2026년 4월 12일 음악설교 — 믿을 수 없는 중에도",date:"2026-04-12",month:"4월",categoryKo:"음악설교",scripture:"로마서 4장 18~19절",situation:"조급인내",summary:"인생의 겨울 고난을 지날 때 가장 괴로운 것은 아무런 힘도 없이 한없이 초라해진 자신을 바라보는 참담함과 고난의 명확한 이유를 알지 못한다는 사실입니다. 맹자의 고전적 통찰처럼 하늘이 큰 임무를 맡기기 전에 그릇을 넓히고 성품을 다듬기 위해 시련을 주시듯, 성경 역시 이러한 연단의 과정을 통과한 뒤 하나님 나라의 상속자라는 거대한 영광을 예비하심을 가르칩니다. 고난을 돌파하는 핵심적인 무기는 현재 눈앞의 처참한 상황을 바라보지 않고 오직 약속을 성취하실 주님을 믿음으로 대면하는 적극적인 신앙의 태도입니다. 바랄 수 없고 믿을 수 없는 최악의 환경일지라도 하나님이 함께 하신다면 영안이 열려 삶의 미래를 혼란 없이 찾아가게 되며, 약속을 따라 일하시는 주님의 새 일을 경험하게 됩니다.  주요 키워드: #음악설교 #믿을수없는중에도 #로마서4장18_19절 #바랄수없는중에바라고 #영안  정밀 인덱싱 타임라인:  [00:00] 성경 봉독 [로마서 4:18~19]  [00:50] 설교 1 (겨울 우울과도 같은 인생 고난의 현실 직면, 맹자의 가르침을 빌린 시련의 유익과 고난을 극복하기 위해 성도가 지녀야 할 무기의 필요성 강해)  [04:59] 찬양 [바랄 수 없는 중에 바라고 — 이손 작사·작곡, 찬양 김명희] (현재 상황을 보지 않고 오직 주님이 이루실 일과 약속을 전적으로 신뢰하며 순종할 것을 선포하는 특송)  [08:37] 설교 2 (바랄 수 없는 중에 바라는 역설적 믿음의 진정한 가치, 하나님이 함께 하실 때 열리는 영안의 신비와 시련을 극복하는 적극적인 신앙의 돌파 공식 강해)  [29:45] 시 낭송 [이 길 끝에서 — 김형종]  [32:46] 설교 3 (하나님 나라의 상속자로서 온전한 영광을 준비하는 믿음의 인내와 최종적인 영적 결단 권면)",notes:"💡 주요 키워드: #음악설교",timeline:[{time:"[00:00:00]",secs:0,title:"성경 봉독 [로마서 4:18~19]"},{time:"[00:00:50]",secs:50,title:"설교 1 (겨울 우울과도 같은 인생 고난의 현실 직면, 맹자의 가르침을 빌린 시련의 유익과 고난을 극복하기 위해 성도가 지녀야 할 무기의 필요성 강해)"},{time:"[00:04:59]",secs:299,title:"찬양 [바랄 수 없는 중에 바라고 — 이손 작사·작곡, 찬양 김명희] (현재 상황을 보지 않고 오직 주님이 이루실 일과 약속을 전적으로 신뢰하며 순종할 것을 선포하는 특송)"},{time:"[00:08:37]",secs:517,title:"설교 2 (바랄 수 없는 중에 바라는 역설적 믿음의 진정한 가치, 하나님이 함께 하실 때 열리는 영안의 신비와 시련을 극복하는 적극적인 신앙의 돌파 공식 강해)"},{time:"[00:29:45]",secs:1785,title:"시 낭송 [이 길 끝에서 — 김형종]"},{time:"[00:32:46]",secs:1966,title:"설교 3 (하나님 나라의 상속자로서 온전한 영광을 준비하는 믿음의 인내와 최종적인 영적 결단 권면)"}]},
+{index:16,year:"2026",id:"Nq7786Ru8rc",title:"2026년 4월 19일 비전설교 — 성공적인 실패",date:"2026-04-19",month:"4월",categoryKo:"비전설교",scripture:"고린도후서 4장 8~10절",situation:"실패결핍",summary:"사방으로 욱여쌈을 당하고 답답하여 우묵한 구덩이 속에 갇힌 것 같은 절망의 순간일지라도 성도가 낙심하지 않고 소망을 품을 수 있는 이유는, 인간의 끝이 곧 하나님의 시작이며 인간의 궁지가 곧 하나님의 기회이기 때문입니다. 실제 남극 대륙 횡단이라는 원대한 꿈을 안고 인내라는 뜻의 배를 타고 출발했으나 얼음에 갇혀 조난당했던 어니스트 섀클턴과 28명 대원들의 역사적 실화처럼, 감당하기 어려운 극심한 한계 상황은 대책 없는 아픔이 아니라 새로운 생명의 탄생을 준비하는 어머니의 아기집과 같은 신비로운 약속의 장소입니다. 항상 예수의 죽음을 몸에 짊어지며 성령의 역사 울타리 안에서 끝까지 인내할 때, 사방의 박해는 무력화되고 예수의 생명이 우리 삶 속에 강력하게 피어나는 성공적인 대반전의 승리를 얻게 됩니다.  주요 키워드: #비전설교 #성공적인실패 #고린도후서4장8_10절 #섀클턴 #인듀런스호  정밀 인덱싱 타임라인:  [00:00] 예배 시작 (4월 생명의 달 비전 설교 주일 오프닝, 새싹 속에 거대한 영광을 심어 두신 하나님의 약속 묵상)  [01:16] 성시 교독 (교독 16번 — 시편 28편 여호와께 부르짖는 간구와 확신의 고백)  [02:48] 신앙고백 (온 성도의 사도신경 복창)  [03:55] 대표 기도 [장용진 장로] (성령님의 역사 울타리 안에서 구원의 인도자 되시는 하나님의 말씀에 의지하여 예수로만 걸어갈 것을 다짐하는 헌신)  [06:37] 성경 봉독 [고린도후서 4:8~10]  [07:28] 시 낭송 [절망의 끝에서 — 김형종]  [10:26] 영상 1 (남극 차가운 바다에 고립되었던 인듀런스 호의 도전과 어니스트 섀클턴의 기적 같은 역사적 탐험 실화 소개 영상 시청)  [11:20] 설교 1 (절망 구덩이의 영적 패러다임 전환 선포, 섀클턴의 대륙 횡단 도전 과정에 담긴 고난과 한계 상황에서의 리더십 분석)  [34:53] 예배 중 찬양 (고난을 넘어서는 하나님의 사랑과 소망을 마음에 품는 온 성도의 합심 고백 찬양)  [38:14] 설교 2 (사방으로 욱여쌈을 당하여도 결단코 망하지 않는 성도의 구원의 요새 선포, 약속을 믿고 끝까지 인내하여 완전한 생환을 이루는 대반전의 영적 결합 선언)",notes:"💡 주요 키워드: #음악설교",timeline:[{time:"[00:00:00]",secs:0,title:"예배 시작 (4월 생명의 달 비전 설교 주일 오프닝, 새싹 속에 거대한 영광을 심어 두신 하나님의 약속 묵상)"},{time:"[00:01:16]",secs:76,title:"성시 교독 (교독 16번 — 시편 28편 여호와께 부르짖는 간구와 확신의 고백)"},{time:"[00:02:48]",secs:168,title:"신앙고백 (온 성도의 사도신경 복창)"},{time:"[00:03:55]",secs:235,title:"대표 기도 [장용진 장로] (성령님의 역사 울타리 안에서 구원의 인도자 되시는 하나님의 말씀에 의지하여 예수로만 걸어갈 것을 다짐하는 헌신)"},{time:"[00:06:37]",secs:397,title:"성경 봉독 [고린도후서 4:8~10]"},{time:"[00:07:28]",secs:448,title:"시 낭송 [절망의 끝에서 — 김형종]"},{time:"[00:10:26]",secs:626,title:"영상 1 (남극 차가운 바다에 고립되었던 인듀런스 호의 도전과 어니스트 섀클턴의 기적 같은 역사적 탐험 실화 소개 영상 시청)"},{time:"[00:11:20]",secs:680,title:"설교 1 (절망 구덩이의 영적 패러다임 전환 선포, 섀클턴의 대륙 횡단 도전 과정에 담긴 고난과 한계 상황에서의 리더십 분석)"},{time:"[00:34:53]",secs:2093,title:"예배 중 찬양 (고난을 넘어서는 하나님의 사랑과 소망을 마음에 품는 온 성도의 합심 고백 찬양)"},{time:"[00:38:14]",secs:2294,title:"설교 2 (사방으로 욱여쌈을 당하여도 결단코 망하지 않는 성도의 구원의 요새 선포, 약속을 믿고 끝까지 인내하여 완전한 생환을 이루는 대반전의 영적 결합 선언)"}]},
+{index:17,year:"2026",id:"wDKeWx2ls-s",title:"2026년 4월 26일 영화설교 — 자라게 하시는 하나님",date:"2026-04-26",month:"4월",categoryKo:"영화설교",scripture:"고린도전서 3장 6~7절",situation:"조급인내",summary:"인생의 밭에 뿌려진 말씀의 씨앗이 언제 싹이 나고 자랄지 인간의 눈으로는 도무지 측량할 수 없습니다. 당장의 눈에 보이는 가시적 결과에 조급해하며 내 힘으로 억지로 잡아당기지 않고, 보이지 않는 땅속에서 밤낮 자고 깨는 사이 은밀히 일하시는 하나님의 주권적 성장 능력을 온전히 신뢰해야 합니다. 심는 이나 물 주는 사람의 애씀보다, 사람이 스스로 제어할 수 없는 생명의 성장 타이밍을 쥐고 계시는 하나님 앞에 겸손히 모든 미래를 맡길 때 삶은 마침내 풍성한 결실을 맺게 됩니다.  주요 키워드: #영화설교 #씨앗의성장 #고린도전서3장 #은밀한섭리 #자라게하시는하나님  정밀 인덱싱 타임라인:  [00:00] 찬양대 찬양  [04:52] 성경 봉독 [고린도전서 3:6~7]  [05:46] 설교 1 (영화설교 도입, 자연의 생명력 속에 감추어진 하나님의 신비로운 성장 법칙 제시)  [10:46] 영상 1 (인간의 힘으로 제어할 수 없는 생명의 시간과 인내의 당위성을 보여주는 영화 장면 시청)  [13:08] 설교 2 (밤낮 자고 깨는 사이에 씨가 자라나는 영적 자람의 본질과 인간의 영적 조급증 지적)  [24:30] 영상 2 (당장 눈앞에 가시적인 변화가 없어도 낙심하지 않아야 하는 영적 농부의 태도 설명)  [26:23] 설교 3 (자녀와 가정이 당장 변하지 않아도 말씀의 물을 꾸준히 주는 인내의 중요성 강해)  [33:40] 시 낭송 [땅속의 숨소리 — 김형종]  [35:47] 설교 4 (오직 자라게 하시는 이는 하나님뿐이심을 고백하는 철저한 겸손의 회복 촉구)  [47:06] 영상 3 (눈물로 씨를 뿌리는 자는 반드시 기쁨으로 단을 거두리라는 확신의 시각적 증거 확인)  [48:30] 설교 5 (성장의 타이밍을 온전히 주님께 맡기고 평강을 누리는 마침 축복 기도)",notes:"💡 주요 키워드: #영화설교",timeline:[{time:"[00:00:00]",secs:0,title:"찬양대 찬양"},{time:"[00:04:52]",secs:292,title:"성경 봉독 [고린도전서 3:6~7]"},{time:"[00:05:46]",secs:346,title:"설교 1 (영화설교 도입, 자연의 생명력 속에 감추어진 하나님의 신비로운 성장 법칙 제시)"},{time:"[00:10:46]",secs:646,title:"영상 1 (인간의 힘으로 제어할 수 없는 생명의 시간과 인내의 당위성을 보여주는 영화 장면 시청)"},{time:"[00:13:08]",secs:788,title:"설교 2 (밤낮 자고 깨는 사이에 씨가 자라나는 영적 자람의 본질과 인간의 영적 조급증 지적)"},{time:"[00:24:30]",secs:1470,title:"영상 2 (당장 눈앞에 가시적인 변화가 없어도 낙심하지 않아야 하는 영적 농부의 태도 설명)"},{time:"[00:26:23]",secs:1583,title:"설교 3 (자녀와 가정이 당장 변하지 않아도 말씀의 물을 꾸준히 주는 인내의 중요성 강해)"},{time:"[00:33:40]",secs:2020,title:"시 낭송 [땅속의 숨소리 — 김형종]"},{time:"[00:35:47]",secs:2147,title:"설교 4 (오직 자라게 하시는 이는 하나님뿐이심을 고백하는 철저한 겸손의 회복 촉구)"},{time:"[00:47:06]",secs:2826,title:"영상 3 (눈물로 씨를 뿌리는 자는 반드시 기쁨으로 단을 거두리라는 확신의 시각적 증거 확인)"},{time:"[00:48:30]",secs:2910,title:"설교 5 (성장의 타이밍을 온전히 주님께 맡기고 평강을 누리는 마침 축복 기도)"}]},
+{index:18,year:"2026",id:"9qAKUU8oeCo",title:"2026년 5월 3일 통합설교 (나눔주일 / 부모자녀주일) — 선한말 용서의 말",date:"2026-05-03",month:"5월",categoryKo:"주일예배",scripture:"에베소서 4장 29절, 32절",situation:"가정가족",summary:"5월 가정의 달을 맞아 선포된 언어의 강력한 영적 권세입니다. 사람의 죽고 사는 것이 혀의 힘에 달렸으니, 가장 편안해야 할 가정 안에서 칼로 찌르는 듯한 날카로운 말과 대화 습관을 과감히 종식해야 합니다. 부부간, 혹은 부모와 자녀 간에 무심코 던지는 가시 돋친 대화를 필터링하고, 상처를 싸매는 선한 말과 하나님의 용서에 기반한 무조건적인 용서의 언어(‘베라카’)를 심어야 합니다. 서로를 불쌍히 여기며 축복의 씨앗을 뿌릴 때, 가정은 비로소 사탄의 공격으로부터 보호받는 천국의 쉼터로 견고히 세워집니다.  주요 키워드: #부모자녀주일 #나눔주일 #선한말 #용서의언어 #에베소서4장  정밀 인덱싱 타임라인:  [00:00] 찬양대 찬양 [식탁의 기도] (어린이 주일 및 부모자녀주일 예배 선포)  [03:52] 성경 봉독 [에베소서 4:29;32]  [04:46] 설교 1 (말 한마디가 자녀의 인생에 미치는 파괴력과 복원의 힘 비교, 용서와 축복의 언어 '베라카'가 지닌 영적 보호막 강해, 부부간 대화 습관을 교정하는 일상 필터링 방안 제시)  [34:53] 시 낭송 [가정 — 김형종]  [36:28] 설교 2 (자녀를 노엽게 하지 않고 주의 교훈으로 양육하는 부모의 태도, 보혈로 상처를 덮고 서로를 안아주는 패밀리 허그 시간, 천국 소통을 위한 결단 기도 마무리)",notes:"💡 주요 키워드: #부모자녀주일",timeline:[{time:"[00:00:00]",secs:0,title:"찬양대 찬양 [식탁의 기도] (어린이 주일 및 부모자녀주일 예배 선포)"},{time:"[00:03:52]",secs:232,title:"성경 봉독 [에베소서 4:29;32]"},{time:"[00:04:46]",secs:286,title:"설교 1 (말 한마디가 자녀의 인생에 미치는 파괴력과 복원의 힘 비교, 용서와 축복의 언어 '베라카'가 지닌 영적 보호막 강해, 부부간 대화 습관을 교정하는 일상 필터링 방안 제시)"},{time:"[00:34:53]",secs:2093,title:"시 낭송 [가정 — 김형종]"},{time:"[00:36:28]",secs:2188,title:"설교 2 (자녀를 노엽게 하지 않고 주의 교훈으로 양육하는 부모의 태도, 보혈로 상처를 덮고 서로를 안아주는 패밀리 허그 시간, 천국 소통을 위한 결단 기도 마무리)"}]},
+{index:19,year:"2026",id:"48wBdYza01U",title:"2026년 5월 10일 통합설교 (음악설교) — 끝까지 지켜야 할 가정과 교회",date:"2026-05-10",month:"5월",categoryKo:"음악설교",scripture:"요한복음 6장 67~68절",situation:"가정가족",summary:"거친 세상을 살아가면서 성도가 결단코 타협하거나 원수에게 빼앗기지 말아야 할 두 가지 절대적 기둥은 바로 '가정'과 '교회'입니다. 교회는 세상에서 입은 모든 상처와 피로를 씻어내고 영생의 말씀 전고를 통해 하늘의 무한한 힘을 공급받는 '영적 유조 탱크'입니다. 가정은 그 공급받은 에너지를 바탕으로 다시 안식하며 영적 숨을 쉴 수 있는 '사랑의 둥지'입니다. 사방에서 멸시하는 눈으로 쳐다보아도 나 혼자서라도 예배 자리를 파수하고 말씀의 초석 위에 가정을 세울 때, 어떤 환난의 풍파에도 결코 망하지 않는 보호의 약속이 성취됩니다.  주요 키워드: #음악설교 #가정과교회 #요한복음6장 #에너지탱크 #안식의둥지  정밀 인덱싱 타임라인:  [00:00] 성경 봉독 [요한복음 6:67~68]  [01:08] 설교 1 (음악설교 시작, 영생의 말씀이 주께 있사오니 누구에게로 가겠냐는 결연한 신앙 확신 선포, 우리의 호흡인 예배와 교회의 상생 법칙 강해)  [09:18] 찬양 [아무도 예배하지 않고 — 이오늘 작사·작곡 / 찬양 김주윤] (사방이 무너져도 나 홀로 주 앞에 무릎 꿇는 확신의 용기를 노래)  [14:43] 설교 2 (짐이 무거워 쓰러져가는 위기의 가정을 향해 주의 음성을 기다리라는 해답 제시, 의인 한 사람이 서 있으면 그 집은 망하지 않는다는 보호의 약속 잠언 12:7 강해)  [24:58] 시 낭송 [확신과 믿음 — 김형종]  [27:40] 설교 3 (서로를 빛나게 하는 가족 간 소통의 약속, 하늘 에너지를 충전하는 유조 탱크로서의 교회의 본질, 작가 사역자의 시온성 향하는 믿음의 가족 그림 해설 및 축복 기도)",notes:"💡 주요 키워드: #부모자녀주일",timeline:[{time:"[00:00:00]",secs:0,title:"성경 봉독 [요한복음 6:67~68]"},{time:"[00:01:08]",secs:68,title:"설교 1 (음악설교 시작, 영생의 말씀이 주께 있사오니 누구에게로 가겠냐는 결연한 신앙 확신 선포, 우리의 호흡인 예배와 교회의 상생 법칙 강해)"},{time:"[00:09:18]",secs:558,title:"찬양 [아무도 예배하지 않고 — 이오늘 작사·작곡 / 찬양 김주윤] (사방이 무너져도 나 홀로 주 앞에 무릎 꿇는 확신의 용기를 노래)"},{time:"[00:14:43]",secs:883,title:"설교 2 (짐이 무거워 쓰러져가는 위기의 가정을 향해 주의 음성을 기다리라는 해답 제시, 의인 한 사람이 서 있으면 그 집은 망하지 않는다는 보호의 약속 잠언 12:7 강해)"},{time:"[00:24:58]",secs:1498,title:"시 낭송 [확신과 믿음 — 김형종]"},{time:"[00:27:40]",secs:1660,title:"설교 3 (서로를 빛나게 하는 가족 간 소통의 약속, 하늘 에너지를 충전하는 유조 탱크로서의 교회의 본질, 작가 사역자의 시온성 향하는 믿음의 가족 그림 해설 및 축복 기도)"}]},
+{index:20,year:"2026",id:"hJIV5WnqxuM",title:"2026년 5월 17일 비전설교 — 가시 사랑",date:"2026-05-17",month:"5월",categoryKo:"비전설교",scripture:"에베소서 4장 2절",situation:"상처치유",summary:"인간관계의 비극은 가장 가까운 가족 공동체(부부, 부모자녀) 안에서 서로에게 체면을 버린 채 날카로운 말의 가시를 세워 상처를 입히는 쇼펜하우어의 '고슴도치 딜레마'에서 시작됩니다. 더 나아가 성도들은 기도가 응답되지 않을 때 '서운함의 가시'를, 뜻대로 일이 풀리지 않을 때 '냉소의 가시'를, 성령의 지시가 나의 욕망과 상충할 때 '거부의 가시'를 세워 하나님을 찌르곤 합니다. 잠깐의 세상 유익을 위한 이기적 원리를 내려놓고, 영원한 삶에 적용되는 주님의 말씀에 순종하여 내 안의 가시를 기꺼이 눕히고 사랑으로 서로를 용납하는 법을 배워야 합니다.  주요 키워드: #비전설교 #가시사랑 #에베소서4장2절 #고슴도치딜레마 #가시눕히기  정밀 인덱싱 타임라인:  [00:00] 예배 시작 (5월 가정의 달 비전 주일 오프닝, 시편 33편 성시 교독 및 사도신경 신앙고백)  [07:24] 시 낭송 [고슴도치 사랑 — 김형종]  [10:27] 설교 1 (쇼펜하우어의 고슴도치 딜레마 비유, 세상에서 가장 사랑하는 가족 사이에서 오히려 입에 담기 어려운 끔찍한 말의 가시로 서로를 찌르는 현대 부부·가족의 대화 실태 고찰)  [33:05] 찬양 [나는 아버지를 닮았네]  [37:23] 설교 2 (기도 미응답 시 세우는 서운함의 가시, 내 뜻대로 안 될 때 찌르는 냉소의 가시, 성령의 감동을 무시하는 거부의 가시 고발 및 영육간의 속사람 회복을 위한 온전한 순종과 결단 권면)",notes:"💡 주요 키워드: #비전설교",timeline:[{time:"[00:00:00]",secs:0,title:"예배 시작 (5월 가정의 달 비전 주일 오프닝, 시편 33편 성시 교독 및 사도신경 신앙고백)"},{time:"[00:07:24]",secs:444,title:"시 낭송 [고슴도치 사랑 — 김형종]"},{time:"[00:10:27]",secs:627,title:"설교 1 (쇼펜하우어의 고슴도치 딜레마 비유, 세상에서 가장 사랑하는 가족 사이에서 오히려 입에 담기 어려운 끔찍한 말의 가시로 서로를 찌르는 현대 부부·가족의 대화 실태 고찰)"},{time:"[00:33:05]",secs:1985,title:"찬양 [나는 아버지를 닮았네]"},{time:"[00:37:23]",secs:2243,title:"설교 2 (기도 미응답 시 세우는 서운함의 가시, 내 뜻대로 안 될 때 찌르는 냉소의 가시, 성령의 감동을 무시하는 거부의 가시 고발 및 영육간의 속사람 회복을 위한 온전한 순종과 결단 권면)"}]},
+{index:21,year:"2026",id:"glwIPMh7eI4",title:"2026년 5월 24일 영화설교 — 내 아이에게 주신 길",date:"2026-05-24",month:"5월",categoryKo:"영화설교",scripture:"에베소서 6장 4절",situation:"가정가족",summary:"하나님께서 세우신 최초의 공동체인 가정이 바르게 세워지지 못하면 가족 전체가 피해자가 되며, 심령의 상처는 사회적 비극의 씨앗이 됩니다. 역사 속 영조와 사도세자(이선)의 비극처럼 부모의 일방적이고 폭압적인 교육과 이에 격렬히 저항하는 자녀의 태도는 서로에게 파괴적인 균열을 냅니다. 부모는 힘과 경험의 우위를 남용해 자녀에게 대리 만족을 강요하거나 모멸감을 주는 언어폭력으로 아이를 노엽게(‘파로기조’) 만드는 행위를 철저히 회개해야 합니다. 부모의 욕심대로 힘으로 끌어당기지 않고, 자녀의 개성과 성품을 존중하며 아이에게 마땅히 행할 고유의 길(‘알 피 다르코’)을 유심히 발견하여 낮은 자세에서 경청(‘휘파쿠어’)으로 품어주어야 합니다.  주요 키워드: #영화설교 #내아이에게주신길 #에베소서6장4절 #영조와사도세자 #알피다르코  정밀 인덱싱 타임라인:  [00:00] 찬양대 찬양 (연합 찬양대 특송: 《저 멀리 뵈는 나의 시온성》)  [05:37] 성경 봉독 [에베소서 6:4]  [06:05] 설교 1 (영화설교 도입, 조선 왕조 역사 속 영조와 사도세자의 독단적이고 폭압적인 가정 교육 방식 고발 및 가정 붕괴가 사회적 비극으로 연결되는 실태 분석)  [14:46] 영상 1 (영화 〈사도〉 속 핵심 명장면 시청: 뒤주에 갇혀 죽어가는 아들과 아비로서 대화하는 가슴 아픈 독백, 따뜻한 눈길과 다정한 말 한마디를 바랐던 세자의 절규)  [16:49] 설교 2 (부모가 이루지 못한 꿈을 자녀에게 강요하는 결과 중심적 삶 비판, 오늘 당장 자녀의 어깨를 두드리며 \"괜찮아\"라고 위로하는 사랑의 소통 방식 제안)  [35:52] 시 낭송 [어른들이 모르는 세계 — 김형종]  [38:08] 설교 3 (히브리어 '알 피 다르코' 및 자녀를 노엽게 하는 '파로기조'의 영적 자성, 아래에서 귀 기울여 경청하는 '휘파쿠어'의 부모 권면, 주제 성화 해설 및 마무리 축복 기도)",notes:"💡 주요 키워드: #비전설교",timeline:[{time:"[00:00:00]",secs:0,title:"찬양대 찬양 (연합 찬양대 특송: 《저 멀리 뵈는 나의 시온성》)"},{time:"[00:05:37]",secs:337,title:"성경 봉독 [에베소서 6:4]"},{time:"[00:06:05]",secs:365,title:"설교 1 (영화설교 도입, 조선 왕조 역사 속 영조와 사도세자의 독단적이고 폭압적인 가정 교육 방식 고발 및 가정 붕괴가 사회적 비극으로 연결되는 실태 분석)"},{time:"[00:14:46]",secs:886,title:"영상 1 (영화 〈사도〉 속 핵심 명장면 시청: 뒤주에 갇혀 죽어가는 아들과 아비로서 대화하는 가슴 아픈 독백, 따뜻한 눈길과 다정한 말 한마디를 바랐던 세자의 절규)"},{time:"[00:16:49]",secs:1009,title:"설교 2 (부모가 이루지 못한 꿈을 자녀에게 강요하는 결과 중심적 삶 비판, 오늘 당장 자녀의 어깨를 두드리며 \"괜찮아\"라고 위로하는 사랑의 소통 방식 제안)"},{time:"[00:35:52]",secs:2152,title:"시 낭송 [어른들이 모르는 세계 — 김형종]"},{time:"[00:38:08]",secs:2288,title:"설교 3 (히브리어 '알 피 다르코' 및 자녀를 노엽게 하는 '파로기조'의 영적 자성, 아래에서 귀 기울여 경청하는 '휘파쿠어'의 부모 권면, 주제 성화 해설 및 마무리 축복 기도)"}]},
+{index:22,year:"2026",id:"V6ghXSRj-ZQ",title:"2026년 5월 31일 문학설교 — 용서와 건강한 약속",date:"2026-05-31",month:"5월",categoryKo:"문학설교",scripture:"마태복음 18장 21~22절",situation:"분노용서",summary:"사소한 오해와 감정의 변화로 지펴진 미움의 작은 불씨를 초기에 다스리지 못하면, 온 인생과 공동체를 순식간에 불태우는 전소의 비극으로 이어집니다. 톨스토이의 고전 문학 〈불을 놓아두면 끄지 못한다〉 속 이반 and 가브릴로가 달걀 하나 때문에 분노하여 7년간 전재산과 영혼을 탕진한 것처럼, 복수심은 마귀에게 마음의 발판(‘토포스’)을 내어주게 만듭니다. 불은 불로 끌 수 없으며, 상대의 죄를 하나님의 시선으로 깨끗이 덮고 내면에 아무런 앙금도 남기지 않은 채 내보내는 완전한 용서(‘아피에미’)를 선포할 때 비로소 미움의 불씨가 꺼지고 건강한 평화의 열매를 맺게 됩니다.  주요 키워드: #문학설교 #용서와건강한약속 #마태복음18장21_22절 #톨스토이 #아피에미  정밀 인덱싱 타임라인:  [00:00] 설교 1 (문학설교 더 클래식 오프닝, 나이 50세에 죽음 앞에 권뇌하다 신에게 귀의한 레프 톨스토이의 만년 단편 소설 〈불을 놓아두면 끄지 못한다(1885)〉 배경 및 미움과 용서의 핵심 가치 소개)  [02:23] 영상 (달걀 하나로 시작된 두 이웃의 사소한 갈등이 소송, 폭행, 태형을 거쳐 전재산을 탕진하는 파멸로 치닫는 애니메이션 요약 영상 시청 및 지혜로운 아버지가 남긴 복음적 잠언 제시)  [05:20] 설교 2 (가브릴로가 지핀 짚더미의 작은 불씨를 즉시 끄는 대신 도망치는 범인을 쫓아가다 온 마을을 전소시킨 이반의 복수심 섞인 파멸적 심리 분석 및 '불은 불로 끌 수 없다'는 교훈 강해)  [12:50] 성경 봉독 [마태복음 18:21~22]  [13:25] 설교 3 (베드로의 일곱 번 제안을 일흔 번까지라도 용서하라 하신 예수님의 끝없는 사랑 대답, 산찌꺼기가 남지 않도록 내보내는 완전한 용서 '아피에미' 강해 및 분노를 품어 사탄에게 발판을 내어주는 '토포스' 위험성 경고, 로마서 12:19의 영적 신뢰 강조)  [35:29] 클래식 (음악 감상 시간: 더블베이스 거장 게리 카가 연주하는 토마소 알비노니의 〈아다지오 G단조〉 깊은 저음 선율 묵상)  [37:39] 설교 4 (방화범의 죄을 숨겨주어 비극의 불꽃을 완전히 끄라는 아버지의 위대한 유언과 이반의 바보 같은 복종, 온 마을에 찾아온 평화의 열매 및 약속의 말씀 선포)  [46:40] 찬양 (설교 후 성도들의 결단 합창 찬양: 《사랑의 종소리》)  [52:50] 마침기도 (마음속 미움의 불씨를 끄고 하나님의 사랑을 회복하기 위한 마무리 축복 기도)",notes:"💡 주요 키워드: #문학설교",timeline:[{time:"[00:00:00]",secs:0,title:"설교 1 (문학설교 더 클래식 오프닝, 나이 50세에 죽음 앞에 권뇌하다 신에게 귀의한 레프 톨스토이의 만년 단편 소설 〈불을 놓아두면 끄지 못한다(1885)〉 배경 및 미움과 용서의 핵심 가치 소개)"},{time:"[00:00:38]",secs:38,title:"설교 1 (6월 음악 설교 주일 오프닝, 신앙생활 중 직면하는 가슴 답답한 순간의 영적 해석과 구원의 때 분별)"},{time:"[00:02:23]",secs:143,title:"영상 (달걀 하나로 시작된 두 이웃의 사소한 갈등이 소송, 폭행, 태형을 거쳐 전재산을 탕진하는 파멸로 치닫는 애니메이션 요약 영상 시청 및 지혜로운 아버지가 남긴 복음적 잠언 제시)"},{time:"[00:04:22]",secs:262,title:"성경 봉독 [창세기 2:18 ; 21~23]"},{time:"[00:05:20]",secs:320,title:"설교 2 (가브릴로가 지핀 짚더미의 작은 불씨를 즉시 끄는 대신 도망치는 범인을 쫓아가다 온 마을을 전소시킨 이반의 복수심 섞인 파멸적 심리 분석 및 '불은 불로 끌 수 없다'는 교훈 강해)"},{time:"[00:05:28]",secs:328,title:"설교 1 (성격 차이와 황혼이혼의 통계적 실태 직시, 혼자 사는 상태인 '레밧도'의 고립을 깨뜨리시는 하나님의 완벽한 설계)"},{time:"[00:06:03]",secs:363,title:"찬양 (《짙은 고난에 지칠지라도》 — 이영 작사, 김민지 작곡 / 반주 김윤정, 찬양 신희정·이인하·장신영)"},{time:"[00:11:33]",secs:693,title:"설교 2 (특송 가사 속 '험한 시간에 두셨더라도'의 타동사적 섭리 강해, 고난에 담긴 주님의 선한 의도와 예레미야 29:11 평안의 약속)"},{time:"[00:12:50]",secs:770,title:"성경 봉독 [마태복음 18:21~22]"},{time:"[00:13:25]",secs:805,title:"설교 3 (베드로의 일곱 번 제안을 일흔 번까지라도 용서하라 하신 예수님의 끝없는 사랑 대답, 산찌꺼기가 남지 않도록 내보내는 완전한 용서 '아피에미' 강해 및 분노를 품어 사탄에게 발판을 내어주는 '토포스' 위험성 경고, 로마서 12:19의 영적 신뢰 강조)"},{time:"[00:19:45]",secs:1185,title:"시 낭송 [하나의 이름을 마주하고 — 김형종]"},{time:"[00:21:59]",secs:1319,title:"시 낭송 [숨 쉴 여유공간 — 김형종]"},{time:"[00:22:43]",secs:1363,title:"설교 2 (에제르와 네게드의 참된 언어적 의미 강해, 사탄의 가정 파괴 작전에 대응하는 세대별 부부의 위로 대화 지침 및 10초 대문 기도법 적용)"},{time:"[00:24:28]",secs:1468,title:"설교 3 (새로운 가치관 형성 시기에 찾아오는 사탄의 공격, 창세기 2:7을 통해 가장 낮은 곳까지 밀착하여 생기를 불어넣으시는 하나님의 지극하신 보살핌 선포)"},{time:"[00:35:29]",secs:2129,title:"클래식 (음악 감상 시간: 더블베이스 거장 게리 카가 연주하는 토마소 알비노니의 〈아다지오 G단조〉 깊은 저음 선율 묵상)"},{time:"[00:37:39]",secs:2259,title:"설교 4 (방화범의 죄을 숨겨주어 비극의 불꽃을 완전히 끄라는 아버지의 위대한 유언과 이반의 바보 같은 복종, 온 마을에 찾아온 평화의 열매 및 약속의 말씀 선포)"},{time:"[00:46:40]",secs:2800,title:"찬양 (설교 후 성도들의 결단 합창 찬양: 《사랑의 종소리》)"},{time:"[00:52:50]",secs:3170,title:"마침기도 (마음속 미움의 불씨를 끄고 하나님의 사랑을 회복하기 위한 마무리 축복 기도)"}]},
+{index:23,year:"2026",id:"wrmRpng3laQ",title:"2026년 6월 7일 통합설교 (부부주일) — 돕는 배필",date:"2026-06-07",month:"6월",categoryKo:"주일예배",scripture:"이사야 61장 1절",situation:"가정가족",summary:"하나님께서 성도에게 성령의 기름을 부으신('마샤흐') 목적은 ======================================== 랑을 회복하기 위한 마무리 축복 기도)ko.srt]",notes:"💡 주요 키워드: #부부주일",timeline:[{time:"[00:00:00]",secs:0,title:"설교 전 찬양 / 강성복, 이인하 부부"},{time:"[00:04:22]",secs:262,title:"성경 봉독 [창세기 2:18 ; 21~23]"},{time:"[00:05:28]",secs:328,title:"설교 1 (성격 차이와 황혼이혼의 통계적 실태 직시, 혼자 사는 상태인 '레밧도'의 고립을 깨뜨리시는 하나님의 완벽한 설계)"},{time:"[00:19:45]",secs:1185,title:"시 낭송 [하나의 이름을 마주하고 — 김형종]"},{time:"[00:22:43]",secs:1363,title:"설교 2 (에제르와 네게드의 참된 언어적 의미 강해, 사탄의 가정 파괴 작전에 대응하는 세대별 부부의 위로 대화 지침 및 10초 대문 기도법 적용)"}]},
+{index:24,year:"2026",id:"aH_n7Fnby30",title:"2026년 6월 14일 통합설교 (음악설교) — 하나님의 시간",date:"2026-06-14",month:"6월",categoryKo:"음악설교",scripture:"로마서 13장 11절",situation:"조급인내",summary:"성도의 삶에 찾아오는 원인 모를 답답함과 숨 막히는 절박함은 개인의 실수나 재앙이 아닙니다. 우리를 구원받기에 합당한 자녀로 빚으시려는 '하나님의 의도적인 시간표(성장의 시간)'입니다. 고난의 험한 시간에 우리를 일부러 '두셨다'는 것은 평안과 미래를 예비하시는 주님의 철저한 계획이며 , 가장 낮아진 위기의 순간에 하나님께서는 아담에게 생기를 불어넣으시듯 우리와 가장 가까이 영적으로 밀착하여 보호하십니다.  주요 키워드: #음악설교 #하나님의시간 #로마서13장11절 #험한시간 #영적밀착  정밀 인덱싱 타임라인:  [00:00] 성경 봉독 [로마서 13:11]  [00:38] 설교 1 (6월 음악 설교 주일 오프닝, 신앙생활 중 직면하는 가슴 답답한 순간의 영적 해석과 구원의 때 분별)  [06:03] 찬양 (《짙은 고난에 지칠지라도》 — 이영 작사, 김민지 작곡 / 반주 김윤정, 찬양 신희정·이인하·장신영)  [11:33] 설교 2 (특송 가사 속 '험한 시간에 두셨더라도'의 타동사적 섭리 강해, 고난에 담긴 주님의 선한 의도와 예레미야 29:11 평안의 약속)  [21:59] 시 낭송 [숨 쉴 여유공간 — 김형종]  [24:28] 설교 3 (새로운 가치관 형성 시기에 찾아오는 사탄의 공격, 창세기 2:7을 통해 가장 낮은 곳까지 밀착하여 생기를 불어넣으시는 하나님의 지극하신 보살핌 선포) text Original line 3: 중심 성경 구절: 잠언 11장 24~25절 — \"흩어 구제하여도 더욱 부하게 되는 일이 있나니 과도히 아껴도 가난하게 될 뿐이니라 구제를 좋아하는 자는 풍족하여질 것이요 남을 윤택하게 하는 자는 자기도 윤택하여지리라.\" Original line 13: 아무런 자격과 소망도 없는 죄인 된 나를 위해 독생자의 보혈을 흘려주시고 자녀라 불러주신 주님의 크신 사랑을 높이는 신년 감사 오프닝 찬양 고백ko.srt]. Original line 17: [잠언 11:24~25] 본문 봉독 Original line 21: 영화 〈아름다운 세상을 위하여〉 중에서 주인공 '트레버의 생각' 예화 영상 시청 (세상을 윤택하게 바꾸는 한 소년의 순전한 나눔의 아이디어 직시)ko.srt]. text Line 31: 《역설적 부유 — 김형종》 묵상 Line 37: 다른 사람을 복되게 할 때 고봉인심으로 갚아주시는 하나님의 재창조 복의 약속 선포, 작가 사역자의 신년 주제 성화 그림 해설 및 순종하는 성도들을 위한 간절한 마침 축복 통성 기도 인도 Line 42: 중심 성경 구절: 이사야 61장 1절 — \"주 여호와의 영이 내게 내리셨으니 이는 여호와께서 내게 기름을 부으사 가난한 자에게 아름다운 소식을 전하게 하려 하심이라 나를 보내사 마음이 상한 자를 고치며 포로된 자에게 자유를, 갇힌 자에게 놓임을 선포하며.\" Line 46: 주요 키워드: #음악설교 #기름부음 #마샤흐 #상한마음치유 #페카코아흐, 유튜브 내용 정리(2026년) Line 50: [00:00] 성경 봉독 — 이사야 61장 1절 봉독 Line 52: [00:53] 영상 시청 — 작은 씨앗 안에 거대한 나무의 가능성을 현실로 피워내시는 하나님의 신비로운 창조 섭리 타임랩스 영상 묵상, 유튜브 내용 정리(2026년) Line 54: [02:03] 설교 1 — 하늘을 향해 온몸으로 손을 흔드는 잎사귀처럼 하나님의 말씀에 즉각 청종하는 순종의 자세 강의, 나를 부르시고 사명자로 준비시키시는 주님의 신년 계획 서두 해설, 유튜브 내용 정리(2026년) Line 56: [06:10] 찬양 / 기름 부으심 — [신상우 작사·작곡, 찬양 장용진 장로] 신년 첫 주 영혼의 갈급함을 채우는 거룩한 음악설교 특별 찬양 세션, 유튜브 내용 정리(2026년) Line 58: [11:49] 설교 2 — 세속에서 떼어내어 하나님 편으로 신분을 옮기시는 은혜인 원어 '마샤흐(מָשַׁח)' 대강해, 깨지고 파쇄된 속마음 상태와 일상 소통의 참상 진단, 갇힌 문을 여는 영적 구출 역사인 '페카코아흐(פְּקַח־קוֹחַ)'의 권능 선포 및 요한일서 2:11 안목의 결함 경계, 유튜브 내용 정리(2026년) Line 60: [35:46] 시 낭송 — [그를 사랑하게 하소서 — 김형종], 유튜브 내용 정리(2026년) Line 62: [37:52] 설교 3 — 가족 공동체 안에서 숨쉴 구멍을 만들어주는 효도 전화 통화 권면, 허리 굽은 자들을 자존감으로 세우시는 하나님의 사랑(시편 146:7~8) 확증, 작가 사역자의 주제 성화 그림 해설 및 세상 속 빛의 통로로 파송하는 간절한 마침 축복 기도, 유튜브 내용 정리(2026년) Line 67: 중심 성경 구절: 시편 147편 3절 — \"상심한 자들을 고치시며 그들의 상처를 싸매시는도다.\" Line 71: 주요 키워드: #비전주일 #킨츠기공법 #샤바르레브 #하바쉬 #여호와라파, 유튜브 내용 정리(2026년) Line 75: [00:00] 예배 시작 / 준비찬양 — 1월 비전 주일 예배 오프닝 선포, 시편 4편(교독 3번) 성시 교독, 온 회중의 사도신경 신앙고백 및 김순자 권사의 구원의 자존감 회복을 위한 대표 기도 진행, 유튜브 내용 정리(2026년) Line 77: [07:44] 성경 봉독 — 시편 147편 3절 봉독 Line 79: [08:11] 시 낭송 / 삶의 묵상 — [흉터 — 김형종] 감상, 유튜브 내용 정리(2026년) Line 81: [10:42] 설교 1 — 아시카가 요시마사 장군의 깨진 찻잔 예화를 통해 본 일본의 '킨츠기(Kintsugi)' 복원 공법 소개, 깨진 가정·우울증·정신적 고뇌의 파편들을 숨기지 않고 전능자 앞에 직시해야 하는 필연성 역설, 슬라이도(Slido) 무기명 양방향 아픔 고백 및 연민의 소통 진행 Line 83: [33:36] 비전특송 찬양 — 《말이라는 씨앗》 [정용진 장로 반주] (언어의 영적 동력과 위로를 노래하는 특송 세션), 유튜브 내용 정리(2026년) Line 85: [37:03] 설교 2 — 그릇이 부러진 극한의 상태 원어 '샤바르 레브(נִשְׁבְּרֵי לֵב)' 강해, 상처를 원래보다 온전하게 고치시는 '라파(רָפָא)'의 재창조 권능 선포, 붕대로 감싸 묶으시는 하나님의 '하바쉬(חָבַשׁ)' 치유법, 바울의 육체 가시 속에서 완전함에 도달하는 '텔레이오타이(τελειούται)'의 신비 강론, 두 번째 슬라이도 확신의 위로 나눔, 작가 사역자의 성화 해설, 가시를 면류관으로 바꾸는 결단 통성 기도 및 최영순 집사의 애찬 마침 기도 Line 93: 영적 본질: 가난과 결핍 속에서 방황하던 난민 소년 야니스가 그의 숨겨진 신체적 강점을 발견해 준 아마추어 감독들을 만나 프로 무대로 나아갈 막힌 길을 뚫어냈듯이, 성령님은 우리 인생의 한계 장벽을 허물고 새로운 피할 길을 여시는 참된 인생의 영적 감독이십니다 헬라어 원어로 '파라클레토스(παράκλητος)'인 보혜사 성령님은 어떠한 대가도 바라지 않고 우리를 무조건 지지하시며, 하늘의 거대한 법정에서 성도들의 모든 죄를 변호해 무죄 방면을 이끌어내시는 완벽한 조력자이십니다 인생의 자욱한 안개로 앞이 보이지 않는 혹독한 순간일지라도, 신호를 음성으로 바꾸어 소리로 끝까지 길을 인도하시는 성령님의 세미한 음성에 주파수를 맞추어야 합니다 성도 역시 공동체와 직장에서 타인의 단점 대신 숨은 재능을 찾아 칭찬하는 '발견의 언어(카리스마)'를 선포하고, 지친 가족의 아픔 곁에 말없이 머무는 '공감의 사랑(메노)'을 실천함으로써 영혼 구원의 방주인 가정과 교회를 천국 안전지대로 수호해야 합니다. Line 99: [00:00] 예배 시작 / 준비찬양 (세상의 조건적인 정죄와 한계를 부수고 자녀라 불러주시는 주님의 보혈의 능력을 높이는 회중 찬양)ko.srt] text Line 101: [03:55] 성경 봉독 [요한복음 14:16~17;26] Line 103: [05:05] 영상 1 [아마추어 감독님] (싹부터 대단한 생명은 없듯 가난한 난민 소년 야니스가 아마추어 감독의 지도로 인생의 공을 쥐고 성장해가는 영화 장면 시청) Line 105: [06:27] 설교 1 (보혜사의 어원적 속성 강의, 짙은 환경의 안개 속에서 불빛 대신 '소리'로 신호를 바꾸어 객차를 건져내는 등대의 비유를 통한 성도의 영적 안테나 예리함 강조, 거대한 법정에서 성도의 죄악을 탄원하고 의롭다 하시는 무죄 변호 복음 선포)ko.srt] Line 107: [29:06] 영상 2 [재능을 알아보다] (야니스의 신체적 강점을 한눈에 파악하여 그리스 성인 3부 리그 연습생 프로 계약으로 가문의 첫 외식을 선물하는 감독의 결정적 추천 장면 시청)ko.srt] Line 109: [29:58] 설교 2 (만남을 통해 피할 길과 탈출구를 여시는 히브리·헬라어 거룩한 '크바시스(έκβασις)' 공식 대강해, 직장과 공동체 안에서 이웃의 은사이자 재능을 뜻하는 '카리스마(χάρισμα)'를 찾아 전하는 칭찬 매뉴얼 적용) Line 111: [36:06] 시 낭송 [선생님 — 김형종] Line 113: [38:29] 설교 3 (어떠한 대가도 없이 성도의 삶이 되어지도록 은혜를 연결하시는 주님의 무조건적인 지지 확증, 공부와 직장에 지친 가족을 섣불리 가르치려 들기보다 조용히 머무는 '메노(μένω)'의 안식 사랑을 통한 가족 전도 비결 강론) Line 115: [49:05] 영상 3 [마지막 천사] (야니스가 꿈의 NBA 구단에 안착하기까지 밤잠 설치며 그의 가치를 역으로 증명해낸 수많은 무명의 천사·이름 없는 감독들의 조력 실화 시청) Line 117: [50:02] 설교 4 (우리를 끝까지 고아와 같이 버려두지 않고 최종 낙원까지 호위하시는 주님의 성령의 사람 인도법 해설, 작가 사역자의 성화 그림 해설 및 복된 은혜의 약속 전달자가 되기 위한 합심 마침 결단 기도) Line 130: [00:00] [성경봉독] — 이사야 43:19 ; 21 봉독 Line 132: [00:45] [설교 1] — 차가운 2월 겨울 공기 속에 숨겨진 땅 밑 봄의 생명 태동 조명, 실패라 느끼는 긴 겨울의 상황 속에서 문제를 기쁨으로 맞닥뜨려 이겨내는 성도의 영적 '견디는 실력' 도입 강해 Line 134: [03:08] [찬양] — 《그곳에서 시작되네》 (박은지 작사, 김민지 작곡 / 반주 신희정, 찬양 최유지 특송 세션) Line 136: [08:00] [설교 2] — 인간이 한계에 부딪혀 끝이라 생각하는 지점에서 시작되는 주님의 초자연적 역동성 분석, 저무는 달과 돋아나는 태양이 교차하는 십자가적 섭리 고찰 Line 138: [13:45] 찬양. 1연 — 찬양 가사의 거룩한 의미 묵상 (\"끝이라고 생각했던 그곳에서 시작되네, 완전하신 주의 계획 이제 깨닫네\") Line 140: [14:16] [설교 3] — 사람의 예상을 무한히 뛰어넘는 하나님의 거룩한 지혜와 모략 원어 '에차(עֵצָה)' 영해 강론, 새로운 대안의 문을 열어두시기 위해 현재 유익이라 여겼던 문들을 여지없이 폐쇄하시는 주님의 깊은 반전 추동력 고찰 Line 142: [20:53] [시 낭송] — 《성령의 바람 — 김형종》 Line 144: [23:20] [설교 4] — 시간과 세월의 흐름에 따라 성도의 영혼에 촘촘하고 강하게 조각되는 영적 나이테 해설, 노년과 백발의 지점까지 반드시 업고 품어 건져내시겠다는 이사야 46:4 신실한 초석 선포 Line 146: [29:25] 찬양. 2연 — 노래 가사 묵상 중창 (\"겨울 지나 봄이 오듯 인생의 계절 지날 때, 나의 믿음 깊어지고 내 기도는 노래가 되네\") Line 148: [29:58] [설교 5] — 다가올 노후에 대한 인간적 조급함과 두려움을 믿음으로 격파하고, 내면의 깊은 성숙을 거쳐 삶의 모든 호흡을 찬송으로 바꾸어내는 황혼 성도의 평안 권면 Line 150: [40:24] 찬양.",notes:"💡 주요 키워드: #부부주일",timeline:[{time:"[00:00:00]",secs:0,title:"성경 봉독 [로마서 13:11]"},{time:"[00:00:38]",secs:38,title:"설교 1 (6월 음악 설교 주일 오프닝, 신앙생활 중 직면하는 가슴 답답한 순간의 영적 해석과 구원의 때 분별)"},{time:"[00:00:45]",secs:45,title:"[설교 1] — 차가운 2월 겨울 공기 속에 숨겨진 땅 밑 봄의 생명 태동 조명, 실패라 느끼는 긴 겨울의 상황 속에서 문제를 기쁨으로 맞닥뜨려 이겨내는 성도의 영적 '견디는 실력' 도입 강해"},{time:"[00:00:53]",secs:53,title:"영상 시청 — 작은 씨앗 안에 거대한 나무의 가능성을 현실로 피워내시는 하나님의 신비로운 창조 섭리 타임랩스 영상 묵상, 유튜브 내용 정리(2026년)"},{time:"[00:02:03]",secs:123,title:"설교 1 — 하늘을 향해 온몸으로 손을 흔드는 잎사귀처럼 하나님의 말씀에 즉각 청종하는 순종의 자세 강의, 나를 부르시고 사명자로 준비시키시는 주님의 신년 계획 서두 해설, 유튜브 내용 정리(2026년)"},{time:"[00:03:08]",secs:188,title:"[찬양] — 《그곳에서 시작되네》 (박은지 작사, 김민지 작곡 / 반주 신희정, 찬양 최유지 특송 세션)"},{time:"[00:03:55]",secs:235,title:"성경 봉독 [요한복음 14:16~17;26]"},{time:"[00:05:05]",secs:305,title:"영상 1 [아마추어 감독님] (싹부터 대단한 생명은 없듯 가난한 난민 소년 야니스가 아마추어 감독의 지도로 인생의 공을 쥐고 성장해가는 영화 장면 시청)"},{time:"[00:06:03]",secs:363,title:"찬양 (《짙은 고난에 지칠지라도》 — 이영 작사, 김민지 작곡 / 반주 김윤정, 찬양 신희정·이인하·장신영)"},{time:"[00:06:10]",secs:370,title:"찬양 / 기름 부으심 — [신상우 작사·작곡, 찬양 장용진 장로] 신년 첫 주 영혼의 갈급함을 채우는 거룩한 음악설교 특별 찬양 세션, 유튜브 내용 정리(2026년)"},{time:"[00:06:27]",secs:387,title:"설교 1 (보혜사의 어원적 속성 강의, 짙은 환경의 안개 속에서 불빛 대신 '소리'로 신호를 바꾸어 객차를 건져내는 등대의 비유를 통한 성도의 영적 안테나 예리함 강조, 거대한 법정에서 성도의 죄악을 탄원하고 의롭다 하시는 무죄 변호 복음 선포)ko.srt]"},{time:"[00:07:44]",secs:464,title:"성경 봉독 — 시편 147편 3절 봉독"},{time:"[00:08:00]",secs:480,title:"[설교 2] — 인간이 한계에 부딪혀 끝이라 생각하는 지점에서 시작되는 주님의 초자연적 역동성 분석, 저무는 달과 돋아나는 태양이 교차하는 십자가적 섭리 고찰"},{time:"[00:08:11]",secs:491,title:"시 낭송 / 삶의 묵상 — [흉터 — 김형종] 감상, 유튜브 내용 정리(2026년)"},{time:"[00:10:42]",secs:642,title:"설교 1 — 아시카가 요시마사 장군의 깨진 찻잔 예화를 통해 본 일본의 '킨츠기(Kintsugi)' 복원 공법 소개, 깨진 가정·우울증·정신적 고뇌의 파편들을 숨기지 않고 전능자 앞에 직시해야 하는 필연성 역설, 슬라이도(Slido) 무기명 양방향 아픔 고백 및 연민의 소통 진행"},{time:"[00:11:33]",secs:693,title:"설교 2 (특송 가사 속 '험한 시간에 두셨더라도'의 타동사적 섭리 강해, 고난에 담긴 주님의 선한 의도와 예레미야 29:11 평안의 약속)"},{time:"[00:11:49]",secs:709,title:"설교 2 — 세속에서 떼어내어 하나님 편으로 신분을 옮기시는 은혜인 원어 '마샤흐(מָשַׁח)' 대강해, 깨지고 파쇄된 속마음 상태와 일상 소통의 참상 진단, 갇힌 문을 여는 영적 구출 역사인 '페카코아흐(פְּקַח־קוֹחַ)'의 권능 선포 및 요한일서 2:11 안목의 결함 경계, 유튜브 내용 정리(2026년)"},{time:"[00:13:45]",secs:825,title:"찬양. 1연 — 찬양 가사의 거룩한 의미 묵상 (\"끝이라고 생각했던 그곳에서 시작되네, 완전하신 주의 계획 이제 깨닫네\")"},{time:"[00:14:16]",secs:856,title:"[설교 3] — 사람의 예상을 무한히 뛰어넘는 하나님의 거룩한 지혜와 모략 원어 '에차(עֵצָה)' 영해 강론, 새로운 대안의 문을 열어두시기 위해 현재 유익이라 여겼던 문들을 여지없이 폐쇄하시는 주님의 깊은 반전 추동력 고찰"},{time:"[00:20:53]",secs:1253,title:"[시 낭송] — 《성령의 바람 — 김형종》"},{time:"[00:21:59]",secs:1319,title:"시 낭송 [숨 쉴 여유공간 — 김형종]"},{time:"[00:23:20]",secs:1400,title:"[설교 4] — 시간과 세월의 흐름에 따라 성도의 영혼에 촘촘하고 강하게 조각되는 영적 나이테 해설, 노년과 백발의 지점까지 반드시 업고 품어 건져내시겠다는 이사야 46:4 신실한 초석 선포"},{time:"[00:24:28]",secs:1468,title:"설교 3 (새로운 가치관 형성 시기에 찾아오는 사탄의 공격, 창세기 2:7을 통해 가장 낮은 곳까지 밀착하여 생기를 불어넣으시는 하나님의 지극하신 보살핌 선포)"},{time:"[00:29:06]",secs:1746,title:"영상 2 [재능을 알아보다] (야니스의 신체적 강점을 한눈에 파악하여 그리스 성인 3부 리그 연습생 프로 계약으로 가문의 첫 외식을 선물하는 감독의 결정적 추천 장면 시청)ko.srt]"},{time:"[00:29:25]",secs:1765,title:"찬양. 2연 — 노래 가사 묵상 중창 (\"겨울 지나 봄이 오듯 인생의 계절 지날 때, 나의 믿음 깊어지고 내 기도는 노래가 되네\")"},{time:"[00:29:58]",secs:1798,title:"설교 2 (만남을 통해 피할 길과 탈출구를 여시는 히브리·헬라어 거룩한 '크바시스(έκβασις)' 공식 대강해, 직장과 공동체 안에서 이웃의 은사이자 재능을 뜻하는 '카리스마(χάρισμα)'를 찾아 전하는 칭찬 매뉴얼 적용)"},{time:"[00:33:36]",secs:2016,title:"비전특송 찬양 — 《말이라는 씨앗》 [정용진 장로 반주] (언어의 영적 동력과 위로를 노래하는 특송 세션), 유튜브 내용 정리(2026년)"},{time:"[00:35:46]",secs:2146,title:"시 낭송 — [그를 사랑하게 하소서 — 김형종], 유튜브 내용 정리(2026년)"},{time:"[00:36:06]",secs:2166,title:"시 낭송 [선생님 — 김형종]"},{time:"[00:37:03]",secs:2223,title:"설교 2 — 그릇이 부러진 극한의 상태 원어 '샤바르 레브(נִשְׁבְּרֵי לֵב)' 강해, 상처를 원래보다 온전하게 고치시는 '라파(רָפָא)'의 재창조 권능 선포, 붕대로 감싸 묶으시는 하나님의 '하바쉬(חָבַשׁ)' 치유법, 바울의 육체 가시 속에서 완전함에 도달하는 '텔레이오타이(τελειούται)'의 신비 강론, 두 번째 슬라이도 확신의 위로 나눔, 작가 사역자의 성화 해설, 가시를 면류관으로 바꾸는 결단 통성 기도 및 최영순 집사의 애찬 마침 기도"},{time:"[00:37:52]",secs:2272,title:"설교 3 — 가족 공동체 안에서 숨쉴 구멍을 만들어주는 효도 전화 통화 권면, 허리 굽은 자들을 자존감으로 세우시는 하나님의 사랑(시편 146:7~8) 확증, 작가 사역자의 주제 성화 그림 해설 및 세상 속 빛의 통로로 파송하는 간절한 마침 축복 기도, 유튜브 내용 정리(2026년)"},{time:"[00:38:29]",secs:2309,title:"설교 3 (어떠한 대가도 없이 성도의 삶이 되어지도록 은혜를 연결하시는 주님의 무조건적인 지지 확증, 공부와 직장에 지친 가족을 섣불리 가르치려 들기보다 조용히 머무는 '메노(μένω)'의 안식 사랑을 통한 가족 전도 비결 강론)"},{time:"[00:49:05]",secs:2945,title:"영상 3 [마지막 천사] (야니스가 꿈의 NBA 구단에 안착하기까지 밤잠 설치며 그의 가치를 역으로 증명해낸 수많은 무명의 천사·이름 없는 감독들의 조력 실화 시청)"},{time:"[00:50:02]",secs:3002,title:"설교 4 (우리를 끝까지 고아와 같이 버려두지 않고 최종 낙원까지 호위하시는 주님의 성령의 사람 인도법 해설, 작가 사역자의 성화 그림 해설 및 복된 은혜의 약속 전달자가 되기 위한 합심 마침 결단 기도)"}]}
 ];
 
 // ────────────────────────────────────────────────
@@ -634,11 +856,14 @@ function openModal(idx) {
 
   document.getElementById('mCat').textContent   = item.categoryKo;
   document.getElementById('mTitle').textContent  = item.title;
-  document.getElementById('mMeta').innerHTML     = '<span class="mr-1"><svg class="fa-icon" viewBox="0 0 448 512"><path d="M152 24c0-13.3-10.7-24-24-24s-24 10.7-24 24V64H64C28.7 64 0 92.7 0 128v16 48V448c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V192 144 128c0-35.3-28.7-64-64-64H344V24c0-13.3-10.7-24-24-24s-24 10.7-24 24V64H152V24zM48 192H400V448c0 8.8-7.2 16-16 16H64c-8.8 0-16-7.2-16-16V192z"/></svg></span>' + item.date + ' &nbsp;|&nbsp; <span class="text-indigo-700 font-bold">' + item.month + ' 대예배</span>';
+  var scrBtn = item.scripture
+    ? ' &nbsp;|&nbsp; <button onclick="openBibleModal(\'' + item.scripture.replace(/'/g,"\\'")+'\')" style="color:#4338ca;font-weight:700;font-size:11px;background:#eef2ff;border:1px solid #c7d2fe;border-radius:6px;padding:2px 8px;cursor:pointer;">' + item.scripture + '</button>'
+    : '';
+  document.getElementById('mMeta').innerHTML = '<span class="mr-1"><svg class="fa-icon" viewBox="0 0 448 512"><path d="M152 24c0-13.3-10.7-24-24-24s-24 10.7-24 24V64H64C28.7 64 0 92.7 0 128v16 48V448c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V192 144 128c0-35.3-28.7-64-64-64H344V24c0-13.3-10.7-24-24-24s-24 10.7-24 24V64H152V24zM48 192H400V448c0 8.8-7.2 16-16 16H64c-8.8 0-16-7.2-16-16V192z"/></svg></span>' + item.date + ' &nbsp;|&nbsp; <span class="text-indigo-700 font-bold">' + item.month + ' 대예배</span>' + scrBtn;
   document.getElementById('mSummary').textContent  = item.summary;
-  document.getElementById('mNotes').textContent    = item.notes;
+  renderNotesBadges('mNotes', item.notes);
   document.getElementById('mSummaryM').textContent = item.summary;
-  document.getElementById('mNotesM').textContent   = item.notes;
+  renderNotesBadges('mNotesM', item.notes);
 
   updateYtLink(0);
   document.getElementById('nowPlaying').classList.add('hidden');
@@ -667,16 +892,21 @@ function openModal(idx) {
 
   document.getElementById('modal').classList.remove('hidden');
   document.body.style.overflow = 'hidden';
+  // 모바일 뒤로가기 → 팝업 닫기 지원
+  if (!window._modalHistoryPushed) {
+    history.pushState({panel:'sermon'}, '');
+    window._modalHistoryPushed = true;
+  }
 }
 
 function closeModal() {
   stopProgress();
-  // iframe src를 비워 재생 즉시 중단
   const box = document.getElementById('playerBox');
   box.innerHTML = '';
   activeItem = null;
   document.getElementById('modal').classList.add('hidden');
   document.body.style.overflow = '';
+  window._modalHistoryPushed = false;
 }
 
 // ────────────────────────────────────────────────
@@ -701,9 +931,9 @@ function renderCards(data) {
         '<div class="text-xs flex items-center bg-slate-50 p-2 rounded-lg border border-slate-100 mb-3">' +
           '<span class="text-indigo-700 font-bold mr-2">' + (sitLabel[item.situation]||'🛡️') + '</span>' +
           '<span class="text-slate-300 mr-2">|</span>' +
-          '<span class="truncate text-slate-500 font-light">' + item.scripture + '</span>' +
+          (item.scripture ? '<button class="scr-btn" data-scr="' + item.scripture + '" style="color:#4338ca;font-weight:600;font-size:11px;background:#eef2ff;border:1px solid #c7d2fe;border-radius:6px;padding:1px 7px;cursor:pointer;">' + item.scripture + '</button>' : '') +
         '</div>' +
-        '<p class="text-xs text-slate-500 font-light leading-relaxed line-clamp-3">' + item.summary + '</p>' +
+        '<p class="text-xs text-slate-500 font-light leading-relaxed line-clamp-3 card-summary">' + item.summary + '</p>' +
       '</div>' +
       '<div class="px-6 py-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-xs">' +
         '<span class="text-indigo-600 font-bold flex items-center gap-1.5"><span class="text-red-500"><svg class="fa-icon" viewBox="0 0 576 512"><path d="M549.655 124.083c-6.281-23.65-24.787-42.276-48.284-48.597C458.781 64 288 64 288 64S117.22 64 74.629 75.486c-23.497 6.322-42.003 24.947-48.284 48.597-11.412 42.867-11.412 132.305-11.412 132.305s0 89.438 11.412 132.305c6.281 23.65 24.787 41.5 48.284 47.821C117.22 448 288 448 288 448s170.78 0 213.371-11.486c23.497-6.321 42.003-24.171 48.284-47.821 11.412-42.867 11.412-132.305 11.412-132.305s0-89.438-11.412-132.305zm-317.51 213.508V175.185l142.739 81.205-142.739 81.201z"/></svg></span>영상 재생</span>' +
@@ -1273,6 +1503,882 @@ function init() {
   }
   buildMonthTabs();
   filterCards();
+  restoreSettings();
+}
+
+
+// ════════════════════════════════════════════════
+// 성경 구절 팝업
+// ════════════════════════════════════════════════
+
+// 성경 구절 데이터 (개역개정 기준 주요 구절)
+var bibleVerses = {
+  "잠언 11장 24~25절": [
+    { v:"24", t:"흩어 구제하여도 더욱 부하게 되는 일이 있나니 과도히 아껴도 가난하게 될 뿐이니라" },
+    { v:"25", t:"구제를 좋아하는 자는 풍족하여질 것이요 남을 윤택하게 하는 자는 자기도 윤택하여지리라" }
+  ],
+  "이사야 61장 1절": [
+    { v:"1", t:"주 여호와의 영이 내게 내리셨으니 이는 여호와께서 내게 기름을 부으사 가난한 자에게 아름다운 소식을 전하게 하려 하심이라 나를 보내사 마음이 상한 자를 고치며 포로된 자에게 자유를, 갇힌 자에게 놓임을 선포하며" }
+  ],
+  "시편 147편 3절": [
+    { v:"3", t:"그가 상심한 자들을 고치시며 그들의 상처를 싸매시는도다" }
+  ],
+  "요한복음 14장 16~17절": [
+    { v:"16", t:"내가 아버지께 구하겠으니 그가 또 다른 보혜사를 너희에게 주사 영원토록 너희와 함께 있게 하리니" },
+    { v:"17", t:"그는 진리의 영이라 세상은 능히 그를 받지 못하나니 이는 그를 보지도 못하고 알지도 못함이라 그러나 너희는 그를 아나니 그는 너희와 함께 거하심이요 또 너희 속에 계시겠음이라" }
+  ],
+  "이사야 43장 19절": [
+    { v:"19", t:"보라 내가 새 일을 행하리니 이제 나타낼 것이라 너희가 그것을 알지 못하겠느냐 반드시 내가 광야에 길을 사막에 강을 내리니" }
+  ],
+  "베드로전서 1장 7절": [
+    { v:"7", t:"너희 믿음의 확실함은 불로 연단하여도 없어질 금보다 더 귀하여 예수 그리스도께서 나타나실 때에 칭찬과 영광과 존귀를 얻게 할 것이니라" }
+  ],
+  "베드로전서 5장 8~9절": [
+    { v:"8", t:"근신하라 깨어라 너희 대적 마귀가 우는 사자 같이 두루 다니며 삼킬 자를 찾나니" },
+    { v:"9", t:"너희는 믿음을 굳건하게 하여 그를 대적하라 이는 세상에 있는 너희 형제들도 동일한 고난을 당하는 줄을 앎이라" }
+  ],
+  "요한복음 14장 16절": [
+    { v:"16", t:"내가 아버지께 구하겠으니 그가 또 다른 보혜사를 너희에게 주사 영원토록 너희와 함께 있게 하리니" }
+  ],
+  "누가복음 5장 4절": [
+    { v:"4", t:"말씀을 마치시고 시몬에게 이르시되 깊은 데로 가서 그물을 내려 고기를 잡으라" }
+  ],
+  "고린도후서 12장 9~10절": [
+    { v:"9", t:"내게 이르시기를 내 은혜가 네게 족하도다 이는 내 능력이 약한 데서 온전하여짐이라 하신지라 그러므로 도리어 크게 기뻐함으로 나의 여러 약한 것들에 대하여 자랑하리니 이는 그리스도의 능력이 내게 머물게 하려 함이라" },
+    { v:"10", t:"그러므로 내가 그리스도를 위하여 약한 것들과 능욕과 궁핍과 박해와 곤고를 기뻐하노니 이는 내가 약한 그 때에 강함이라" }
+  ],
+  "마가복음 4장 26~29절": [
+    { v:"26", t:"또 이르시되 하나님의 나라는 사람이 씨를 땅에 뿌림과 같으니" },
+    { v:"27", t:"그가 밤낮 자고 깨고 하는 중에 씨가 나서 자라되 어떻게 그리 되는지를 알지 못하느니라" },
+    { v:"28", t:"땅이 스스로 열매를 맺되 처음에는 싹이요 다음에는 이삭이요 그 다음에는 이삭에 충실한 곡식이라" },
+    { v:"29", t:"열매가 익으면 곧 낫을 대나니 이는 추수 때가 이르렀음이라" }
+  ],
+  "잠언 12장 18절": [
+    { v:"18", t:"칼로 찌름 같이 함부로 말하는 자가 있거니와 지혜로운 자의 혀는 양약과 같으니라" }
+  ],
+  "에베소서 4장 32절": [
+    { v:"32", t:"서로 친절하게 하며 불쌍히 여기며 서로 용서하기를 하나님이 그리스도 안에서 너희를 용서하심과 같이 하라" }
+  ],
+  "요한복음 6장 67~68절": [
+    { v:"67", t:"예수께서 열두 제자에게 이르시되 너희도 가려느냐" },
+    { v:"68", t:"시몬 베드로가 대답하되 주여 영생의 말씀이 주께 있사오니 우리가 누구에게로 가오리이까" }
+  ],
+  "고린도후서 12장 7~9절": [
+    { v:"7", t:"여러 계시를 받은 것이 지극히 크므로 너무 자만하지 않게 하시려고 내 육체에 가시 곧 사탄의 사자를 주셨으니 이는 나를 쳐서 너무 자만하지 않게 하려 하심이라" },
+    { v:"8", t:"이것이 내게서 떠나가게 하기 위하여 내가 세 번 주께 간구하였더니" },
+    { v:"9", t:"나에게 이르시기를 내 은혜가 네게 족하도다 이는 내 능력이 약한 데서 온전하여짐이라 하신지라 그러므로 도리어 크게 기뻐함으로 나의 여러 약한 것들에 대하여 자랑하리니 이는 그리스도의 능력이 내게 머물게 하려 함이라" }
+  ],
+  "에베소서 6장 4절": [
+    { v:"4", t:"또 아비들아 너희 자녀를 노엽게 하지 말고 오직 주의 교훈과 훈계로 양육하라" }
+  ],
+  "마태복음 18장 21~22절": [
+    { v:"21", t:"그 때에 베드로가 나아와 이르되 주여 형제가 내게 죄를 범하면 몇 번이나 용서하여 주리이까 일곱 번까지 하오리이까" },
+    { v:"22", t:"예수께서 이르시되 네게 이르노니 일곱 번뿐 아니라 일곱 번을 일흔 번까지라도 할지니라" }
+  ],
+  "창세기 2장 18절": [
+    { v:"18", t:"여호와 하나님이 이르시되 사람이 혼자 사는 것이 좋지 아니하니 내가 그를 위하여 돕는 배필을 지으리라 하시니라" }
+  ],
+  "전도서 3장 1절": [
+    { v:"1", t:"범사에 기한이 있고 천하 만사가 다 때가 있나니" },
+    { v:"11", t:"하나님이 모든 것을 지으시되 때를 따라 아름답게 하셨고 또 사람들에게는 영원을 사모하는 마음을 주셨느니라 그러나 하나님이 하시는 일의 시종을 사람으로 능히 측량할 수 없게 하셨도다" }
+  ],
+  "요한복음 14장 19절": [
+    { v:"19", t:"조금 있으면 세상은 다시 나를 보지 못할 것이로되 너희는 나를 보리니 이는 내가 살아 있고 너희도 살아 있겠음이라" }
+  ],
+  "로마서 4장 18절": [
+    { v:"18", t:"아브라함이 바랄 수 없는 중에 바라고 믿었으니 이는 네 후손이 이같으리라 하신 말씀대로 많은 민족의 조상이 되게 하려 하심이라" }
+  ],
+  "고린도후서 4장 8~10절": [
+    { v:"8",  t:"우리가 사방으로 욱여쌈을 당하여도 싸이지 아니하며 답답한 일을 당하여도 낙심하지 아니하며" },
+    { v:"9",  t:"박해를 받아도 버린 바 되지 아니하며 거꾸러뜨림을 당하여도 망하지 아니하고" },
+    { v:"10", t:"우리가 항상 예수의 죽음을 몸에 짊어짐은 예수의 생명이 또한 우리 몸에 나타나게 하려 함이라" }
+  ],
+  "시편 121편 1~2절": [
+    { v:"1", t:"내가 산을 향하여 눈을 들리라 나의 도움이 어디서 올까" },
+    { v:"2", t:"나의 도움은 천지를 지으신 여호와에게서로다" }
+  ]
+};
+
+var currentBibleRef = '';
+
+function openBibleModal(ref) {
+  currentBibleRef = ref;
+  document.getElementById('bibleRef').textContent = ref;
+  document.getElementById('bibleSearch').value = '';
+  filterBibleVerses();
+  document.getElementById('bibleModal').classList.remove('hidden');
+}
+
+function closeBibleModal() {
+  document.getElementById('bibleModal').classList.add('hidden');
+}
+
+function filterBibleVerses() {
+  var q = (document.getElementById('bibleSearch').value || '').trim().toLowerCase();
+  var ref = currentBibleRef;
+  var verses = bibleVerses[ref];
+  var list = document.getElementById('bibleVerseList');
+  var countEl = document.getElementById('bibleVerseCount');
+
+  if (!verses || verses.length === 0) {
+    list.innerHTML = '<div style="text-align:center;padding:40px 20px;color:#94a3b8;">' +
+      '<p style="font-size:32px;margin-bottom:8px">📖</p>' +
+      '<p style="font-size:14px;font-weight:600;">구절 데이터가 준비 중입니다</p>' +
+      '<p style="font-size:12px;margin-top:4px;">' + ref + '</p></div>';
+    countEl.textContent = '';
+    return;
+  }
+
+  var filtered = q ? verses.filter(function(v) { return v.t.toLowerCase().includes(q) || v.v.includes(q); }) : verses;
+
+  countEl.textContent = filtered.length + '절 표시 중';
+
+  if (filtered.length === 0) {
+    list.innerHTML = '<p style="text-align:center;padding:30px;color:#94a3b8;font-size:13px;">검색 결과가 없습니다</p>';
+    return;
+  }
+
+  list.innerHTML = filtered.map(function(item) {
+    var highlighted = q ? item.t.replace(new RegExp('(' + q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + ')', 'gi'),
+      '<mark style="background:#fef9c3;border-radius:3px;padding:0 2px;">$1</mark>') : item.t;
+    return '<div style="display:flex;gap:12px;padding:14px 0;border-bottom:1px solid #f1f5f9;">' +
+      '<span style="flex-shrink:0;width:28px;height:28px;background:#eef2ff;color:#3730a3;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;">' + item.v + '</span>' +
+      '<p style="font-size:14px;line-height:1.85;color:#1e293b;font-family:Georgia,serif;margin:0;">' + highlighted + '</p>' +
+    '</div>';
+  }).join('');
+}
+
+// notes 해시태그 뱃지 렌더링
+function renderNotesBadges(elId, notesStr) {
+  var el = document.getElementById(elId);
+  if (!el) return;
+  if (!notesStr) { el.innerHTML = ''; return; }
+  var clean = notesStr.replace('💡 주요 키워드:','').replace('💡 주요 키워드','').trim();
+  var tags = clean.split(/\s+/).filter(function(t){ return t.startsWith('#'); });
+  if (tags.length === 0) { el.textContent = notesStr; return; }
+  el.innerHTML = '<div style="display:flex;flex-wrap:wrap;gap:6px;padding:4px 0">' +
+    tags.map(function(t){
+      return '<span style="background:#eef2ff;color:#3730a3;border:1px solid #c7d2fe;border-radius:999px;padding:4px 12px;font-size:11px;font-weight:700;">' + t + '</span>';
+    }).join('') + '</div>';
+}
+
+
+// ════════════════════════════════════════════════
+// 성경 읽기 시스템 v2 (모바일 최적화 + CORS 안전)
+// ════════════════════════════════════════════════
+
+var BR_BOOKS = [
+  {n:'창세기',c:50,t:'ot'},{n:'출애굽기',c:40,t:'ot'},{n:'레위기',c:27,t:'ot'},
+  {n:'민수기',c:36,t:'ot'},{n:'신명기',c:34,t:'ot'},{n:'여호수아',c:24,t:'ot'},
+  {n:'사사기',c:21,t:'ot'},{n:'룻기',c:4,t:'ot'},{n:'사무엘상',c:31,t:'ot'},
+  {n:'사무엘하',c:24,t:'ot'},{n:'열왕기상',c:22,t:'ot'},{n:'열왕기하',c:25,t:'ot'},
+  {n:'역대상',c:29,t:'ot'},{n:'역대하',c:36,t:'ot'},{n:'에스라',c:10,t:'ot'},
+  {n:'느헤미야',c:13,t:'ot'},{n:'에스더',c:10,t:'ot'},{n:'욥기',c:42,t:'ot'},
+  {n:'시편',c:150,t:'ot'},{n:'잠언',c:31,t:'ot'},{n:'전도서',c:12,t:'ot'},
+  {n:'아가',c:8,t:'ot'},{n:'이사야',c:66,t:'ot'},{n:'예레미야',c:52,t:'ot'},
+  {n:'예레미야애가',c:5,t:'ot'},{n:'에스겔',c:48,t:'ot'},{n:'다니엘',c:12,t:'ot'},
+  {n:'호세아',c:14,t:'ot'},{n:'요엘',c:3,t:'ot'},{n:'아모스',c:9,t:'ot'},
+  {n:'오바댜',c:1,t:'ot'},{n:'요나',c:4,t:'ot'},{n:'미가',c:7,t:'ot'},
+  {n:'나훔',c:3,t:'ot'},{n:'하박국',c:3,t:'ot'},{n:'스바냐',c:3,t:'ot'},
+  {n:'학개',c:2,t:'ot'},{n:'스가랴',c:14,t:'ot'},{n:'말라기',c:4,t:'ot'},
+  {n:'마태복음',c:28,t:'nt'},{n:'마가복음',c:16,t:'nt'},{n:'누가복음',c:24,t:'nt'},
+  {n:'요한복음',c:21,t:'nt'},{n:'사도행전',c:28,t:'nt'},{n:'로마서',c:16,t:'nt'},
+  {n:'고린도전서',c:16,t:'nt'},{n:'고린도후서',c:13,t:'nt'},{n:'갈라디아서',c:6,t:'nt'},
+  {n:'에베소서',c:6,t:'nt'},{n:'빌립보서',c:4,t:'nt'},{n:'골로새서',c:4,t:'nt'},
+  {n:'데살로니가전서',c:5,t:'nt'},{n:'데살로니가후서',c:3,t:'nt'},
+  {n:'디모데전서',c:6,t:'nt'},{n:'디모데후서',c:4,t:'nt'},{n:'디도서',c:3,t:'nt'},
+  {n:'빌레몬서',c:1,t:'nt'},{n:'히브리서',c:13,t:'nt'},{n:'야고보서',c:5,t:'nt'},
+  {n:'베드로전서',c:5,t:'nt'},{n:'베드로후서',c:3,t:'nt'},{n:'요한1서',c:5,t:'nt'},
+  {n:'요한2서',c:1,t:'nt'},{n:'요한3서',c:1,t:'nt'},{n:'유다서',c:1,t:'nt'},
+  {n:'요한계시록',c:22,t:'nt'}
+];
+
+var brBook = -1;
+var brChap = 1;
+var brFontSize = 16;
+var brTestament = 'ot';
+var brCache = {};
+
+// ── 뒤로가기: 히스토리 스택 관리 ──
+var brHistory = [];  // [{book, chap}]
+
+function brGoBack() {
+  if (brHistory.length > 1) {
+    brHistory.pop(); // 현재 제거
+    var prev = brHistory[brHistory.length - 1];
+    brBook = prev.book;
+    brChap = prev.chap;
+    if (BR_BOOKS[brBook].t !== brTestament) {
+      brTestament = BR_BOOKS[brBook].t;
+      brApplyTabStyle();
+    }
+    brInitBookSelect();
+    document.getElementById('brBookSelect').value = brBook;
+    brUpdateChapSelect();
+    document.getElementById('brChapSelect').value = brChap;
+    brLoadChapter(true); // true = 히스토리에 추가하지 않음
+  } else {
+    closeBibleReader();
+  }
+}
+
+// ── API: CORS-safe 3단계 폴백 ──
+// 1순위: bolls.life (JSON, CORS OK)
+// 2순위: get.bible v2 (JSON, CORS OK)
+// 3순위: api.getbible.net (JSONP-style, CORS OK)
+function brFetchVerses(bookNum, chap) {
+  // 1순위
+  return fetch('https://bolls.life/get-chapter/KRJV/' + bookNum + '/' + chap + '/')
+    .then(function(r) {
+      if (!r.ok) throw new Error('bolls ' + r.status);
+      return r.json();
+    })
+    .then(function(data) {
+      if (!Array.isArray(data) || data.length === 0) throw new Error('empty');
+      return data.map(function(v) { return {verse: v.verse || v.pk, text: v.text}; });
+    })
+    .catch(function(e1) {
+      console.warn('[성경] bolls.life 실패:', e1.message, '→ get.bible 시도');
+      // 2순위
+      return fetch('https://get.bible/v2/korean/' + bookNum + '/' + chap + '.json', {mode:'cors'})
+        .then(function(r) {
+          if (!r.ok) throw new Error('get.bible ' + r.status);
+          return r.json();
+        })
+        .then(function(d) {
+          var arr = (d.chapter || Object.values(d)[0] || []);
+          if (!arr.length) throw new Error('empty');
+          return arr.map(function(v) { return {verse: v.verse, text: v.text}; });
+        })
+        .catch(function(e2) {
+          console.warn('[성경] get.bible 실패:', e2.message, '→ api.getbible.net 시도');
+          // 3순위: getbible.net 공개 API
+          return fetch('https://api.getbible.net/v2/korean/' + bookNum + '/' + chap + '.json')
+            .then(function(r) {
+              if (!r.ok) throw new Error('getbible ' + r.status);
+              return r.json();
+            })
+            .then(function(d) {
+              var verses = d.verses || {};
+              var result = Object.values(verses).map(function(v) {
+                return {verse: v.verse, text: v.text};
+              });
+              if (!result.length) throw new Error('empty');
+              return result;
+            });
+        });
+    });
+}
+
+// ── 설교-구절 인덱스 ──
+function buildVerseSermonIndex() {
+  var idx = {};
+  db.forEach(function(sermon) {
+    if (!sermon.scripture) return;
+    BR_BOOKS.forEach(function(book, bi) {
+      if (!sermon.scripture.startsWith(book.n)) return;
+      var chapM = sermon.scripture.match(/(\d+)장/);
+      if (!chapM) return;
+      var chapN = chapM[1];
+      // 장 단위
+      var ckey = bi + '_' + chapN;
+      if (!idx[ckey]) idx[ckey] = [];
+      if (!idx[ckey].some(function(s){ return s.id === sermon.id; })) idx[ckey].push(sermon);
+      // 절 단위
+      var verseM = sermon.scripture.match(/(\d+)장\s*(\d+)(?:[~\-~]\s*(\d+))?절/);
+      if (verseM) {
+        var sv = parseInt(verseM[2]);
+        var ev = verseM[3] ? parseInt(verseM[3]) : sv;
+        for (var v = sv; v <= ev; v++) {
+          var vkey = bi + '_' + chapN + '_' + v;
+          if (!idx[vkey]) idx[vkey] = [];
+          if (!idx[vkey].some(function(s){ return s.id === sermon.id; })) idx[vkey].push(sermon);
+        }
+      }
+    });
+  });
+  return idx;
+}
+
+// ── 책 목록 초기화 ──
+function brInitBookSelect() {
+  var sel = document.getElementById('brBookSelect');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">책 선택</option>';
+  BR_BOOKS.forEach(function(book, i) {
+    if (book.t !== brTestament) return;
+    var opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = book.n;
+    sel.appendChild(opt);
+  });
+}
+
+function brApplyTabStyle() {
+  var otBtn = document.getElementById('brTabOT');
+  var ntBtn = document.getElementById('brTabNT');
+  if (!otBtn) return;
+  otBtn.style.background = brTestament === 'ot' ? '#4f46e5' : '#334155';
+  otBtn.style.color      = brTestament === 'ot' ? '#fff' : '#94a3b8';
+  ntBtn.style.background = brTestament === 'nt' ? '#4f46e5' : '#334155';
+  ntBtn.style.color      = brTestament === 'nt' ? '#fff' : '#94a3b8';
+}
+
+function brSetTestament(t) {
+  brTestament = t;
+  brApplyTabStyle();
+  brBook = -1;
+  brInitBookSelect();
+  document.getElementById('brChapSelect').innerHTML = '<option value="">장</option>';
+  document.getElementById('brNowLabel').textContent = '성경 읽기';
+  document.getElementById('brChapInfoText').textContent = '';
+  document.getElementById('brWelcome').style.display = 'flex';
+  document.getElementById('brVerseContainer').style.display = 'none';
+  document.getElementById('brSermonInline').style.display = 'none';
+  document.getElementById('brError').style.display = 'none';
+}
+
+function brOnBookChange() {
+  var val = document.getElementById('brBookSelect').value;
+  if (val === '') return;
+  brBook = parseInt(val);
+  brCurrentChapToOne();
+}
+
+function brCurrentChapToOne() {
+  var book = BR_BOOKS[brBook];
+  var sel = document.getElementById('brChapSelect');
+  sel.innerHTML = '';
+  for (var c = 1; c <= book.c; c++) {
+    var opt = document.createElement('option');
+    opt.value = c; opt.textContent = c + '장';
+    sel.appendChild(opt);
+  }
+  brChap = 1;
+  sel.value = 1;
+  brLoadChapter();
+}
+
+function brUpdateChapSelect() {
+  var book = BR_BOOKS[brBook];
+  var sel = document.getElementById('brChapSelect');
+  sel.innerHTML = '';
+  for (var c = 1; c <= book.c; c++) {
+    var opt = document.createElement('option');
+    opt.value = c; opt.textContent = c + '장';
+    sel.appendChild(opt);
+  }
+  sel.value = brChap;
+}
+
+// ── 장 로드 ──
+function brLoadChapter(skipHistory) {
+  var chapVal = document.getElementById('brChapSelect').value;
+  if (!chapVal || brBook < 0) return;
+  brChap = parseInt(chapVal);
+
+  // 히스토리 추가
+  if (!skipHistory) {
+    if (!brHistory.length || brHistory[brHistory.length-1].book !== brBook || brHistory[brHistory.length-1].chap !== brChap) {
+      brHistory.push({book: brBook, chap: brChap});
+      if (brHistory.length > 50) brHistory.shift();
+    }
+  }
+
+  var bookNum  = brBook + 1;
+  var cacheKey = bookNum + '_' + brChap;
+  var bookName = BR_BOOKS[brBook].n;
+
+  // UI 상태
+  document.getElementById('brWelcome').style.display   = 'none';
+  document.getElementById('brError').style.display     = 'none';
+  document.getElementById('brVerseContainer').style.display = 'none';
+  document.getElementById('brSermonInline').style.display   = 'none';
+  document.getElementById('brLoading').style.display   = 'block';
+  document.getElementById('brNowLabel').textContent    = bookName + ' ' + brChap + '장';
+  document.getElementById('brChapInfoText').textContent = bookName + ' ' + brChap + '장';
+  document.getElementById('brChapHint').textContent    = BR_BOOKS[brBook].c + '장 중';
+  document.getElementById('brTextArea').scrollTop = 0;
+
+  if (brCache[cacheKey]) {
+    brRenderVerses(brCache[cacheKey]);
+    return;
+  }
+
+  brFetchVerses(bookNum, brChap)
+    .then(function(verses) {
+      brCache[cacheKey] = verses;
+      brRenderVerses(verses);
+    })
+    .catch(function(err) {
+      console.error('[성경] 모든 API 실패:', err);
+      document.getElementById('brLoading').style.display = 'none';
+      var detail = document.getElementById('brErrorDetail');
+      if (detail) detail.textContent = '오류: ' + err.message + '\n(인터넷 연결 확인 후 다시 시도해 주세요)';
+      document.getElementById('brError').style.display = 'block';
+    });
+}
+
+// ── 본문 렌더링 ──
+function brRenderVerses(verses) {
+  document.getElementById('brLoading').style.display = 'none';
+
+  var bookName = BR_BOOKS[brBook].n;
+  var idx = buildVerseSermonIndex();
+  var chapKey = brBook + '_' + brChap;
+  var chapSermons = idx[chapKey] || [];
+
+  var sitEmoji = {'상처치유':'🩹','우울불안':'💭','고난시련':'🔥','실패결핍':'📉','분노용서':'⚓','가정가족':'🏠','조급인내':'⏳','나눔전도':'🌱'};
+
+  var html = '<h3 style="color:#fff;font-size:18px;font-weight:700;margin:0 0 16px;font-family:\'Noto Serif KR\',serif;padding-bottom:12px;border-bottom:1px solid #1e293b">' +
+    bookName + ' ' + brChap + '장' +
+    (chapSermons.length ? ' <span style="color:#6366f1;font-size:12px;background:#1e1b4b;border:1px solid #3730a3;border-radius:6px;padding:2px 8px;margin-left:6px">📌 설교 ' + chapSermons.length + '편</span>' : '') +
+  '</h3>';
+
+  verses.forEach(function(v) {
+    var vn  = parseInt(v.verse);
+    var vkey = brBook + '_' + brChap + '_' + vn;
+    var vSermons = idx[vkey] || [];
+    var hasS = vSermons.length > 0;
+
+    html += '<div style="display:flex;gap:10px;padding:6px 8px;border-radius:8px;margin-bottom:3px;' +
+      (hasS ? 'background:rgba(99,102,241,0.1);border-left:3px solid #6366f1;' : 'border-left:3px solid transparent;') + '">';
+
+    // 절 번호
+    html += '<span style="flex-shrink:0;width:24px;color:' + (hasS?'#818cf8':'#334155') + ';font-size:11px;font-weight:700;padding-top:3px;text-align:right">' + vn + '</span>';
+
+    // 본문
+    html += '<div style="flex:1;min-width:0">';
+    html += '<p style="color:' + (hasS?'#e2e8f0':'#94a3b8') + ';font-size:' + brFontSize + 'px;line-height:1.9;margin:0;font-family:\'Noto Serif KR\',serif">' + v.text + '</p>';
+
+    // 구절 연결 설교 뱃지
+    if (hasS) {
+      html += '<div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:4px">';
+      vSermons.forEach(function(s) {
+        html += '<button onclick="closeBibleReader();setTimeout(function(){openModal(' + s.index + ')},150)" ' +
+          'style="background:#4f46e5;border:none;color:#fff;border-radius:6px;padding:3px 9px;font-size:10px;font-weight:700;cursor:pointer;line-height:1.4">' +
+          (sitEmoji[s.situation]||'📖') + ' ' + s.date.slice(2,10) + '</button>';
+      });
+      html += '</div>';
+    }
+    html += '</div></div>';
+  });
+
+  var container = document.getElementById('brVerseContainer');
+  container.innerHTML = html;
+  container.style.display = 'block';
+
+  // 연결 설교 패널 (하단 인라인)
+  var inlineEl = document.getElementById('brSermonInline');
+  var listEl   = document.getElementById('brSermonInlineList');
+  if (chapSermons.length > 0) {
+    listEl.innerHTML = chapSermons.map(function(s) {
+      return '<div onclick="closeBibleReader();setTimeout(function(){openModal(' + s.index + ')},150)" ' +
+        'style="background:#0f172a;border:1px solid #3730a3;border-radius:10px;padding:10px 12px;margin-bottom:8px;cursor:pointer">' +
+        '<p style="color:#c7d2fe;font-size:12px;font-weight:700;margin:0 0 3px;font-family:\'Noto Serif KR\',serif;line-height:1.4">' + s.title + '</p>' +
+        '<p style="color:#6366f1;font-size:10px;margin:0">' + s.scripture + ' · ' + s.date + '</p>' +
+        '<p style="color:#4f46e5;font-size:10px;font-weight:700;margin:4px 0 0">▶ 설교 보기</p>' +
+      '</div>';
+    }).join('');
+    inlineEl.style.display = 'block';
+  } else {
+    inlineEl.style.display = 'none';
+  }
+}
+
+// ── 이전/다음 장 ──
+function brPrevChap() {
+  if (brBook < 0) return;
+  if (brChap > 1) {
+    brChap--;
+    document.getElementById('brChapSelect').value = brChap;
+  } else if (brBook > 0) {
+    brBook--;
+    if (BR_BOOKS[brBook].t !== brTestament) { brTestament = BR_BOOKS[brBook].t; brApplyTabStyle(); brInitBookSelect(); }
+    document.getElementById('brBookSelect').value = brBook;
+    brChap = BR_BOOKS[brBook].c;
+    brUpdateChapSelect();
+  } else { return; }
+  brLoadChapter();
+}
+
+function brNextChap() {
+  if (brBook < 0) return;
+  if (brChap < BR_BOOKS[brBook].c) {
+    brChap++;
+    document.getElementById('brChapSelect').value = brChap;
+  } else if (brBook < BR_BOOKS.length - 1) {
+    brBook++;
+    if (BR_BOOKS[brBook].t !== brTestament) { brTestament = BR_BOOKS[brBook].t; brApplyTabStyle(); brInitBookSelect(); }
+    document.getElementById('brBookSelect').value = brBook;
+    brChap = 1;
+    brUpdateChapSelect();
+  } else { return; }
+  brLoadChapter();
+}
+
+// ── 글자 크기 ──
+function brChangeFontSize(d) {
+  brFontSize = Math.max(12, Math.min(24, brFontSize + d));
+  document.querySelectorAll('#brVerseContainer p').forEach(function(p) {
+    if (p.style.fontSize) p.style.fontSize = brFontSize + 'px';
+  });
+}
+
+// ── 열기 / 닫기 ──
+function openBibleReader(bookIdx, chapNum) {
+  var panel = document.getElementById('bibleReaderPanel');
+  panel.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+
+  // 히스토리 API로 뒤로가기 지원
+  if (!window.brHistoryPushed) {
+    history.pushState({brPanel: 'reader'}, '');
+    window.brHistoryPushed = true;
+  }
+
+  if (brBook < 0) brSetTestament('ot');
+  brInitBookSelect();
+  brApplyTabStyle();
+
+  if (bookIdx !== undefined && chapNum !== undefined) {
+    brBook = bookIdx;
+    brChap = chapNum;
+    if (BR_BOOKS[bookIdx].t !== brTestament) { brTestament = BR_BOOKS[bookIdx].t; brApplyTabStyle(); brInitBookSelect(); }
+    document.getElementById('brBookSelect').value = bookIdx;
+    brUpdateChapSelect();
+    document.getElementById('brChapSelect').value = chapNum;
+    brLoadChapter();
+  }
+}
+
+function closeBibleReader() {
+  var panel = document.getElementById('bibleReaderPanel');
+  panel.style.display = 'none';
+  document.body.style.overflow = '';
+  window.brHistoryPushed = false;
+  brHistory = [];
+}
+
+// 브라우저/모바일 뒤로가기 버튼 처리
+window.addEventListener('popstate', function(e) {
+  // 1순위: 설교 팝업
+  var modal = document.getElementById('modal');
+  if (modal && !modal.classList.contains('hidden')) {
+    closeModal();
+    return;
+  }
+  // 2순위: 성경 읽기
+  var panel = document.getElementById('bibleReaderPanel');
+  if (panel && panel.style.display === 'flex') {
+    brGoBack();
+    if (panel.style.display === 'flex') {
+      history.pushState({brPanel:'reader'}, '');
+    }
+    return;
+  }
+  // 3순위: 성경 책갈피
+  var bip = document.getElementById('bibleIndexPanel');
+  if (bip && bip.style.display === 'flex') {
+    closeBibleIndex();
+  }
+});
+
+function openBibleReaderAt(bookName, chapNum) {
+  var bi = BR_BOOKS.findIndex(function(b){ return b.n === bookName; });
+  if (bi < 0) return;
+  if (typeof closeBibleIndex === 'function') closeBibleIndex();
+  openBibleReader(bi, chapNum || 1);
+}
+
+// ════════════════════════════════════════════════
+// 성경 책갈피 시스템
+// ════════════════════════════════════════════════
+
+// ── 성경 66권 전체 정의 ──
+var BIBLE_STRUCTURE = {
+  ot: {
+    label: '구약',
+    sections: [
+      { name: '모세오경', books: ['창세기','출애굽기','레위기','민수기','신명기'] },
+      { name: '역사서', books: ['여호수아','사사기','룻기','사무엘상','사무엘하','열왕기상','열왕기하','역대상','역대하','에스라','느헤미야','에스더'] },
+      { name: '시가서', books: ['욥기','시편','잠언','전도서','아가'] },
+      { name: '대선지서', books: ['이사야','예레미야','예레미야애가','에스겔','다니엘'] },
+      { name: '소선지서', books: ['호세아','요엘','아모스','오바댜','요나','미가','나훔','하박국','스바냐','학개','스가랴','말라기'] }
+    ]
+  },
+  nt: {
+    label: '신약',
+    sections: [
+      { name: '복음서', books: ['마태복음','마가복음','누가복음','요한복음'] },
+      { name: '역사서', books: ['사도행전'] },
+      { name: '바울서신', books: ['로마서','고린도전서','고린도후서','갈라디아서','에베소서','빌립보서','골로새서','데살로니가전서','데살로니가후서','디모데전서','디모데후서','디도서','빌레몬서'] },
+      { name: '공동서신', books: ['히브리서','야고보서','베드로전서','베드로후서','요한1서','요한2서','요한3서','유다서'] },
+      { name: '예언서', books: ['요한계시록'] }
+    ]
+  }
+};
+
+var biTab = 'all';      // 현재 탭: all / ot / nt / used
+var biSelectedBook = ''; // 선택된 책
+
+// 설교 DB에서 책 이름 → 설교 목록 인덱스 생성 (항상 최신 db 기준)
+function buildBookSermonIndex() {
+  var allBooks = [];
+  Object.values(BIBLE_STRUCTURE).forEach(function(cat) {
+    cat.sections.forEach(function(sec) { allBooks = allBooks.concat(sec.books); });
+  });
+
+  var index = {};
+  allBooks.forEach(function(book) { index[book] = []; });
+
+  db.forEach(function(sermon) {
+    if (!sermon.scripture) return;
+    allBooks.forEach(function(book) {
+      if (sermon.scripture.startsWith(book)) {
+        if (!index[book]) index[book] = [];
+        // 중복 방지
+        var already = index[book].some(function(s){ return s.id === sermon.id; });
+        if (!already) index[book].push(sermon);
+      }
+    });
+  });
+  return index;
+}
+
+// ── 탭 전환 ──
+function setBiTab(tab) {
+  biTab = tab;
+  ['All','OT','NT','Used'].forEach(function(t) {
+    var btn = document.getElementById('biTab' + t);
+    if (!btn) return;
+    var active = tab === t.toLowerCase();
+    btn.style.background = active ? '#4f46e5' : 'transparent';
+    btn.style.color = active ? '#fff' : '#64748b';
+  });
+  renderBibleIndex();
+}
+
+// ── 성경 책갈피 열기/닫기 ──
+function openBibleIndex() {
+  biSelectedBook = '';
+  document.getElementById('bibleIndexPanel').style.display = 'flex';
+  document.getElementById('bibleWelcome').style.display = 'flex';
+  document.getElementById('bibleBookContent').style.display = 'none';
+  document.getElementById('bibleIndexSearch').value = '';
+  document.body.style.overflow = 'hidden';
+  renderBibleIndex();
+}
+
+function closeBibleIndex() {
+  document.getElementById('bibleIndexPanel').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+// ── 사이드바 책 목록 렌더링 ──
+function renderBibleIndex() {
+  var q = (document.getElementById('bibleIndexSearch').value || '').trim().toLowerCase();
+  var bookIndex = buildBookSermonIndex();
+  var sidebar = document.getElementById('bibleBookList');
+  var html = '';
+
+  function renderSection(sectionName, books, catKey) {
+    if (biTab === 'ot' && catKey !== 'ot') return '';
+    if (biTab === 'nt' && catKey !== 'nt') return '';
+
+    var sectionHtml = '';
+    var visibleCount = 0;
+
+    books.forEach(function(book) {
+      var sermons = bookIndex[book] || [];
+      var hasSermon = sermons.length > 0;
+      if (biTab === 'used' && !hasSermon) return;
+      if (q && !book.toLowerCase().includes(q) && !sermons.some(function(s){ return s.title.toLowerCase().includes(q) || (s.scripture||'').toLowerCase().includes(q); })) return;
+
+      visibleCount++;
+      var isSelected = biSelectedBook === book;
+      sectionHtml += '<button onclick="selectBibleBook(\'' + book + '\')" style="' +
+        'width:100%;text-align:left;padding:7px 10px;border-radius:8px;border:none;cursor:pointer;' +
+        'background:' + (isSelected ? '#4f46e5' : 'transparent') + ';' +
+        'color:' + (isSelected ? '#fff' : (hasSermon ? '#e2e8f0' : '#475569')) + ';' +
+        'font-size:12px;font-weight:' + (hasSermon ? '700' : '400') + ';' +
+        'display:flex;align-items:center;justify-content:space-between;gap:4px;margin-bottom:1px;' +
+        '">' +
+        '<span style="truncate">' + book + '</span>' +
+        (hasSermon ? '<span style="background:' + (isSelected?'rgba(255,255,255,.25)':'#4f46e5') + ';color:#fff;border-radius:999px;padding:1px 6px;font-size:10px;font-weight:700;flex-shrink:0">' + sermons.length + '</span>' : '') +
+      '</button>';
+    });
+
+    if (visibleCount === 0) return '';
+    return '<div style="margin-bottom:12px">' +
+      '<p style="color:#334155;font-size:10px;font-weight:700;letter-spacing:.05em;padding:4px 10px;margin:0 0 4px 0">' + sectionName.toUpperCase() + '</p>' +
+      sectionHtml +
+    '</div>';
+  }
+
+  Object.entries(BIBLE_STRUCTURE).forEach(function(entry) {
+    var catKey = entry[0], cat = entry[1];
+    if (biTab !== 'all' && biTab !== catKey && biTab !== 'used') return;
+    cat.sections.forEach(function(sec) {
+      html += renderSection(sec.name, sec.books, catKey);
+    });
+  });
+
+  sidebar.innerHTML = html || '<p style="color:#475569;font-size:11px;padding:12px;text-align:center">결과 없음</p>';
+
+  // 통계 업데이트
+  var usedCount = Object.values(bookIndex).filter(function(v){ return v.length > 0; }).length;
+  document.getElementById('bibleIndexSubtitle').textContent =
+    '설교 ' + db.length + '편 · 연결된 성경책 ' + usedCount + '권 / 66권';
+}
+
+// ── 책 선택 → 우측 내용 렌더링 ──
+function selectBibleBook(book) {
+  biSelectedBook = book;
+  renderBibleIndex(); // 사이드바 하이라이트 갱신
+
+  var bookIndex = buildBookSermonIndex();
+  var sermons = bookIndex[book] || [];
+  var q = (document.getElementById('bibleIndexSearch').value || '').trim().toLowerCase();
+  if (q) {
+    sermons = sermons.filter(function(s){
+      return s.title.toLowerCase().includes(q) ||
+             (s.scripture||'').toLowerCase().includes(q) ||
+             (s.summary||'').toLowerCase().includes(q);
+    });
+  }
+
+  document.getElementById('bibleWelcome').style.display = 'none';
+  var content = document.getElementById('bibleBookContent');
+  content.style.display = 'block';
+
+  var sitLabel = {
+    '상처치유':'🩹 상처치유','우울불안':'💭 우울불안','고난시련':'🔥 고난시련',
+    '실패결핍':'📉 실패결핍','분노용서':'⚓ 분노용서','가정가족':'🏠 가정가족',
+    '조급인내':'⏳ 조급인내','나눔전도':'🌱 나눔전도'
+  };
+
+  // 책 헤더
+  var html = '<div style="margin-bottom:24px">' +
+    '<h3 style="color:#fff;font-size:22px;font-weight:700;margin:0 0 4px 0;font-family:\'Noto Serif KR\',serif">' + book + '</h3>' +
+    (sermons.length > 0
+      ? '<p style="color:#6366f1;font-size:13px;font-weight:600;margin:0">' + sermons.length + '편의 설교가 이 책과 연결되어 있습니다</p>'
+      : '<p style="color:#475569;font-size:13px;margin:0">아직 등록된 설교가 없습니다</p>'
+    ) +
+  '</div>';
+
+  if (sermons.length === 0) {
+    html += '<div style="background:#1e293b;border-radius:16px;padding:48px;text-align:center">' +
+      '<div style="font-size:40px;margin-bottom:12px">📭</div>' +
+      '<p style="color:#475569;font-size:14px;font-weight:600;margin:0 0 4px 0">' + book + '과 연결된 설교가 없습니다</p>' +
+      '<p style="color:#334155;font-size:12px;margin:0">설교를 등록하면 자동으로 이 책과 연결됩니다</p>' +
+    '</div>';
+  } else {
+    // 구절별로 그룹핑
+    var byScripture = {};
+    sermons.forEach(function(s) {
+      var key = s.scripture || '기타';
+      if (!byScripture[key]) byScripture[key] = [];
+      byScripture[key].push(s);
+    });
+
+    Object.entries(byScripture).forEach(function(entry) {
+      var scripture = entry[0], list = entry[1];
+      html += '<div style="margin-bottom:28px">';
+
+      // 구절 헤더 (클릭하면 성경 내용 팝업)
+      html += '<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid #1e293b">' +
+        '<div style="width:4px;height:28px;background:linear-gradient(180deg,#6366f1,#4f46e5);border-radius:2px;flex-shrink:0"></div>' +
+        '<div style="flex:1">' +
+          '<button onclick="openBibleModal(\'' + scripture.replace(/'/g,"\\'") + '\')" style="background:none;border:none;cursor:pointer;text-align:left;padding:0">' +
+            '<span style="color:#a5b4fc;font-size:13px;font-weight:700;font-family:\'Noto Serif KR\',serif">' + scripture + '</span>' +
+            '<span style="color:#4f46e5;font-size:10px;margin-left:6px;background:#1e1b4b;border:1px solid #3730a3;border-radius:5px;padding:1px 6px">본문 보기</span>' +
+          '</button>' +
+        '</div>' +
+      '</div>';
+
+      // 설교 카드들
+      list.forEach(function(sermon) {
+        var catColor = {
+          '통합설교':'#4f46e5','음악설교':'#7c3aed','비전설교':'#d97706',
+          '영화설교':'#dc2626','문학설교':'#0d9488','주일예배':'#475569'
+        }[sermon.categoryKo] || '#4f46e5';
+
+        html += '<div onclick="closeBibleIndex();setTimeout(function(){openModal(' + sermon.index + ')},100)" ' +
+          'style="background:#1e293b;border:1px solid #334155;border-radius:14px;padding:16px;margin-bottom:10px;cursor:pointer;transition:all .2s" ' +
+          'onmouseover="this.style.borderColor=\'#6366f1\';this.style.background=\'#1e2d4a\'" ' +
+          'onmouseout="this.style.borderColor=\'#334155\';this.style.background=\'#1e293b\'">' +
+          '<div style="display:flex;align-items:center;gap-8px;flex-wrap:wrap;gap:6px;margin-bottom:8px">' +
+            '<span style="background:' + catColor + '22;color:' + catColor + ';border:1px solid ' + catColor + '44;border-radius:999px;padding:2px 8px;font-size:10px;font-weight:700">' + sermon.categoryKo + '</span>' +
+            '<span style="color:#475569;font-size:11px;font-family:monospace">' + sermon.date + '</span>' +
+            '<span style="background:#1e293b;color:#6366f1;border:1px solid #334155;border-radius:999px;padding:2px 8px;font-size:10px;font-weight:600">' + (sitLabel[sermon.situation]||'') + '</span>' +
+          '</div>' +
+          '<p style="color:#e2e8f0;font-size:14px;font-weight:700;margin:0 0 6px 0;line-height:1.4;font-family:\'Noto Serif KR\',serif">' + sermon.title + '</p>' +
+          '<p style="color:#64748b;font-size:12px;margin:0;line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">' + (sermon.summary||'').slice(0,100) + (sermon.summary&&sermon.summary.length>100?'…':'') + '</p>' +
+          '<div style="margin-top:10px;color:#4f46e5;font-size:11px;font-weight:700">▶ 클릭하여 말씀 보기</div>' +
+        '</div>';
+      });
+
+      html += '</div>'; // byScripture group
+    });
+  }
+
+  content.innerHTML = html;
+}
+
+// 카드 성경구절 버튼 이벤트 위임
+document.addEventListener('click', function(e) {
+  var btn = e.target.closest('.scr-btn');
+  if (btn) { e.stopPropagation(); openBibleModal(btn.dataset.scr); }
+});
+
+
+// ════════════════════════════════════════════════
+// 야간모드 / 글자크기 시스템
+// ════════════════════════════════════════════════
+var _darkMode = false;
+var _mainFontSize = 14;   // px
+var _modalFontSize = 14;  // px
+
+function toggleDarkMode() {
+  _darkMode = !_darkMode;
+  document.body.classList.toggle('dark-mode', _darkMode);
+  var icon = document.getElementById('darkModeIcon');
+  var btn  = document.getElementById('darkModeBtn');
+  if (icon) icon.textContent = _darkMode ? '☀️' : '🌙';
+  if (btn)  btn.style.background = _darkMode ? '#1e293b' : '#334155';
+  try { lsSet('hs_dark', _darkMode ? '1' : '0'); } catch(e){}
+}
+
+function mainFontUp()   { _mainFontSize  = Math.min(22, _mainFontSize  + 1); applyMainFont(); }
+function mainFontDown() { _mainFontSize  = Math.max(11, _mainFontSize  - 1); applyMainFont(); }
+function applyMainFont() {
+  document.documentElement.style.setProperty('--main-font-size', _mainFontSize + 'px');
+  try { lsSet('hs_font', _mainFontSize); } catch(e){}
+}
+
+function modalFontUp()   { _modalFontSize = Math.min(22, _modalFontSize + 1); applyModalFont(); }
+function modalFontDown() { _modalFontSize = Math.max(11, _modalFontSize - 1); applyModalFont(); }
+function applyModalFont() {
+  var targets = ['mSummary','mSummaryM','mNotes','mNotesM'];
+  targets.forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.style.fontSize = _modalFontSize + 'px';
+  });
+  // 타임라인 버튼 텍스트
+  document.querySelectorAll('#tlList .tl-btn span.truncate').forEach(function(el) {
+    el.style.fontSize = Math.max(10, _modalFontSize - 2) + 'px';
+  });
+}
+
+// 저장된 설정 복원
+function restoreSettings() {
+  try {
+    var dark = lsGet('hs_dark');
+    if (dark === '1') { _darkMode = false; toggleDarkMode(); }
+    var font = parseInt(lsGet('hs_font'));
+    if (!isNaN(font)) { _mainFontSize = font; applyMainFont(); }
+  } catch(e){}
 }
 
 window.onload = init;
