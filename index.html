@@ -2,7 +2,10 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1e1b4b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>하늘스크린교회 말씀 아카이브</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
@@ -53,6 +56,13 @@
   body.dark-mode .bg-indigo-50\/40{background:rgba(99,102,241,.1)!important}
   body.dark-mode .text-slate-400{color:#64748b!important}
   body.dark-mode main{color:#e2e8f0}
+  /* 모바일 메뉴바 다크모드 */
+  body.dark-mode header .bg-slate-50\/80{background:rgba(15,23,42,.8)!important}
+  body.dark-mode header .text-slate-600{color:#94a3b8!important}
+  body.dark-mode header .border-slate-100,body.dark-mode header .border-slate-200{border-color:#1e293b!important}
+  body.dark-mode #searchInput,body.dark-mode #yearFilter{background:#0f172a!important;color:#e2e8f0!important;border-color:#334155!important}
+  body.dark-mode .tab-sit,body.dark-mode .tab-month{background:#0f172a!important;color:#94a3b8!important}
+  body.dark-mode .tab-sit.active-btn,body.dark-mode .tab-month.active-btn{background:#4f46e5!important;color:#fff!important}
   /* FIX 1: 성경구절 팝업 야간모드 */
   body.dark-mode #bibleModal .bg-white{background:#1e293b!important}
   body.dark-mode #bibleModal .bg-slate-50{background:#0f172a!important}
@@ -80,58 +90,101 @@
 
   @keyframes spin{to{transform:rotate(360deg)}}
   @keyframes brSpin{to{transform:rotate(360deg)}}
+
+  /* ══ 모바일 최적화 ══ */
+  /* iOS 입력창 포커스 시 자동 확대 방지 (16px 미만이면 줌됨) */
+  @media (max-width:640px){
+    #searchInput,#yearFilter,#adminSearch,#adminPwInput,
+    #editModal input,#editModal select,#editModal textarea,
+    #bibleSearch,#bibleIndexSearch,#bannerEditModal input,#bannerEditModal textarea{
+      font-size:16px!important;
+    }
+  }
+  /* 터치 타깃 최소 크기 보장 + 탭 하이라이트 제거 */
+  button{-webkit-tap-highlight-color:transparent}
+  /* 부드러운 스크롤 (모바일 모달) */
+  #modal>div,#editModal>div,#importModal>div{-webkit-overflow-scrolling:touch}
+  /* 안전영역 대응 (노치 기기) */
+  @supports(padding:max(0px)){
+    header{padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right)}
+  }
 </style>
 </head>
 <body class="text-slate-800 antialiased">
 
 <!-- ══ HEADER ══ -->
 <header class="bg-white/90 backdrop-blur-md border-b border-slate-200 sticky top-0 z-40 shadow-sm">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-    <div class="flex items-center space-x-4">
-      <div class="bg-indigo-950 text-amber-400 p-2.5 rounded-xl shadow-md">
-        <span class="text-2xl">📽</span>
+  <!-- 1줄: 로고 + 제목 -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between gap-3">
+    <div class="flex items-center gap-2.5 sm:gap-4 min-w-0">
+      <div class="bg-indigo-950 text-amber-400 p-2 sm:p-2.5 rounded-xl shadow-md flex-shrink-0">
+        <span class="text-xl sm:text-2xl">📽</span>
       </div>
-      <div>
-        <h1 class="text-xl font-bold text-slate-900 tracking-wide serif">하늘스크린교회</h1>
-        <p class="text-xs text-indigo-600 font-bold">AI 상황별 말씀 매칭 &amp; 타임 싱크로 아카이브</p>
-      </div>
+      <h1 class="text-lg sm:text-2xl font-bold text-slate-900 tracking-tight serif whitespace-nowrap">하늘스크린교회</h1>
     </div>
-    <div class="flex items-center gap-1.5">
-      <button onclick="toggleDarkMode()" id="darkModeBtn" title="야간/주간 모드" class="flex items-center justify-center rounded-xl transition shadow-md" style="width:38px;height:38px;background:#334155;border:none;cursor:pointer;flex-shrink:0">
-        <span id="darkModeIcon" style="font-size:16px">🌙</span>
+    <!-- 데스크톱 메뉴바 (텍스트 라벨 항상 표시) -->
+    <nav class="hidden md:flex items-center gap-2">
+      <button onclick="openBibleReader()" class="flex items-center gap-1.5 rounded-xl transition shadow-sm bg-violet-700 hover:bg-violet-600 text-white font-bold px-3.5 py-2.5 text-sm border-none cursor-pointer">
+        <span>📖</span> 성경 읽기
       </button>
-      <button onclick="mainFontDown()" title="글자 작게" class="flex items-center justify-center rounded-xl transition shadow-md" style="width:38px;height:38px;background:#334155;border:none;color:#e2e8f0;font-size:13px;font-weight:700;cursor:pointer;flex-shrink:0">A−</button>
-      <button onclick="mainFontUp()" title="글자 크게" class="flex items-center justify-center rounded-xl transition shadow-md" style="width:38px;height:38px;background:#334155;border:none;color:#e2e8f0;font-size:14px;font-weight:700;cursor:pointer;flex-shrink:0">A+</button>
-      <button onclick="openBibleReader()" class="flex items-center justify-center gap-1 rounded-xl transition shadow-md bg-violet-700 hover:bg-violet-600 text-white font-bold" style="height:38px;padding:0 10px;font-size:12px;border:none;cursor:pointer;flex-shrink:0">
-        📖 <span class="hidden sm:inline">성경 읽기</span>
+      <button onclick="openBibleIndex()" class="flex items-center gap-1.5 rounded-xl transition shadow-sm bg-indigo-700 hover:bg-indigo-600 text-white font-bold px-3.5 py-2.5 text-sm border-none cursor-pointer">
+        <span>🔖</span> 책갈피
       </button>
-      <button onclick="openBibleIndex()" class="flex items-center justify-center gap-1 rounded-xl transition shadow-md bg-indigo-700 hover:bg-indigo-600 text-white font-bold" style="height:38px;padding:0 10px;font-size:12px;border:none;cursor:pointer;flex-shrink:0">
-        🔖 <span class="hidden sm:inline">책갈피</span>
+      <button onclick="openAdminLogin()" class="flex items-center gap-1.5 rounded-xl transition shadow-sm bg-slate-700 hover:bg-slate-600 text-white font-bold px-3.5 py-2.5 text-sm border-none cursor-pointer">
+        <span>🛡</span> 관리자
       </button>
-      <button onclick="openAdminLogin()" class="flex items-center justify-center gap-1 rounded-xl transition shadow-md bg-slate-700 hover:bg-slate-600 text-white font-bold" style="height:38px;padding:0 10px;font-size:12px;border:none;cursor:pointer;flex-shrink:0">
-        🛡 <span class="hidden sm:inline">관리자</span>
+      <div class="w-px h-7 bg-slate-200 mx-1"></div>
+      <button onclick="toggleDarkMode()" id="darkModeBtn" title="야간/주간 모드" class="flex items-center justify-center rounded-xl transition shadow-sm" style="width:40px;height:40px;background:#334155;border:none;cursor:pointer;flex-shrink:0">
+        <span id="darkModeIcon" style="font-size:17px">🌙</span>
       </button>
+      <button onclick="mainFontDown()" title="글자 작게" class="flex items-center justify-center rounded-xl transition shadow-sm" style="width:40px;height:40px;background:#334155;border:none;color:#e2e8f0;font-size:13px;font-weight:700;cursor:pointer;flex-shrink:0">A−</button>
+      <button onclick="mainFontUp()" title="글자 크게" class="flex items-center justify-center rounded-xl transition shadow-sm" style="width:40px;height:40px;background:#334155;border:none;color:#e2e8f0;font-size:15px;font-weight:700;cursor:pointer;flex-shrink:0">A+</button>
+    </nav>
+  </div>
+  <!-- 모바일 메뉴바 (아이콘 + 짧은 텍스트, 가로 균등 배치) -->
+  <div class="md:hidden border-t border-slate-100 bg-slate-50/80">
+    <div class="grid grid-cols-5 gap-0">
+      <button onclick="openBibleReader()" class="flex flex-col items-center justify-center gap-0.5 py-2 active:bg-slate-200 transition border-none bg-transparent cursor-pointer">
+        <span class="text-base">📖</span>
+        <span class="text-[10px] font-bold text-slate-600">성경</span>
+      </button>
+      <button onclick="openBibleIndex()" class="flex flex-col items-center justify-center gap-0.5 py-2 active:bg-slate-200 transition border-none bg-transparent cursor-pointer border-l border-slate-200">
+        <span class="text-base">🔖</span>
+        <span class="text-[10px] font-bold text-slate-600">책갈피</span>
+      </button>
+      <button onclick="openAdminLogin()" class="flex flex-col items-center justify-center gap-0.5 py-2 active:bg-slate-200 transition border-none bg-transparent cursor-pointer border-l border-slate-200">
+        <span class="text-base">🛡</span>
+        <span class="text-[10px] font-bold text-slate-600">관리자</span>
+      </button>
+      <button onclick="toggleDarkMode()" id="darkModeBtnM" class="flex flex-col items-center justify-center gap-0.5 py-2 active:bg-slate-200 transition border-none bg-transparent cursor-pointer border-l border-slate-200">
+        <span id="darkModeIconM" class="text-base">🌙</span>
+        <span class="text-[10px] font-bold text-slate-600">화면</span>
+      </button>
+      <div class="flex items-center justify-center gap-1 py-2 border-l border-slate-200">
+        <button onclick="mainFontDown()" title="글자 작게" class="rounded-md" style="width:30px;height:30px;background:#334155;border:none;color:#e2e8f0;font-size:12px;font-weight:700;cursor:pointer">A−</button>
+        <button onclick="mainFontUp()" title="글자 크게" class="rounded-md" style="width:30px;height:30px;background:#334155;border:none;color:#e2e8f0;font-size:13px;font-weight:700;cursor:pointer">A+</button>
+      </div>
     </div>
   </div>
 </header>
 
-<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+<main class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-5 sm:py-10">
   <!-- FIX 3: 배너 — id 부여하여 관리자가 수정 가능 -->
-  <div id="bannerSection" class="bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 rounded-3xl p-8 text-white mb-10 shadow-xl border border-indigo-900/40 relative overflow-hidden">
-    <div class="absolute right-0 bottom-0 opacity-5 text-[14rem] translate-x-12 translate-y-16 pointer-events-none">❝</div>
-    <span id="bannerBadge" class="bg-amber-400/20 text-amber-300 text-xs font-bold px-3 py-1 rounded-full border border-amber-400/30">2026 영적 은혜 가동 전선</span>
-    <h2 id="bannerTitle" class="text-xl sm:text-2xl font-bold mt-4 mb-2 serif text-amber-100">"내 형편에 맞는 생명의 만나와 영적 전술 노트를 펼쳐라"</h2>
-    <p id="bannerDesc" class="text-slate-300 text-sm max-w-4xl font-light leading-relaxed">말씀 카드를 클릭하면 영상이 재생됩니다. 타임라인 항목을 누르면 해당 시간대로 즉시 이동합니다.</p>
+  <div id="bannerSection" class="bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 rounded-2xl sm:rounded-3xl p-5 sm:p-8 text-white mb-6 sm:mb-10 shadow-xl border border-indigo-900/40 relative overflow-hidden">
+    <div class="absolute right-0 bottom-0 opacity-5 text-[10rem] sm:text-[14rem] translate-x-12 translate-y-16 pointer-events-none">❝</div>
+    <span id="bannerBadge" class="bg-amber-400/20 text-amber-300 text-[11px] sm:text-xs font-bold px-3 py-1 rounded-full border border-amber-400/30">2026 영적 은혜 가동 전선</span>
+    <h2 id="bannerTitle" class="text-base sm:text-2xl font-bold mt-3 sm:mt-4 mb-2 serif text-amber-100 leading-snug">"내 형편에 맞는 생명의 만나와 영적 전술 노트를 펼쳐라"</h2>
+    <p id="bannerDesc" class="text-slate-300 text-xs sm:text-sm max-w-4xl font-light leading-relaxed">AI 상황별 말씀 매칭 &amp; 타임 싱크로 아카이브 · 말씀 카드를 클릭하면 영상이 재생되고, 타임라인 항목을 누르면 해당 시간대로 즉시 이동합니다.</p>
   </div>
 
   <!-- 필터 -->
-  <div class="bg-white rounded-3xl p-6 shadow-md border border-slate-200 mb-10 space-y-5">
+  <div class="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-md border border-slate-200 mb-6 sm:mb-10 space-y-4 sm:space-y-5">
     <div class="relative">
-      <span class="absolute left-4 top-4 text-slate-400">🔍</span>
-      <input type="text" id="searchInput" oninput="filterCards()" placeholder="키워드, 성경 구절, 찬양 곡명으로 검색..."
-        class="w-full bg-slate-50 border border-slate-300 rounded-xl pl-12 pr-4 py-3.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:bg-white transition">
+      <span class="absolute left-4 top-3.5 text-slate-400">🔍</span>
+      <input type="text" id="searchInput" oninput="filterCards()" placeholder="키워드, 성경 구절, 찬양 곡명 검색..."
+        class="w-full bg-slate-50 border border-slate-300 rounded-xl pl-11 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:bg-white transition">
     </div>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-5 border-t border-slate-100 pt-4">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5 border-t border-slate-100 pt-4">
       <div>
         <label class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2">연도</label>
         <select id="yearFilter" onchange="filterCards()" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-600">
@@ -145,29 +198,29 @@
     </div>
     <div class="border-t border-slate-100 pt-4">
       <label class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2">마음 상황별 처방</label>
-      <div class="flex flex-wrap gap-2" id="sitTabs">
-        <button onclick="setSit('all')" data-sit="all" class="tab-sit active-btn px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 transition">모든 형편</button>
-        <button onclick="setSit('상처치유')" data-sit="상처치유" class="tab-sit px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">🩹 상처·자존감 치유</button>
-        <button onclick="setSit('우울불안')" data-sit="우울불안" class="tab-sit px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">💭 우울·불안·고독</button>
-        <button onclick="setSit('고난시련')" data-sit="고난시련" class="tab-sit px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">🔥 연단과 시련</button>
-        <button onclick="setSit('실패결핍')" data-sit="실패결핍" class="tab-sit px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">📉 파선·결핍·실패</button>
-        <button onclick="setSit('분노용서')" data-sit="분노용서" class="tab-sit px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">⚓ 미움·분노·용서</button>
-        <button onclick="setSit('가정가족')" data-sit="가정가족" class="tab-sit px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">🏠 부부·자녀·가정</button>
-        <button onclick="setSit('조급인내')" data-sit="조급인내" class="tab-sit px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">⏳ 조급함·기다림</button>
-        <button onclick="setSit('나눔전도')" data-sit="나눔전도" class="tab-sit px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">🌱 나눔과 전도</button>
+      <div class="flex flex-wrap gap-1.5 sm:gap-2" id="sitTabs">
+        <button onclick="setSit('all')" data-sit="all" class="tab-sit active-btn px-3 sm:px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 transition">모든 형편</button>
+        <button onclick="setSit('상처치유')" data-sit="상처치유" class="tab-sit px-3 sm:px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">🩹 상처·자존감</button>
+        <button onclick="setSit('우울불안')" data-sit="우울불안" class="tab-sit px-3 sm:px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">💭 우울·불안</button>
+        <button onclick="setSit('고난시련')" data-sit="고난시련" class="tab-sit px-3 sm:px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">🔥 연단·시련</button>
+        <button onclick="setSit('실패결핍')" data-sit="실패결핍" class="tab-sit px-3 sm:px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">📉 결핍·실패</button>
+        <button onclick="setSit('분노용서')" data-sit="분노용서" class="tab-sit px-3 sm:px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">⚓ 분노·용서</button>
+        <button onclick="setSit('가정가족')" data-sit="가정가족" class="tab-sit px-3 sm:px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">🏠 부부·자녀</button>
+        <button onclick="setSit('조급인내')" data-sit="조급인내" class="tab-sit px-3 sm:px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">⏳ 조급·기다림</button>
+        <button onclick="setSit('나눔전도')" data-sit="나눔전도" class="tab-sit px-3 sm:px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 transition">🌱 나눔·전도</button>
       </div>
     </div>
     <p class="text-xs text-slate-400 font-bold border-t border-slate-100 pt-3" id="counter">로딩 중...</p>
   </div>
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="cardGrid"></div>
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-8" id="cardGrid"></div>
 </main>
 <!-- ══ 말씀 모달 ══ -->
-<div id="modal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
-  <div class="bg-white rounded-3xl max-w-6xl w-full max-h-[92vh] overflow-y-auto shadow-2xl border border-slate-200 flex flex-col">
-    <div class="p-5 border-b border-slate-200 bg-slate-50 rounded-t-3xl flex items-start justify-between flex-shrink-0">
-      <div class="flex-1 min-w-0 mr-4">
+<div id="modal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-0 sm:p-4">
+  <div class="bg-white rounded-none sm:rounded-3xl max-w-6xl w-full h-full sm:h-auto sm:max-h-[92vh] overflow-y-auto shadow-2xl border-0 sm:border border-slate-200 flex flex-col">
+    <div class="p-4 sm:p-5 border-b border-slate-200 bg-slate-50 sm:rounded-t-3xl flex items-start justify-between flex-shrink-0 sticky top-0 z-10">
+      <div class="flex-1 min-w-0 mr-3">
         <span id="mCat" class="bg-indigo-100 text-indigo-950 text-xs font-bold px-3 py-1 rounded-full border border-indigo-200"></span>
-        <h3 id="mTitle" class="text-lg font-bold mt-2 text-slate-900 serif leading-snug"></h3>
+        <h3 id="mTitle" class="text-base sm:text-lg font-bold mt-2 text-slate-900 serif leading-snug"></h3>
         <p id="mMeta" class="text-xs text-slate-500 mt-1.5 font-medium"></p>
       </div>
       <div class="flex items-center gap-1.5 flex-shrink-0">
@@ -176,7 +229,7 @@
         <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 p-2 rounded-full hover:bg-slate-200 transition text-xl">✕</button>
       </div>
     </div>
-    <div class="p-5 grid grid-cols-1 lg:grid-cols-12 gap-6 flex-1">
+    <div class="p-4 sm:p-5 grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 flex-1">
       <div class="lg:col-span-7 flex flex-col gap-4">
         <div class="player-wrap" id="playerBox"></div>
         <a id="ytLink" href="#" target="_blank" class="flex items-center justify-center gap-2 bg-slate-900 hover:bg-red-700 text-white text-xs font-bold py-2.5 rounded-xl transition">
@@ -542,8 +595,10 @@ var _darkMode=false;
 function toggleDarkMode(){
   _darkMode=!_darkMode;
   document.body.classList.toggle('dark-mode',_darkMode);
-  document.getElementById('darkModeIcon').textContent=_darkMode?'☀️':'🌙';
-  document.getElementById('darkModeBtn').style.background=_darkMode?'#1e293b':'#334155';
+  var ic=document.getElementById('darkModeIcon'),icM=document.getElementById('darkModeIconM'),btn=document.getElementById('darkModeBtn');
+  if(ic)ic.textContent=_darkMode?'☀️':'🌙';
+  if(icM)icM.textContent=_darkMode?'☀️':'🌙';
+  if(btn)btn.style.background=_darkMode?'#1e293b':'#334155';
   try{lsSet('hs_dark',_darkMode?'1':'0')}catch(e){}
 }
 
