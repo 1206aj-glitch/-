@@ -71,6 +71,8 @@
   body.dark-mode #bibleModal #bibleVerseList div{border-color:#334155!important}
   body.dark-mode #bibleModal #bibleVerseList span{background:#312e81!important;color:#a5b4fc!important}
   body.dark-mode #bibleModal input{background:#0f172a!important;color:#e2e8f0!important;border-color:#334155!important}
+  body.dark-mode #bibleModalSermons button{background:#312e81!important;border-color:#4338ca!important}
+  body.dark-mode #bibleModalSermons button span:first-child{color:#e0e7ff!important}
   body.dark-mode #alertModal .bg-white{background:#1e293b!important}
   body.dark-mode #alertModal .text-slate-900{color:#f1f5f9!important}
   body.dark-mode #alertModal .text-slate-500{color:#94a3b8!important}
@@ -504,12 +506,19 @@
 <div id="bibleModal" class="fixed inset-0 z-[90] hidden bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
   <div class="bg-white rounded-3xl w-full max-w-2xl max-h-[85vh] flex flex-col shadow-2xl border border-slate-200">
     <div class="p-5 border-b border-slate-100 bg-gradient-to-r from-indigo-950 to-slate-900 rounded-t-3xl flex items-center justify-between flex-shrink-0">
-      <div>
+      <div class="min-w-0 flex-1 mr-3">
         <p class="text-indigo-300 text-xs font-bold uppercase tracking-widest mb-1">중심 성경 구절</p>
-        <h3 id="bibleRef" class="text-white text-lg font-bold serif"></h3>
+        <h3 id="bibleRef" class="text-white text-lg font-bold serif truncate"></h3>
       </div>
-      <button onclick="closeBibleModal()" class="text-slate-400 hover:text-white p-2 rounded-full hover:bg-white/10 transition text-xl border-none cursor-pointer">✕</button>
+      <div class="flex items-center gap-2 flex-shrink-0">
+        <button id="bibleReadBtn" onclick="openReaderFromBibleModal()" class="items-center gap-1.5 bg-violet-600 hover:bg-violet-500 text-white font-bold text-xs px-3.5 py-2 rounded-xl transition border-none cursor-pointer" style="display:inline-flex">
+          📖 성경 읽기
+        </button>
+        <button onclick="closeBibleModal()" class="text-slate-400 hover:text-white p-2 rounded-full hover:bg-white/10 transition text-xl border-none cursor-pointer">✕</button>
+      </div>
     </div>
+    <!-- 이 구절과 연결된 설교 -->
+    <div id="bibleModalSermons" class="px-5 pt-4 flex-shrink-0" style="display:none"></div>
     <div class="px-5 py-3 border-b border-slate-100 flex-shrink-0 bg-slate-50">
       <input type="text" id="bibleSearch" oninput="filterBibleVerses()" placeholder="구절 내용으로 검색..."
         class="w-full bg-white border border-slate-200 rounded-xl px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-400">
@@ -924,9 +933,75 @@ function showAlert(msg,type){
 // ════════ 성경 구절 팝업 ════════
 var bibleVerses={"잠언 11장 24~25절":[{v:"24",t:"흩어 구제하여도 더욱 부하게 되는 일이 있나니 과도히 아껴도 가난하게 될 뿐이니라"},{v:"25",t:"구제를 좋아하는 자는 풍족하여질 것이요 남을 윤택하게 하는 자는 자기도 윤택하여지리라"}],"이사야 61장 1절":[{v:"1",t:"주 여호와의 영이 내게 내리셨으니 이는 여호와께서 내게 기름을 부으사 가난한 자에게 아름다운 소식을 전하게 하려 하심이라 나를 보내사 마음이 상한 자를 고치며 포로된 자에게 자유를, 갇힌 자에게 놓임을 선포하며"}],"시편 147편 3절":[{v:"3",t:"그가 상심한 자들을 고치시며 그들의 상처를 싸매시는도다"}],"요한복음 14장 16~17절":[{v:"16",t:"내가 아버지께 구하겠으니 그가 또 다른 보혜사를 너희에게 주사 영원토록 너희와 함께 있게 하리니"},{v:"17",t:"그는 진리의 영이라 세상은 능히 그를 받지 못하나니 이는 그를 보지도 못하고 알지도 못함이라 그러나 너희는 그를 아나니 그는 너희와 함께 거하심이요 또 너희 속에 계시겠음이라"}],"이사야 43장 19절":[{v:"19",t:"보라 내가 새 일을 행하리니 이제 나타낼 것이라 너희가 그것을 알지 못하겠느냐 반드시 내가 광야에 길을 사막에 강을 내리니"}],"베드로전서 1장 7절":[{v:"7",t:"너희 믿음의 확실함은 불로 연단하여도 없어질 금보다 더 귀하여 예수 그리스도께서 나타나실 때에 칭찬과 영광과 존귀를 얻게 할 것이니라"}],"베드로전서 5장 8~9절":[{v:"8",t:"근신하라 깨어라 너희 대적 마귀가 우는 사자 같이 두루 다니며 삼킬 자를 찾나니"},{v:"9",t:"너희는 믿음을 굳건하게 하여 그를 대적하라"}],"요한복음 14장 16절":[{v:"16",t:"내가 아버지께 구하겠으니 그가 또 다른 보혜사를 너희에게 주사 영원토록 너희와 함께 있게 하리니"}],"누가복음 5장 4절":[{v:"4",t:"말씀을 마치시고 시몬에게 이르시되 깊은 데로 가서 그물을 내려 고기를 잡으라"}],"에베소서 2장 10절":[{v:"10",t:"우리는 그가 만드신 바라 그리스도 예수 안에서 선한 일을 위하여 지으심을 받은 자니 이 일은 하나님이 전에 예비하사 우리로 그 가운데서 행하게 하려 하심이니라"}],"시편 121편 1~2절":[{v:"1",t:"내가 산을 향하여 눈을 들리라 나의 도움이 어디서 올까"},{v:"2",t:"나의 도움은 천지를 지으신 여호와에게서로다"}],"히브리서 2장 14~15절":[{v:"14",t:"자녀들은 혈과 육에 속하였으매 그도 또한 같은 모양으로 혈과 육을 함께 지니심은 죽음을 통하여 죽음의 세력을 잡은 자 곧 마귀를 멸하시며"},{v:"15",t:"또 죽기를 무서워하므로 한평생 매여 종노릇하는 모든 자들을 놓아주려 하심이니"}],"누가복음 24장 1~5절":[{v:"1",t:"안식 후 첫날 새벽에 이 여자들이 그 준비한 향품을 가지고 무덤에 가서"},{v:"2",t:"돌이 무덤에서 굴려 옮겨진 것을 보고"},{v:"5",t:"여자들이 두려워 얼굴을 땅에 대니 두 사람이 이르되 어찌하여 살아 있는 자를 죽은 자 가운데서 찾느냐"}],"로마서 4장 18~19절":[{v:"18",t:"아브라함이 바랄 수 없는 중에 바라고 믿었으니 이는 네 후손이 이같으리라 하신 말씀대로 많은 민족의 조상이 되게 하려 하심이라"},{v:"19",t:"그가 백 세나 되어 자기 몸이 죽은 것 같고 사라의 태가 죽은 것 같음을 알고도 믿음이 약하여지지 아니하고"}],"고린도후서 4장 8~10절":[{v:"8",t:"우리가 사방으로 욱여쌈을 당하여도 싸이지 아니하며 답답한 일을 당하여도 낙심하지 아니하며"},{v:"9",t:"박해를 받아도 버린 바 되지 아니하며 거꾸러뜨림을 당하여도 망하지 아니하고"},{v:"10",t:"우리가 항상 예수의 죽음을 몸에 짊어짐은 예수의 생명이 또한 우리 몸에 나타나게 하려 함이라"}],"고린도전서 3장 6~7절":[{v:"6",t:"나는 심었고 아볼로는 물을 주었으되 오직 하나님께서 자라나게 하셨나니"},{v:"7",t:"그런즉 심는 이나 물 주는 이는 아무것도 아니로되 오직 자라게 하시는 이는 하나님뿐이니라"}],"에베소서 4장 29절, 32절":[{v:"29",t:"무릇 더러운 말은 너희 입 밖에도 내지 말고 오직 덕을 세우는 데 소용되는 대로 선한 말을 하여 듣는 자들에게 은혜를 끼치게 하라"},{v:"32",t:"서로 친절하게 하며 불쌍히 여기며 서로 용서하기를 하나님이 그리스도 안에서 너희를 용서하심과 같이 하라"}],"요한복음 6장 67~68절":[{v:"67",t:"예수께서 열두 제자에게 이르시되 너희도 가려느냐"},{v:"68",t:"시몬 베드로가 대답하되 주여 영생의 말씀이 주께 있사오니 우리가 누구에게로 가오리이까"}],"에베소서 4장 2절":[{v:"2",t:"모든 겸손과 온유로 하고 오래 참음으로 사랑 가운데서 서로 용납하고"}],"에베소서 6장 4절":[{v:"4",t:"또 아비들아 너희 자녀를 노엽게 하지 말고 오직 주의 교훈과 훈계로 양육하라"}],"마태복음 18장 21~22절":[{v:"21",t:"그 때에 베드로가 나아와 이르되 주여 형제가 내게 죄를 범하면 몇 번이나 용서하여 주리이까 일곱 번까지 하오리이까"},{v:"22",t:"예수께서 이르시되 네게 이르노니 일곱 번뿐 아니라 일곱 번을 일흔 번까지라도 할지니라"}],"창세기 2장 18절":[{v:"18",t:"여호와 하나님이 이르시되 사람이 혼자 사는 것이 좋지 아니하니 내가 그를 위하여 돕는 배필을 지으리라 하시니라"}],"로마서 13장 11절":[{v:"11",t:"또한 너희가 이 시기를 알거니와 자다가 깰 때가 벌써 되었으니 이는 이제 우리의 구원이 처음 믿을 때보다 가까웠음이라"}],"요한복음 14장 19절":[{v:"19",t:"조금 있으면 세상은 다시 나를 보지 못할 것이로되 너희는 나를 보리니 이는 내가 살아 있고 너희도 살아 있겠음이라"}]};
 
+// ════════ 성경 참조 파서 (장/편 모두 지원) ════════
+// "시편 147편 3절", "잠언 11장 24~25절", "에베소서 4장 29절, 32절" 등에서
+// {bookName, chap, verseStart, verseEnd} 추출
+function parseScriptureRef(ref){
+  if(!ref)return null;
+  // 책 이름: BR_BOOKS 중 ref가 시작하는 가장 긴 이름 매칭
+  var bookName=null;
+  for(var i=0;i<BR_BOOKS.length;i++){
+    if(ref.indexOf(BR_BOOKS[i].n)===0){
+      if(!bookName||BR_BOOKS[i].n.length>bookName.length)bookName=BR_BOOKS[i].n;
+    }
+  }
+  if(!bookName)return null;
+  var rest=ref.slice(bookName.length);
+  // 장 또는 편
+  var cm=rest.match(/(\d+)\s*[장편]/);
+  if(!cm)return null;
+  var chap=parseInt(cm[1],10);
+  // 절 범위 (첫 절 그룹만 대표로) — "24~25절", "8~9절", "29절, 32절"
+  var verseStart=null,verseEnd=null;
+  var vm=rest.match(/(\d+)\s*(?:[~\-–—]\s*(\d+))?\s*절/);
+  if(vm){verseStart=parseInt(vm[1],10);verseEnd=vm[2]?parseInt(vm[2],10):verseStart}
+  // 추가로 콤마로 나열된 절들도 수집 (29절, 32절)
+  var allVerses=[];
+  var vre=/(\d+)\s*(?:[~\-–—]\s*(\d+))?\s*절/g,m2;
+  while((m2=vre.exec(rest))!==null){
+    var a=parseInt(m2[1],10),b=m2[2]?parseInt(m2[2],10):a;
+    for(var v=a;v<=b;v++)allVerses.push(v);
+  }
+  return {bookName:bookName,chap:chap,verseStart:verseStart,verseEnd:verseEnd,verses:allVerses};
+}
+// 책 이름 → BR_BOOKS 인덱스
+function bookNameToIndex(name){
+  for(var i=0;i<BR_BOOKS.length;i++){if(BR_BOOKS[i].n===name)return i}
+  return -1;
+}
+
 var currentBibleRef='';
-function openBibleModal(ref){currentBibleRef=ref;document.getElementById('bibleRef').textContent=ref;document.getElementById('bibleSearch').value='';filterBibleVerses();document.getElementById('bibleModal').classList.remove('hidden')}
+function openBibleModal(ref){currentBibleRef=ref;document.getElementById('bibleRef').textContent=ref;document.getElementById('bibleSearch').value='';renderBibleModalSermons(ref);filterBibleVerses();var canRead=!!parseScriptureRef(ref);var rb=document.getElementById('bibleReadBtn');if(rb)rb.style.display=canRead?'inline-flex':'none';document.getElementById('bibleModal').classList.remove('hidden')}
 function closeBibleModal(){document.getElementById('bibleModal').classList.add('hidden')}
+// 성경 구절 팝업 → 성경 읽기로 이동
+function openReaderFromBibleModal(){
+  var p=parseScriptureRef(currentBibleRef);
+  if(!p){showAlert('이 구절은 성경 읽기로 연결할 수 없습니다.','info');return}
+  var bi=bookNameToIndex(p.bookName);
+  if(bi<0){showAlert('책을 찾을 수 없습니다.','error');return}
+  closeBibleModal();
+  openBibleReader(bi,p.chap);
+}
+// 성경 구절 팝업 상단에 "이 구절의 설교" 표시
+function renderBibleModalSermons(ref){
+  var el=document.getElementById('bibleModalSermons');if(!el)return;
+  var p=parseScriptureRef(ref);
+  if(!p){el.style.display='none';return}
+  // 같은 책+장을 가진 설교 찾기
+  var matches=db.filter(function(s){
+    var sp=parseScriptureRef(s.scripture);
+    return sp&&sp.bookName===p.bookName&&sp.chap===p.chap;
+  });
+  if(!matches.length){el.style.display='none';return}
+  el.style.display='block';
+  el.innerHTML='<p style="font-size:11px;font-weight:700;color:#4338ca;margin:0 0 8px;letter-spacing:.03em">📌 이 구절과 연결된 설교 '+matches.length+'편</p>'+
+    matches.map(function(s){
+      return '<button onclick="closeBibleModal();setTimeout(function(){openModal('+s.index+')},120)" style="display:block;width:100%;text-align:left;background:#eef2ff;border:1px solid #c7d2fe;border-radius:10px;padding:10px 12px;margin-bottom:6px;cursor:pointer">'+
+        '<span style="font-size:12px;font-weight:700;color:#1e1b4b;line-height:1.4;display:block">'+s.title+'</span>'+
+        '<span style="font-size:10px;color:#6366f1;font-weight:600">'+s.categoryKo+' · '+s.date+' · ▶ 설교 보기</span>'+
+      '</button>';
+    }).join('');
+}
 function filterBibleVerses(){
   var q=(document.getElementById('bibleSearch').value||'').trim().toLowerCase();
   var verses=bibleVerses[currentBibleRef],list=document.getElementById('bibleVerseList'),cnt=document.getElementById('bibleVerseCount');
@@ -957,7 +1032,7 @@ var brBook=-1,brChap=1,brFontSize=16,brTestament='ot',brCache={},brHistory=[];
 
 function brGoBack(){if(brHistory.length>1){brHistory.pop();var p=brHistory[brHistory.length-1];brBook=p.book;brChap=p.chap;if(BR_BOOKS[brBook].t!==brTestament){brTestament=BR_BOOKS[brBook].t;brApplyTabStyle()}brInitBookSelect();document.getElementById('brBookSelect').value=brBook;brUpdateChapSelect();document.getElementById('brChapSelect').value=brChap;brLoadChapter(true)}else{closeBibleReader()}}
 function brFetchVerses(bn,c){return fetch('https://bolls.life/get-chapter/KRJV/'+bn+'/'+c+'/').then(function(r){if(!r.ok)throw new Error(''+r.status);return r.json()}).then(function(d){if(!Array.isArray(d)||!d.length)throw new Error('empty');return d.map(function(v){return{verse:v.verse||v.pk,text:v.text}})}).catch(function(){return fetch('https://api.getbible.net/v2/korean/'+bn+'/'+c+'.json').then(function(r){if(!r.ok)throw new Error(''+r.status);return r.json()}).then(function(d){var vv=d.verses||{};var r2=Object.values(vv).map(function(v){return{verse:v.verse,text:v.text}});if(!r2.length)throw new Error('empty');return r2})})}
-function buildVerseSermonIndex(){var idx={};db.forEach(function(s){if(!s.scripture)return;BR_BOOKS.forEach(function(book,bi){if(!s.scripture.startsWith(book.n))return;var cm=s.scripture.match(/(\d+)장/);if(!cm)return;var ck=bi+'_'+cm[1];if(!idx[ck])idx[ck]=[];if(!idx[ck].some(function(x){return x.id===s.id}))idx[ck].push(s)})});return idx}
+function buildVerseSermonIndex(){var idx={};db.forEach(function(s){if(!s.scripture)return;var p=parseScriptureRef(s.scripture);if(!p)return;var bi=bookNameToIndex(p.bookName);if(bi<0)return;var ck=bi+'_'+p.chap;if(!idx[ck])idx[ck]=[];if(!idx[ck].some(function(x){return x.id===s.id}))idx[ck].push(s);if(p.verses&&p.verses.length){p.verses.forEach(function(vn){var vk=bi+'_'+p.chap+'_'+vn;if(!idx[vk])idx[vk]=[];if(!idx[vk].some(function(x){return x.id===s.id}))idx[vk].push(s)})}});return idx}
 function brInitBookSelect(){var sel=document.getElementById('brBookSelect');sel.innerHTML='<option value="">책 선택</option>';BR_BOOKS.forEach(function(b,i){if(b.t!==brTestament)return;var o=document.createElement('option');o.value=i;o.textContent=b.n;sel.appendChild(o)})}
 function brApplyTabStyle(){var ot=document.getElementById('brTabOT'),nt=document.getElementById('brTabNT');if(!ot)return;ot.style.background=brTestament==='ot'?'#4f46e5':'#334155';ot.style.color=brTestament==='ot'?'#fff':'#94a3b8';nt.style.background=brTestament==='nt'?'#4f46e5':'#334155';nt.style.color=brTestament==='nt'?'#fff':'#94a3b8'}
 function brSetTestament(t){brTestament=t;brApplyTabStyle();brBook=-1;brInitBookSelect();document.getElementById('brChapSelect').innerHTML='<option value="">장</option>';document.getElementById('brNowLabel').textContent='성경 읽기';document.getElementById('brChapInfoText').textContent='';document.getElementById('brWelcome').style.display='flex';document.getElementById('brVerseContainer').style.display='none';document.getElementById('brSermonInline').style.display='none';document.getElementById('brError').style.display='none'}
@@ -997,7 +1072,7 @@ function closeBibleReader(){document.getElementById('bibleReaderPanel').style.di
 // ════════ 성경 책갈피 ════════
 var BIBLE_STRUCTURE={ot:{sections:[{name:'모세오경',books:['창세기','출애굽기','레위기','민수기','신명기']},{name:'역사서',books:['여호수아','사사기','룻기','사무엘상','사무엘하','열왕기상','열왕기하','역대상','역대하','에스라','느헤미야','에스더']},{name:'시가서',books:['욥기','시편','잠언','전도서','아가']},{name:'대선지서',books:['이사야','예레미야','예레미야애가','에스겔','다니엘']},{name:'소선지서',books:['호세아','요엘','아모스','오바댜','요나','미가','나훔','하박국','스바냐','학개','스가랴','말라기']}]},nt:{sections:[{name:'복음서',books:['마태복음','마가복음','누가복음','요한복음']},{name:'역사서',books:['사도행전']},{name:'바울서신',books:['로마서','고린도전서','고린도후서','갈라디아서','에베소서','빌립보서','골로새서','데살로니가전서','데살로니가후서','디모데전서','디모데후서','디도서','빌레몬서']},{name:'공동서신',books:['히브리서','야고보서','베드로전서','베드로후서','요한1서','요한2서','요한3서','유다서']},{name:'예언서',books:['요한계시록']}]}};
 var biTab='all',biSelectedBook='';
-function buildBookSermonIndex(){var allBooks=[];Object.values(BIBLE_STRUCTURE).forEach(function(cat){cat.sections.forEach(function(s){allBooks=allBooks.concat(s.books)})});var idx={};allBooks.forEach(function(b){idx[b]=[]});db.forEach(function(s){if(!s.scripture)return;allBooks.forEach(function(b){if(s.scripture.startsWith(b)&&!idx[b].some(function(x){return x.id===s.id}))idx[b].push(s)})});return idx}
+function buildBookSermonIndex(){var allBooks=[];Object.values(BIBLE_STRUCTURE).forEach(function(cat){cat.sections.forEach(function(s){allBooks=allBooks.concat(s.books)})});var idx={};allBooks.forEach(function(b){idx[b]=[]});db.forEach(function(s){if(!s.scripture)return;var p=parseScriptureRef(s.scripture);if(!p)return;if(idx[p.bookName]&&!idx[p.bookName].some(function(x){return x.id===s.id}))idx[p.bookName].push(s)});return idx}
 function setBiTab(tab){biTab=tab;['All','OT','NT','Used'].forEach(function(t){var btn=document.getElementById('biTab'+t);if(!btn)return;var active=tab===t.toLowerCase();btn.style.background=active?'#4f46e5':'transparent';btn.style.color=active?'#fff':'#64748b'});renderBibleIndex()}
 function openBibleIndex(){biSelectedBook='';document.getElementById('bibleIndexPanel').style.display='flex';document.getElementById('bibleWelcome2').style.display='flex';document.getElementById('bibleBookContent').style.display='none';document.getElementById('bibleIndexSearch').value='';document.body.style.overflow='hidden';renderBibleIndex()}
 function closeBibleIndex(){document.getElementById('bibleIndexPanel').style.display='none';document.body.style.overflow=''}
