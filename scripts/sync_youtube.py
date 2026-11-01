@@ -7,7 +7,7 @@
 - 이미 있는 영상(같은 영상 ID)은 건너뜁니다.
 - GitHub Actions(.github/workflows/youtube-sync.yml)가 매주 실행합니다.
 """
-import json, os, re, sys, time, urllib.request
+import json, os, re, sys, time, urllib.parse, urllib.request
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
 
@@ -120,6 +120,58 @@ def build_item(vid, title, published, desc):
             'categoryKo': cat, 'scripture': scripture, 'summary': summary, 'notes': notes, 'timeline': tl}
 
 
+
+API_KEY = os.environ.get('YT_API_KEY', '').strip()
+
+
+def api(path, **params):
+    q = urllib.parse.urlencode(dict(params, key=API_KEY))
+    with urllib.request.urlopen('https://www.googleapis.com/youtube/v3/%s?%s' % (path, q), timeout=30) as r:
+        return json.loads(r.read().decode('utf-8'))
+
+
+def channel_from_api(html):
+    """기존 설교 영상 ID로 채널을 확인 (가장 정확)"""
+    seeds = list(dict.fromkeys(re.findall(r'\bid\s*:\s*"([\w-]{11})"', html) + re.findall(r'"id"\s*:\s*"([\w-]{11})"', html)))[:20]
+    j = api('videos', part='snippet', id=','.join(seeds))
+    counts, names = {}, {}
+    for it in j.get('items', []):
+        c = it['snippet']['channelId']
+        counts[c] = counts.get(c, 0) + 1
+        names[c] = it['snippet'].get('channelTitle', '')
+    if not counts:
+        sys.exit('기존 설교 영상으로 채널을 찾지 못했습니다.')
+    cid = max(counts, key=counts.get)
+    print('  채널 확인 (기존 설교 영상 기준):', cid, names.get(cid, ''))
+    return cid
+
+
+def entries_from_api(channel, since_date):
+    """업로드 목록을 최신순으로 읽어 since_date 이전 영상이 나올 때까지 (최대 200개)"""
+    uploads = 'UU' + channel[2:]
+    out, token = [], None
+    for _ in range(4):
+        params = dict(part='snippet,contentDetails,status', playlistId=uploads, maxResults=50)
+        if token:
+            params['pageToken'] = token
+        j = api('playlistItems', **params)
+        stop = False
+        for it in j.get('items', []):
+            sn = it['snippet']
+            if it.get('status', {}).get('privacyStatus') not in (None, 'public'):
+                continue
+            pub = it['contentDetails'].get('videoPublishedAt') or sn.get('publishedAt', '')
+            out.append({'vid': it['contentDetails']['videoId'], 'title': sn.get('title', ''),
+                        'published': pub, 'desc': sn.get('description', ''), 'pending': False})
+            if since_date and pub[:10] < since_date:
+                stop = True
+        token = j.get('nextPageToken')
+        if stop or not token:
+            break
+    print('  YouTube API 사용: 영상 %d개 확인' % len(out))
+    return out
+
+
 NS = {'a': 'http://www.w3.org/2005/Atom', 'yt': 'http://www.youtube.com/xml/schemas/2015',
       'media': 'http://search.yahoo.com/mrss/'}
 
@@ -158,6 +210,9 @@ def entries_from_pages(channel, existing):
             print('  영상 정보 조회 실패', vid, ex)
             continue
         vd = pr.get('videoDetails', {})
+        if not vd.get('title'):
+            print('  영상 정보 차단됨(유튜브 봇 확인 페이지):', vid)
+            continue
         mf = pr.get('microformat', {}).get('playerMicroformatRenderer', {})
         live = mf.get('liveBroadcastDetails', {})
         published = mf.get('publishDate') or mf.get('uploadDate') or datetime.now(timezone.utc).isoformat()
@@ -195,8 +250,17 @@ def main():
     auto = json.loads(read_block(html, AUTO_S, AUTO_E).strip().removeprefix('var AUTO_SERMONS =').rstrip(';').strip() or '[]')
     existing = set(re.findall(r'\bid\s*:\s*"([\w-]{11})"', html)) | set(re.findall(r'"id"\s*:\s*"([\w-]{11})"', html))
 
-    channel = resolve_channel(html)
-    entries = get_entries(channel, existing)
+    dates = re.findall(r'date\s*:\s*"(\d{4}-\d{2}-\d{2})"', html) + re.findall(r'"date"\s*:\s*"(\d{4}-\d{2}-\d{2})"', html)
+    latest = max(dates) if dates else ''
+    if API_KEY:
+        channel = channel_from_api(html)
+        entries = entries_from_api(channel, latest)
+    else:
+        print('  (YT_API_KEY 미설정 — 키 없이 RSS/페이지 방식 시도)')
+        channel = resolve_channel(html)
+        entries = get_entries(channel, existing)
+    if not entries:
+        sys.exit('유튜브에서 영상 목록을 가져오지 못했습니다. 저장소 Settings > Secrets and variables > Actions 에 YT_API_KEY 를 등록해 주세요.')
     kw = re.compile(KEYWORD) if KEYWORD else None
     added = []
     for ent in entries:
