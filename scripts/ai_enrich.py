@@ -163,6 +163,7 @@ def enrich(auto):
     print('  AI 정리 대기 %d편 → 이번에 최대 %d편 처리' % (len(todo), MAX_PER_RUN))
     done = 0
     perm_fail = 0
+    quota_hit = False
     enrich.failed = 0
     for i, item in enumerate(todo[:MAX_PER_RUN]):
         if i:
@@ -175,6 +176,7 @@ def enrich(auto):
                 model, item['date'], item['title'], len(item['timeline']), item.get('scripture', '')))
         except DailyQuotaExceeded:
             print('  오늘 무료 한도에 도달 — 남은 설교는 다음 실행에서 이어서 정리합니다')
+            quota_hit = True
             break
         except Exception as ex:
             enrich.failed += 1
@@ -189,7 +191,10 @@ def enrich(auto):
                     break
             continue
         perm_fail = 0
+    # 이번에 처리 못 한 설교가 남았고 한도에도 안 걸렸으면 → 워크플로가 곧바로 다음 회차를 실행
+    enrich.more = bool(done) and not quota_hit and len(todo) > MAX_PER_RUN
     return done
 
 
 enrich.failed = 0
+enrich.more = False

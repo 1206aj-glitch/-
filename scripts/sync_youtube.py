@@ -291,6 +291,9 @@ def main():
 
     # 새로 추가됐거나 아직 정리 안 된 설교를 Gemini로 요약·타임라인 정리
     enriched = ai_enrich.enrich(auto)
+    if ai_enrich.enrich.more and os.environ.get('GITHUB_OUTPUT'):
+        with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
+            f.write('more=true\n')
 
     if not added and not enriched and embed is not None and html == open(HTML, encoding='utf-8').read():
         print('새 설교 없음')
