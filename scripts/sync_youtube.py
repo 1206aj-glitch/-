@@ -244,6 +244,79 @@ def get_entries(channel, existing):
     return entries_from_pages(channel, existing)
 
 
+SKIP_FILE = os.path.join(ROOT, 'scripts', 'backfill_skip.json')
+BACKFILL = os.environ.get('BACKFILL', 'on').strip().lower() not in ('', '0', 'off', 'no', 'false')
+
+
+def all_uploads(channel):
+    """채널 업로드 영상 전체 (최신순, 최대 3000개)"""
+    uploads = 'UU' + channel[2:]
+    out, token = [], None
+    for _ in range(60):
+        params = dict(part='snippet,contentDetails,status', playlistId=uploads, maxResults=50)
+        if token:
+            params['pageToken'] = token
+        j = api('playlistItems', **params)
+        for it in j.get('items', []):
+            if it.get('status', {}).get('privacyStatus') not in (None, 'public'):
+                continue
+            sn = it['snippet']
+            out.append({'vid': it['contentDetails']['videoId'], 'title': sn.get('title', ''),
+                        'published': it['contentDetails'].get('videoPublishedAt') or sn.get('publishedAt', ''),
+                        'desc': sn.get('description', '')})
+        token = j.get('nextPageToken')
+        if not token:
+            break
+    return out
+
+
+def backfill(channel, auto, existing, dates, slots):
+    """2026년 정리가 끝나면 지난 설교를 최신→과거 순으로 한 편씩: AI 정리에 성공한 것만 추가 (빈 설교는 올리지 않음).
+    반환: (추가한 편수, 남은 후보가 있는지)"""
+    try:
+        skip = set(json.load(open(SKIP_FILE, encoding='utf-8')))
+    except Exception:
+        skip = set()
+    kw = re.compile(KEYWORD) if KEYWORD else None
+    cands = []
+    for ent in all_uploads(channel):
+        vid = ent['vid']
+        if not vid or vid in existing or vid in skip or (kw and not kw.search(ent['title'])):
+            continue
+        item = build_item(vid, ent['title'], ent['published'], ent['desc'])
+        if item['date'] in dates:
+            skip.add(vid)          # 같은 날짜 설교가 이미 있음 → 재업로드·편집본으로 보고 제외
+            continue
+        cands.append(item)
+    cands.sort(key=lambda x: x['date'], reverse=True)
+    print('  지난 설교 채우기: 후보 %d편 → 이번에 최대 %d편' % (len(cands), slots))
+    added, tried = 0, 0
+    for item in cands[:slots]:
+        if tried:
+            time.sleep(ai_enrich.PAUSE)
+        tried += 1
+        try:
+            res, model = ai_enrich.ask_gemini(item['title'], item['date'], item['id'])
+        except ai_enrich.DailyQuotaExceeded:
+            print('  오늘 무료 한도에 도달 — 지난 설교는 다음 실행에서 이어서 추가합니다')
+            ai_enrich.enrich.quota_hit = True
+            break
+        except Exception as ex:
+            print('  지난 설교 정리 실패:', item['date'], item['title'], '|', str(ex)[:300])
+            if 'PERMISSION_DENIED' in str(ex) or 'permission_denied' in str(ex):
+                skip.add(item['id'])   # 볼 수 없는 영상 → 다음부터 건너뜀
+            continue
+        ai_enrich._to_item(item, res)
+        auto.append(item)
+        existing.add(item['id'])
+        dates.add(item['date'])
+        added += 1
+        print('  지난 설교 추가 (%s): %s %s · 타임라인 %d개 · %s' % (
+            model, item['date'], item['title'], len(item['timeline']), item.get('scripture', '')))
+    json.dump(sorted(skip), open(SKIP_FILE, 'w', encoding='utf-8'), ensure_ascii=False, indent=0)
+    return added, len(cands) > tried
+
+
 def main():
     html = open(HTML, encoding='utf-8').read()
     if AUTO_S not in html:
@@ -291,7 +364,19 @@ def main():
 
     # 새로 추가됐거나 아직 정리 안 된 설교를 Gemini로 요약·타임라인 정리
     enriched = ai_enrich.enrich(auto)
-    if ai_enrich.enrich.more and os.environ.get('GITHUB_OUTPUT'):
+    more = ai_enrich.enrich.more
+
+    # 올해 설교 정리가 다 끝났고 한도가 남았으면 → 지난 설교(2025년 이전)를 과거 방향으로 채움
+    pending_now = [a for a in auto if (a.get('ai_v') or 0) < ai_enrich.AI_VERSION and not a.get('ai_denied')]
+    slots = ai_enrich.MAX_PER_RUN - enriched - ai_enrich.enrich.failed
+    if BACKFILL and API_KEY and ai_enrich.GEMINI_KEY and not pending_now and not ai_enrich.enrich.quota_hit and slots > 0:
+        n, left = backfill(channel, auto, existing, set(dates), slots)
+        enriched += n
+        if n:
+            print('  지난 설교 %d편 추가' % n)
+        more = more or (left and not ai_enrich.enrich.quota_hit and n > 0)
+
+    if more and os.environ.get('GITHUB_OUTPUT'):
         with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
             f.write('more=true\n')
 

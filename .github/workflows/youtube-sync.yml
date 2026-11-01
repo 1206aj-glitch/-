@@ -37,16 +37,18 @@ jobs:
           CHANNEL_ID: 'UCE2gX_bg3lq1-7bn7WZAPQQ'
           # 제목에 이 단어가 있는 영상만 추가 (| 로 여러 개)
           SERMON_KEYWORD: '설교|예배|말씀|주일|성탄|송구영신'
+          # 올해 설교 정리가 끝나면 지난 설교(2025년 → 과거)를 하루 한도 안에서 한 편씩 AI 정리해 추가 (끄려면 'off')
+          BACKFILL: 'on'
 
       - name: 변경 사항 저장
         run: |
-          if git diff --quiet; then
+          if git diff --quiet && git diff --cached --quiet; then
             echo "새 설교 없음 — 변경 없음"
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add index.html
+          git add index.html scripts/backfill_skip.json
           git commit -m "유튜브 새 설교 자동 추가 / AI 정리"
           git pull --rebase
           git push
