@@ -2,8 +2,8 @@ name: 유튜브 새 설교 자동 업데이트
 
 on:
   schedule:
-    # 매일 밤 10시(한국시간) 확인 — 새 설교 추가 + 아직 AI 정리 안 된 설교를 하루 몇 편씩 정리
-    - cron: '0 13 * * *'
+    # 3시간마다 확인 — 새 설교 추가 + 아직 AI 정리 안 된 설교를 이어서 정리 (할 일이 없으면 30초 안에 끝남)
+    - cron: '17 */3 * * *'
   workflow_dispatch: {}   # Actions 탭에서 'Run workflow'로 즉시 실행 가능
 
 permissions:

@@ -33,6 +33,10 @@ PROMPT = """당신은 한국 교회 설교 아카이브 편집자입니다. 첨�
 {{"summary":"...","keywords":["#..."],"scripture":"...","timeline":[{{"time":"00:05:12","title":"..."}}],"situation":"...","category":"..."}}"""
 
 
+class DailyQuotaExceeded(Exception):
+    pass
+
+
 def _post(url, body):
     req = urllib.request.Request(url, data=json.dumps(body).encode('utf-8'), method='POST',
                                  headers={'Content-Type': 'application/json', 'x-goog-api-key': GEMINI_KEY})
@@ -81,8 +85,10 @@ def ask_gemini(title, date, vid):
                 except urllib.error.HTTPError as ex:
                     detail = ex.read().decode('utf-8', 'replace')[:300]
                     last = '%s %s %s: %s' % (model, caller.__name__, ex.code, detail)
-                    if ex.code == 429:          # 분당 한도 → 잠시 쉬고 재시도
-                        time.sleep(70)
+                    if ex.code == 429:
+                        if re.search(r'per ?day|PerDay|daily', detail, re.I):
+                            raise DailyQuotaExceeded(detail)   # 하루 한도 → 오늘은 여기까지, 다음 실행에서 이어서
+                        time.sleep(70)                         # 분당 한도 → 잠시 쉬고 재시도
                         continue
                     break                       # 400/404 등 → 다른 방식/모델로
                 except Exception as ex:
@@ -145,6 +151,9 @@ def enrich(auto):
             done += 1
             print('  AI 정리 완료 (%s): %s %s · 타임라인 %d개 · %s' % (
                 model, item['date'], item['title'], len(item['timeline']), item.get('scripture', '')))
+        except DailyQuotaExceeded:
+            print('  오늘 무료 한도에 도달 — 남은 설교는 다음 실행에서 이어서 정리합니다')
+            break
         except Exception as ex:
             enrich.failed += 1
             print('  AI 정리 실패:', item['date'], item['title'], '|', ex)
