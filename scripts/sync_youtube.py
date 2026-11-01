@@ -9,6 +9,8 @@
 """
 import json, os, re, sys, time, urllib.parse, urllib.request
 import xml.etree.ElementTree as ET
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import ai_enrich
 from datetime import datetime, timedelta, timezone
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -287,8 +289,13 @@ def main():
         html = html.replace(EMBED_S + embed + EMBED_E,
                             EMBED_S + embed.replace('"channel":""', '"channel":"%s"' % channel) + EMBED_E)
 
-    if not added and embed is not None and html == open(HTML, encoding='utf-8').read():
+    # 새로 추가됐거나 아직 정리 안 된 설교를 Gemini로 요약·타임라인 정리
+    enriched = ai_enrich.enrich(auto)
+
+    if not added and not enriched and embed is not None and html == open(HTML, encoding='utf-8').read():
         print('새 설교 없음')
+        if ai_enrich.enrich.failed:
+            sys.exit('AI 정리에 실패했습니다. 위 로그의 오류 내용을 확인하세요 (GEMINI_API_KEY 등).')
         return
 
     auto.sort(key=lambda x: x['date'])
@@ -296,7 +303,9 @@ def main():
     old_block = AUTO_S + read_block(html, AUTO_S, AUTO_E) + AUTO_E
     html = html.replace(old_block, AUTO_S + 'var AUTO_SERMONS = ' + data + ';' + AUTO_E)
     open(HTML, 'w', encoding='utf-8').write(html)
-    print('완료: 새 설교 %d편 추가' % len(added))
+    print('완료: 새 설교 %d편 추가, AI 정리 %d편' % (len(added), enriched))
+    if ai_enrich.enrich.failed and not enriched:
+        sys.exit('AI 정리에 실패했습니다. 위 로그의 오류 내용을 확인하세요 (GEMINI_API_KEY 등).')
 
 
 if __name__ == '__main__':

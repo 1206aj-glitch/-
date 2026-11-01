@@ -1284,7 +1284,7 @@ function saveEdit() {
     // 수정
     var idx = db.findIndex(function(d){ return d.index === editingIndex; });
     if (idx !== -1) {
-      db[idx] = Object.assign({}, db[idx], {
+      db[idx] = Object.assign({}, db[idx], { edited: true,
         title: title, id: vid, date: date, year: year, month: monthKo,
         categoryKo: cat, scripture: scripture, summary: summary,
         notes: notes, timeline: tl,
@@ -1626,12 +1626,25 @@ function mergeAutoSermons() {
   var ids = {}; db.forEach(function(d){ ids[d.id] = true; });
   var maxIdx = db.reduce(function(m,d){ return Math.max(m, d.index||0); }, 0);
   var added = 0;
+  var SITS = ['상처치유','우울불안','고난시련','실패결핍','분노용서','가정가족','조급인내','나눔전도'];
+  var updated = 0;
   AUTO_SERMONS.forEach(function(s) {
-    if (!s.id || ids[s.id] || deleted.indexOf(s.id) !== -1) return;
+    if (!s.id || deleted.indexOf(s.id) !== -1) return;
+    if (ids[s.id]) {
+      // 이전에 자동 등록된 설교가 AI로 정리되었으면 최신 내용으로 교체 (관리자가 직접 수정한 설교는 유지)
+      var k = db.findIndex(function(d){ return d.id === s.id; });
+      if (k !== -1 && db[k].auto && !db[k].edited && s.ai && !db[k].ai) {
+        db[k] = Object.assign({}, s, { auto: true, index: db[k].index,
+          situation: SITS.indexOf(s.situation) !== -1 ? s.situation : classify(s.title, s.summary, s.notes) });
+        updated++;
+      }
+      return;
+    }
     var it = Object.assign({}, s, { auto: true, index: ++maxIdx });
-    it.situation = classify(it.title, it.summary, it.notes);
+    it.situation = SITS.indexOf(s.situation) !== -1 ? s.situation : classify(it.title, it.summary, it.notes);
     db.push(it); ids[s.id] = true; added++;
   });
+  if (updated && !added) lsSet('hs_db_v8', JSON.stringify(db));
   if (added) {
     lsSet('hs_db_v8', JSON.stringify(db));
     setTimeout(function(){ ytToast('새 설교 ' + added + '편이 추가되었습니다'); }, 600);

@@ -2,9 +2,8 @@ name: 유튜브 새 설교 자동 업데이트
 
 on:
   schedule:
-    # 매주 일요일·월요일 밤 10시(한국시간)에 확인 — 주일 설교가 늦게 올라와도 다음 날 반영
-    - cron: '0 13 * * 0'
-    - cron: '0 13 * * 1'
+    # 매일 밤 10시(한국시간) 확인 — 새 설교 추가 + 아직 AI 정리 안 된 설교를 하루 몇 편씩 정리
+    - cron: '0 13 * * *'
   workflow_dispatch: {}   # Actions 탭에서 'Run workflow'로 즉시 실행 가능
 
 permissions:
@@ -13,6 +12,7 @@ permissions:
 jobs:
   sync:
     runs-on: ubuntu-latest
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
 
@@ -26,6 +26,10 @@ jobs:
           # 하늘스크린교회 채널 (비워두면 기존 설교 영상에서 자동으로 찾습니다)
           # 저장소 Settings > Secrets and variables > Actions 에 등록한 YouTube API 키 (공개되지 않음)
           YT_API_KEY: ${{ secrets.YT_API_KEY }}
+          # Google AI Studio에서 발급한 Gemini API 키 — 영상을 보고 요약·타임라인·키워드를 자동 작성 (없으면 건너뜀)
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          # 한 번 실행에 AI로 정리할 최대 설교 수 (무료 한도: 하루 영상 8시간)
+          AI_MAX_PER_RUN: '6'
           CHANNEL_ID: 'UCE2gX_bg3lq1-7bn7WZAPQQ'
           # 제목에 이 단어가 있는 영상만 추가 (| 로 여러 개)
           SERMON_KEYWORD: '설교|예배|말씀|주일|성탄|송구영신'
@@ -39,5 +43,6 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add index.html
-          git commit -m "유튜브 새 설교 자동 추가"
+          git commit -m "유튜브 새 설교 자동 추가 / AI 정리"
+          git pull --rebase
           git push
