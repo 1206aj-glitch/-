@@ -7,7 +7,7 @@
 - 이미 있는 영상(같은 영상 ID)은 건너뜁니다.
 - GitHub Actions(.github/workflows/youtube-sync.yml)가 매주 실행합니다.
 """
-import json, os, re, sys, urllib.request
+import json, os, re, sys, time, urllib.request
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta, timezone
 
@@ -120,6 +120,73 @@ def build_item(vid, title, published, desc):
             'categoryKo': cat, 'scripture': scripture, 'summary': summary, 'notes': notes, 'timeline': tl}
 
 
+NS = {'a': 'http://www.w3.org/2005/Atom', 'yt': 'http://www.youtube.com/xml/schemas/2015',
+      'media': 'http://search.yahoo.com/mrss/'}
+
+
+def entries_from_rss(xml):
+    root = ET.fromstring(xml)
+    out = []
+    for e in root.findall('a:entry', NS):
+        stats = e.find('media:group/media:community/media:statistics', NS)
+        out.append({'vid': e.findtext('yt:videoId', '', NS), 'title': e.findtext('a:title', '', NS),
+                    'published': e.findtext('a:published', '', NS),
+                    'desc': e.findtext('media:group/media:description', '', NS),
+                    'pending': stats is not None and stats.get('views') == '0'})
+    return out
+
+
+def entries_from_pages(channel, existing):
+    """RSS가 막혔을 때: 채널의 동영상/실시간 목록 페이지와 각 영상 페이지에서 직접 정보를 읽음"""
+    ids = []
+    for tab in ('videos', 'streams'):
+        try:
+            page = fetch('https://www.youtube.com/channel/%s/%s' % (channel, tab))
+        except Exception as ex:
+            print('  목록 페이지 조회 실패', tab, ex)
+            continue
+        for v in re.findall(r'"videoId":"([\w-]{11})"', page):
+            if v not in ids:
+                ids.append(v)
+    out = []
+    for vid in [v for v in ids if v not in existing][:20]:
+        try:
+            w = fetch('https://www.youtube.com/watch?v=' + vid)
+            m = re.search(r'ytInitialPlayerResponse\s*=\s*(\{.+?\})\s*;\s*(?:var\s|</script>)', w, re.S)
+            pr = json.loads(m.group(1))
+        except Exception as ex:
+            print('  영상 정보 조회 실패', vid, ex)
+            continue
+        vd = pr.get('videoDetails', {})
+        mf = pr.get('microformat', {}).get('playerMicroformatRenderer', {})
+        live = mf.get('liveBroadcastDetails', {})
+        published = mf.get('publishDate') or mf.get('uploadDate') or datetime.now(timezone.utc).isoformat()
+        if len(published) == 10:
+            published += 'T00:00:00+09:00'
+        out.append({'vid': vid, 'title': vd.get('title', ''), 'published': published,
+                    'desc': vd.get('shortDescription', ''),
+                    'pending': bool(vd.get('isUpcoming') or live.get('isLiveNow'))})
+    return out
+
+
+def get_entries(channel, existing):
+    if os.environ.get('RSS_FILE'):
+        return entries_from_rss(open(os.environ['RSS_FILE'], encoding='utf-8').read())
+    urls = ['https://www.youtube.com/feeds/videos.xml?channel_id=' + channel,
+            'https://www.youtube.com/feeds/videos.xml?playlist_id=UU' + channel[2:]]
+    for attempt in range(3):
+        for u in urls:
+            try:
+                ents = entries_from_rss(fetch(u))
+                print('  RSS 사용:', u)
+                return ents
+            except Exception as ex:
+                print('  RSS 실패 (%d회차): %s %s' % (attempt + 1, u, ex))
+        time.sleep(5)
+    print('  RSS를 쓸 수 없어 채널 페이지에서 직접 확인합니다')
+    return entries_from_pages(channel, existing)
+
+
 def main():
     html = open(HTML, encoding='utf-8').read()
     if AUTO_S not in html:
@@ -129,27 +196,17 @@ def main():
     existing = set(re.findall(r'\bid\s*:\s*"([\w-]{11})"', html)) | set(re.findall(r'"id"\s*:\s*"([\w-]{11})"', html))
 
     channel = resolve_channel(html)
-    rss_src = os.environ.get('RSS_FILE')
-    xml = open(rss_src, encoding='utf-8').read() if rss_src else \
-        fetch('https://www.youtube.com/feeds/videos.xml?channel_id=' + channel)
-
-    ns = {'a': 'http://www.w3.org/2005/Atom', 'yt': 'http://www.youtube.com/xml/schemas/2015',
-          'media': 'http://search.yahoo.com/mrss/'}
-    root = ET.fromstring(xml)
+    entries = get_entries(channel, existing)
     kw = re.compile(KEYWORD) if KEYWORD else None
     added = []
-    for e in root.findall('a:entry', ns):
-        vid = e.findtext('yt:videoId', '', ns)
-        title = e.findtext('a:title', '', ns)
-        published = e.findtext('a:published', '', ns)
-        desc = e.findtext('media:group/media:description', '', ns)
-        stats = e.find('media:group/media:community/media:statistics', ns)
+    for ent in entries:
+        vid, title, published, desc = ent['vid'], ent['title'], ent['published'], ent['desc']
         if not vid or vid in existing:
             continue
         if kw and not kw.search(title):
             print('  제외(제목 필터):', title)
             continue
-        if stats is not None and stats.get('views') == '0':
+        if ent.get('pending'):
             print('  보류(아직 공개 전 예약/라이브):', title)
             continue
         item = build_item(vid, title, published, desc)

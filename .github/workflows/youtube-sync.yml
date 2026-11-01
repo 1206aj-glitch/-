@@ -23,8 +23,8 @@ jobs:
       - name: 채널 새 영상 확인 후 index.html 갱신
         run: python scripts/sync_youtube.py
         env:
-          # 비워두면 기존 설교 영상에서 채널을 자동으로 찾습니다
-          CHANNEL_ID: ''
+          # 하늘스크린교회 채널 (비워두면 기존 설교 영상에서 자동으로 찾습니다)
+          CHANNEL_ID: 'UCE2gX_bg3lq1-7bn7WZAPQQ'
           # 제목에 이 단어가 있는 영상만 추가 (| 로 여러 개)
           SERMON_KEYWORD: '설교|예배|말씀'
 
