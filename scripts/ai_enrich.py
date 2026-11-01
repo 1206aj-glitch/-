@@ -162,6 +162,7 @@ def enrich(auto):
         return 0
     print('  AI 정리 대기 %d편 → 이번에 최대 %d편 처리' % (len(todo), MAX_PER_RUN))
     done = 0
+    perm_fail = 0
     enrich.failed = 0
     for i, item in enumerate(todo[:MAX_PER_RUN]):
         if i:
@@ -178,8 +179,16 @@ def enrich(auto):
         except Exception as ex:
             enrich.failed += 1
             print('  AI 정리 실패:', item['date'], item['title'], '|', ex)
-            if 'API key not valid' in str(ex) or 'PERMISSION_DENIED' in str(ex):
+            if 'API key not valid' in str(ex):
                 break
+            # 403 권한 오류는 그 영상만의 문제일 수 있음(방금 올린 생방송·처리 중 영상 등) → 다음 영상으로.
+            # 다만 연속 3편이 모두 403이면 키 문제로 보고 중단
+            if 'PERMISSION_DENIED' in str(ex) or 'permission_denied' in str(ex):
+                perm_fail += 1
+                if perm_fail >= 3 and not done:
+                    break
+            continue
+        perm_fail = 0
     return done
 
 
