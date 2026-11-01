@@ -1633,7 +1633,8 @@ function mergeAutoSermons() {
     if (ids[s.id]) {
       // 이전에 자동 등록된 설교가 AI로 정리되었으면 최신 내용으로 교체 (관리자가 직접 수정한 설교는 유지)
       var k = db.findIndex(function(d){ return d.id === s.id; });
-      if (k !== -1 && db[k].auto && !db[k].edited && s.ai && !db[k].ai) {
+      var av = function(x){ return x.ai_v || (x.ai ? 1 : 0); };
+      if (k !== -1 && db[k].auto && !db[k].edited && av(s) > av(db[k])) {
         db[k] = Object.assign({}, s, { auto: true, index: db[k].index,
           situation: SITS.indexOf(s.situation) !== -1 ? s.situation : classify(s.title, s.summary, s.notes) });
         updated++;
@@ -1798,13 +1799,33 @@ function renderNotesBadges(elId, notesStr) {
   var el = document.getElementById(elId);
   if (!el) return;
   if (!notesStr) { el.innerHTML = ''; return; }
-  var clean = notesStr.replace('💡 주요 키워드:','').replace('💡 주요 키워드','').trim();
-  var tags = clean.split(/\s+/).filter(function(t){ return t.startsWith('#'); });
-  if (tags.length === 0) { el.textContent = notesStr; return; }
-  el.innerHTML = '<div style="display:flex;flex-wrap:wrap;gap:6px;padding:4px 0">' +
-    tags.map(function(t){
-      return '<span style="background:#eef2ff;color:#3730a3;border:1px solid #c7d2fe;border-radius:999px;padding:4px 12px;font-size:11px;font-weight:700;">' + t + '</span>';
-    }).join('') + '</div>';
+  var esc = function(t){ return String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); };
+  var tags = [], notes = [];
+  String(notesStr).split('\n').forEach(function(line) {
+    line = line.trim();
+    if (!line) return;
+    var body = line.replace(/^💡\s*/, '');
+    if (/^주요 키워드\s*[:：]?/.test(body)) {
+      body.replace(/^주요 키워드\s*[:：]?/, '').split(/\s+/).forEach(function(t){ if (t.charAt(0) === '#') tags.push(t); });
+      return;
+    }
+    var m = body.match(/^([^:：]{1,12})\s*[:：]\s*(.+)$/);
+    notes.push(m ? { label: m[1], text: m[2] } : { label: '', text: body });
+  });
+  if (!tags.length && !notes.length) { el.textContent = notesStr; return; }
+  var html = '';
+  if (tags.length) {
+    html += '<div style="display:flex;flex-wrap:wrap;gap:6px;padding:4px 0' + (notes.length ? ';margin-bottom:10px' : '') + '">' +
+      tags.map(function(t){
+        return '<span style="background:#eef2ff;color:#3730a3;border:1px solid #c7d2fe;border-radius:999px;padding:4px 12px;font-size:11px;font-weight:700;">' + esc(t) + '</span>';
+      }).join('') + '</div>';
+  }
+  html += notes.map(function(n){
+    return '<div style="display:flex;gap:8px;margin:6px 0;line-height:1.7">' +
+      '<span style="flex-shrink:0">💡</span><div>' +
+      (n.label ? '<b style="color:#4338ca">' + esc(n.label) + '</b> · ' : '') + esc(n.text) + '</div></div>';
+  }).join('');
+  el.innerHTML = html;
 }
 
 

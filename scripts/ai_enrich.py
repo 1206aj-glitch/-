@@ -9,9 +9,11 @@ Gemini가 설교 영상을 직접 보고 요약·키워드·성경구절·타임
 import json, os, re, time, urllib.error, urllib.request
 
 GEMINI_KEY = os.environ.get('GEMINI_API_KEY', '').strip()
-MODELS = [m.strip() for m in os.environ.get('GEMINI_MODEL', 'gemini-3.8-flash,gemini-2.5-flash').split(',') if m.strip()]
+MODELS = [m.strip() for m in os.environ.get('GEMINI_MODEL', 'gemini-3.8-flash').split(',') if m.strip()]
 MAX_PER_RUN = int(os.environ.get('AI_MAX_PER_RUN', '6') or 6)
 PAUSE = int(os.environ.get('AI_PAUSE_SEC', '65') or 65)
+
+AI_VERSION = 2   # 정리 형식이 바뀌면 올림 → 예전 형식으로 정리된 설교도 다시 정리
 
 SITUATIONS = ['상처치유', '우울불안', '고난시련', '실패결핍', '분노용서', '가정가족', '조급인내', '나눔전도']
 CATEGORIES = ['통합설교', '음악설교', '주일예배', '비전설교', '영화설교', '문학설교']
@@ -26,11 +28,12 @@ PROMPT = """당신은 한국 교회 설교 아카이브 편집자입니다. 첨�
 - keywords: 해시태그 5~7개. 첫 번째는 설교 종류(#음악설교 등), 원어가 나오면 그 단어도 포함. 예: ["#비전설교","#척박함","#광야","#라파"]
 - scripture: 중심 성경 본문 하나. 형식은 반드시 "책이름 N장 N~N절" (시편은 "시편 N편 N절"). 성경 봉독 장면을 기준으로.
 - timeline: 영상 흐름을 8~14개 지점으로. time은 영상에서 그 부분이 실제 시작되는 시각 "HH:MM:SS". title은 무엇을 하는 부분인지 구체적으로(예: "성경 봉독 (시편 121:1~2)", "🎵 특송 《하나님의 시간》", "영화 예화: 〈쇼생크 탈출〉의 희망 장면", "헬라어 '아피에미' 강해", "📝 시 낭송 《제목 — 김형종》", "결단 기도"). 시각은 반드시 영상을 기준으로 정확하게.
+- insights: '인사이트 & 성령 전술 노트' 3~4개. 각 항목은 label과 text. label은 다음 중에서 설교에 실제로 있는 것만: 원어 강해, 예화, 특송, 시 낭송, 실천 지침, 핵심 메시지. text는 1~2문장으로 구체적으로(예: label "원어 강해", text "히브리어 '라파'는 상처를 꿰매어 온전히 회복시키는 치유를 뜻하며…"; label "실천 지침", text "이번 주 매일 5분, 감사 제목 세 가지를 적고 가족과 나누기"). 실천 지침은 꼭 하나 포함.
 - situation: 이 설교가 가장 위로가 될 성도의 마음 상황 하나를 다음 중에서만: {situations}
 - category: 다음 중 하나: {categories}
 
 출력 형식 (설명 없이 JSON만):
-{{"summary":"...","keywords":["#..."],"scripture":"...","timeline":[{{"time":"00:05:12","title":"..."}}],"situation":"...","category":"..."}}"""
+{{"summary":"...","keywords":["#..."],"scripture":"...","timeline":[{{"time":"00:05:12","title":"..."}}],"insights":[{{"label":"원어 강해","text":"..."}}],"situation":"...","category":"..."}}"""
 
 
 class DailyQuotaExceeded(Exception):
@@ -44,12 +47,14 @@ def _post(url, body):
         return json.loads(r.read().decode('utf-8'))
 
 
-def _call_generate(model, prompt, video_url):
-    body = {
-        'contents': [{'parts': [{'file_data': {'file_uri': video_url}}, {'text': prompt}]}],
-        'generationConfig': {'responseMimeType': 'application/json', 'temperature': 0.3,
-                             'mediaResolution': 'MEDIA_RESOLUTION_LOW'},
-    }
+def _call_generate(model, prompt, video_url, light=True):
+    video = {'file_data': {'file_uri': video_url}}
+    cfg = {'responseMimeType': 'application/json', 'temperature': 0.3}
+    if light:
+        # 설교는 음성이 핵심 → 화면은 5초에 1장, 저해상도로 보내 토큰을 크게 줄임 (무료 분당 한도 대응)
+        video['video_metadata'] = {'fps': 0.2}
+        cfg['mediaResolution'] = 'MEDIA_RESOLUTION_LOW'
+    body = {'contents': [{'parts': [video, {'text': prompt}]}], 'generationConfig': cfg}
     j = _post('https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent' % model, body)
     parts = j['candidates'][0]['content']['parts']
     return ''.join(p.get('text', '') for p in parts)
@@ -76,25 +81,31 @@ def _parse(text):
 def ask_gemini(title, date, vid):
     prompt = PROMPT.format(title=title, date=date, situations=', '.join(SITUATIONS), categories=', '.join(CATEGORIES))
     url = 'https://www.youtube.com/watch?v=' + vid
-    last = None
+    errors = []
+    callers = [('generate', lambda m: _call_generate(m, prompt, url, True)),
+               ('generate(기본설정)', lambda m: _call_generate(m, prompt, url, False)),
+               ('interactions', lambda m: _call_interactions(m, prompt, url))]
     for model in MODELS:
-        for caller in (_call_generate, _call_interactions):
-            for attempt in range(3):
+        for name, caller in callers:
+            for attempt in range(4):
                 try:
-                    return _parse(caller(model, prompt, url)), model
+                    return _parse(caller(model)), model
                 except urllib.error.HTTPError as ex:
-                    detail = ex.read().decode('utf-8', 'replace')[:300]
-                    last = '%s %s %s: %s' % (model, caller.__name__, ex.code, detail)
+                    detail = ex.read().decode('utf-8', 'replace')[:400]
+                    errors.append('%s/%s %s: %s' % (model, name, ex.code, detail))
                     if ex.code == 429:
                         if re.search(r'per ?day|PerDay|daily', detail, re.I):
                             raise DailyQuotaExceeded(detail)   # 하루 한도 → 오늘은 여기까지, 다음 실행에서 이어서
-                        time.sleep(70)                         # 분당 한도 → 잠시 쉬고 재시도
+                        time.sleep(75)                         # 분당 한도 → 잠시 쉬고 재시도
                         continue
-                    break                       # 400/404 등 → 다른 방식/모델로
+                    if ex.code in (500, 503, 504):
+                        time.sleep(30)
+                        continue
+                    break                                      # 400/404 등 → 다음 방식으로
                 except Exception as ex:
-                    last = '%s %s: %s' % (model, caller.__name__, ex)
+                    errors.append('%s/%s: %s' % (model, name, ex))
                     break
-    raise RuntimeError(last)
+    raise RuntimeError(' || '.join(errors[-4:]))
 
 
 def _to_item(item, res):
@@ -116,8 +127,17 @@ def _to_item(item, res):
     tags = [k if str(k).startswith('#') else '#' + str(k) for k in (res.get('keywords') or []) if str(k).strip()]
     if summary:
         item['summary'] = summary
+    lines = []
     if tags:
-        item['notes'] = '💡 주요 키워드: ' + ' '.join(t.replace(' ', '') for t in tags[:8])
+        lines.append('💡 주요 키워드: ' + ' '.join(t.replace(' ', '') for t in tags[:8]))
+    elif item.get('notes', '').startswith('💡 주요 키워드'):
+        lines.append(item['notes'].split('\n')[0])
+    for ins in (res.get('insights') or [])[:5]:
+        label, text = str(ins.get('label', '')).strip(), str(ins.get('text', '')).strip()
+        if label and text:
+            lines.append('💡 %s: %s' % (label, text.replace('\n', ' ')))
+    if lines:
+        item['notes'] = '\n'.join(lines)
     sc = str(res.get('scripture', '')).strip()
     if re.search(r'\d+\s*(장|편)', sc):
         item['scripture'] = sc
@@ -128,6 +148,7 @@ def _to_item(item, res):
     if res.get('category') in CATEGORIES:
         item['categoryKo'] = res['category']
     item['ai'] = True
+    item['ai_v'] = AI_VERSION
     return item
 
 
@@ -136,7 +157,7 @@ def enrich(auto):
     if not GEMINI_KEY:
         print('  (GEMINI_API_KEY 미설정 — AI 정리 건너뜀)')
         return 0
-    todo = [a for a in sorted(auto, key=lambda x: x['date'], reverse=True) if not a.get('ai')]
+    todo = [a for a in sorted(auto, key=lambda x: x['date'], reverse=True) if (a.get('ai_v') or 0) < AI_VERSION]
     if not todo:
         return 0
     print('  AI 정리 대기 %d편 → 이번에 최대 %d편 처리' % (len(todo), MAX_PER_RUN))
