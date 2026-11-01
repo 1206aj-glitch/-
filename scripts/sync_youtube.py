@@ -274,6 +274,8 @@ def main():
             print('  보류(아직 공개 전 예약/라이브):', title)
             continue
         item = build_item(vid, title, published, desc)
+        if latest and item['date'] < latest:
+            continue  # 이미 정리된 설교보다 이전 영상(지난해 영상, 재업로드본 등)은 추가하지 않음
         auto.append(item)
         existing.add(vid)
         added.append(item)
