@@ -297,7 +297,7 @@ def main():
 
     if not added and not enriched and embed is not None and html == open(HTML, encoding='utf-8').read():
         print('새 설교 없음')
-        if ai_enrich.enrich.failed:
+        if ai_enrich.enrich.failed and not ai_enrich.enrich.quota_hit:
             sys.exit('AI 정리에 실패했습니다. 위 로그의 오류 내용을 확인하세요 (GEMINI_API_KEY 등).')
         return
 
@@ -307,7 +307,7 @@ def main():
     html = html.replace(old_block, AUTO_S + 'var AUTO_SERMONS = ' + data + ';' + AUTO_E)
     open(HTML, 'w', encoding='utf-8').write(html)
     print('완료: 새 설교 %d편 추가, AI 정리 %d편' % (len(added), enriched))
-    if ai_enrich.enrich.failed and not enriched:
+    if ai_enrich.enrich.failed and not enriched and not ai_enrich.enrich.quota_hit:
         sys.exit('AI 정리에 실패했습니다. 위 로그의 오류 내용을 확인하세요 (GEMINI_API_KEY 등).')
 
 

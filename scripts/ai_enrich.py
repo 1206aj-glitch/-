@@ -91,10 +91,14 @@ def ask_gemini(title, date, vid):
                 try:
                     return _parse(caller(model)), model
                 except urllib.error.HTTPError as ex:
-                    detail = ex.read().decode('utf-8', 'replace')[:400]
+                    full = ex.read().decode('utf-8', 'replace')
+                    detail = full[:400]
                     errors.append('%s/%s %s: %s' % (model, name, ex.code, detail))
+                    if ex.code == 403:
+                        # 영상 접근 권한 문제 → 다른 방식으로 다시 보내도 같은 결과, 하루 요청 수만 낭비하므로 바로 포기
+                        raise RuntimeError(' || '.join(errors[-2:]))
                     if ex.code == 429:
-                        if re.search(r'per ?day|PerDay|daily', detail, re.I):
+                        if re.search(r'per ?day|PerDay|daily', full, re.I):
                             raise DailyQuotaExceeded(detail)   # 하루 한도 → 오늘은 여기까지, 다음 실행에서 이어서
                         time.sleep(75)                         # 분당 한도 → 잠시 쉬고 재시도
                         continue
@@ -158,12 +162,14 @@ def enrich(auto):
         print('  (GEMINI_API_KEY 미설정 — AI 정리 건너뜀)')
         return 0
     todo = [a for a in sorted(auto, key=lambda x: x['date'], reverse=True) if (a.get('ai_v') or 0) < AI_VERSION]
+    todo.sort(key=lambda a: a.get('ai_denied', 0))   # 권한 오류가 났던 영상은 맨 뒤로 (순서는 유지)
     if not todo:
         return 0
     print('  AI 정리 대기 %d편 → 이번에 최대 %d편 처리' % (len(todo), MAX_PER_RUN))
     done = 0
     perm_fail = 0
     quota_hit = False
+    enrich.quota_hit = False
     enrich.failed = 0
     for i, item in enumerate(todo[:MAX_PER_RUN]):
         if i:
@@ -171,12 +177,14 @@ def enrich(auto):
         try:
             res, model = ask_gemini(item['title'], item['date'], item['id'])
             _to_item(item, res)
+            item.pop('ai_denied', None)
             done += 1
             print('  AI 정리 완료 (%s): %s %s · 타임라인 %d개 · %s' % (
                 model, item['date'], item['title'], len(item['timeline']), item.get('scripture', '')))
         except DailyQuotaExceeded:
             print('  오늘 무료 한도에 도달 — 남은 설교는 다음 실행에서 이어서 정리합니다')
             quota_hit = True
+            enrich.quota_hit = True
             break
         except Exception as ex:
             enrich.failed += 1
@@ -186,6 +194,7 @@ def enrich(auto):
             # 403 권한 오류는 그 영상만의 문제일 수 있음(방금 올린 생방송·처리 중 영상 등) → 다음 영상으로.
             # 다만 연속 3편이 모두 403이면 키 문제로 보고 중단
             if 'PERMISSION_DENIED' in str(ex) or 'permission_denied' in str(ex):
+                item['ai_denied'] = item.get('ai_denied', 0) + 1
                 perm_fail += 1
                 if perm_fail >= 3 and not done:
                     break
@@ -198,3 +207,4 @@ def enrich(auto):
 
 enrich.failed = 0
 enrich.more = False
+enrich.quota_hit = False
