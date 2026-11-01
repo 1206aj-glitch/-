@@ -245,6 +245,7 @@ def get_entries(channel, existing):
 
 
 SKIP_FILE = os.path.join(ROOT, 'scripts', 'backfill_skip.json')
+BACKFILL_FROM = os.environ.get('BACKFILL_FROM_YEAR', '2017').strip() or '0000'   # 이 해까지 거슬러 올라감
 BACKFILL = os.environ.get('BACKFILL', 'on').strip().lower() not in ('', '0', 'off', 'no', 'false')
 
 
@@ -284,6 +285,8 @@ def backfill(channel, auto, existing, dates, slots):
         if not vid or vid in existing or vid in skip or (kw and not kw.search(ent['title'])):
             continue
         item = build_item(vid, ent['title'], ent['published'], ent['desc'])
+        if item['year'] < BACKFILL_FROM:
+            continue
         if item['date'] in dates:
             skip.add(vid)          # 같은 날짜 설교가 이미 있음 → 재업로드·편집본으로 보고 제외
             continue
