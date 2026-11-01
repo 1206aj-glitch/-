@@ -36,6 +36,22 @@ PROMPT = """당신은 한국 교회 설교 아카이브 편집자입니다. 첨�
 {{"summary":"...","keywords":["#..."],"scripture":"...","timeline":[{{"time":"00:05:12","title":"..."}}],"insights":[{{"label":"원어 강해","text":"..."}}],"situation":"...","category":"..."}}"""
 
 
+def quota_day():
+    """Gemini 무료 한도가 초기화되는 기준 날짜 (미국 태평양 시간 자정 = 한국 오후 4~5시)"""
+    from datetime import datetime
+    from zoneinfo import ZoneInfo
+    return datetime.now(ZoneInfo('America/Los_Angeles')).date().isoformat()
+
+
+def waiting(a):
+    """아직 AI 정리가 필요하고, 오늘(한도일) 이미 권한 오류로 실패한 영상이 아닌 설교"""
+    if (a.get('ai_v') or 0) >= AI_VERSION:
+        return False
+    if a.get('ai_denied', 0) >= 7:      # 일주일 내내 볼 수 없던 영상은 포기
+        return False
+    return a.get('ai_denied_on') != quota_day()
+
+
 class DailyQuotaExceeded(Exception):
     pass
 
@@ -161,8 +177,9 @@ def enrich(auto):
     if not GEMINI_KEY:
         print('  (GEMINI_API_KEY 미설정 — AI 정리 건너뜀)')
         return 0
-    todo = [a for a in sorted(auto, key=lambda x: x['date'], reverse=True) if (a.get('ai_v') or 0) < AI_VERSION]
-    todo.sort(key=lambda a: a.get('ai_denied', 0))   # 권한 오류가 났던 영상은 맨 뒤로 (순서는 유지)
+    # 항상 가장 최근 설교부터 (월요일엔 전날 주일 설교가 맨 먼저).
+    # 권한 오류가 난 영상(생방송 직후 처리 중 등)은 같은 '한도일'에는 다시 시도하지 않고 다음 날 다시 맨 앞에서 시도
+    todo = [a for a in sorted(auto, key=lambda x: x['date'], reverse=True) if waiting(a)]
     if not todo:
         return 0
     print('  AI 정리 대기 %d편 → 이번에 최대 %d편 처리' % (len(todo), MAX_PER_RUN))
@@ -178,6 +195,7 @@ def enrich(auto):
             res, model = ask_gemini(item['title'], item['date'], item['id'])
             _to_item(item, res)
             item.pop('ai_denied', None)
+            item.pop('ai_denied_on', None)
             done += 1
             print('  AI 정리 완료 (%s): %s %s · 타임라인 %d개 · %s' % (
                 model, item['date'], item['title'], len(item['timeline']), item.get('scripture', '')))
@@ -195,6 +213,7 @@ def enrich(auto):
             # 다만 연속 3편이 모두 403이면 키 문제로 보고 중단
             if 'PERMISSION_DENIED' in str(ex) or 'permission_denied' in str(ex):
                 item['ai_denied'] = item.get('ai_denied', 0) + 1
+                item['ai_denied_on'] = quota_day()
                 perm_fail += 1
                 if perm_fail >= 3 and not done:
                     break

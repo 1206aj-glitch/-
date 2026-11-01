@@ -367,7 +367,7 @@ def main():
     more = ai_enrich.enrich.more
 
     # 올해 설교 정리가 다 끝났고 한도가 남았으면 → 지난 설교(2025년 이전)를 과거 방향으로 채움
-    pending_now = [a for a in auto if (a.get('ai_v') or 0) < ai_enrich.AI_VERSION and not a.get('ai_denied')]
+    pending_now = [a for a in auto if ai_enrich.waiting(a)]   # 올해(최신) 설교가 항상 먼저, 그다음 지난 설교
     slots = ai_enrich.MAX_PER_RUN - enriched - ai_enrich.enrich.failed
     if BACKFILL and API_KEY and ai_enrich.GEMINI_KEY and not pending_now and not ai_enrich.enrich.quota_hit and slots > 0:
         n, left = backfill(channel, auto, existing, set(dates), slots)
@@ -380,7 +380,10 @@ def main():
         with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
             f.write('more=true\n')
 
-    if not added and not enriched and embed is not None and html == open(HTML, encoding='utf-8').read():
+    auto_before = read_block(open(HTML, encoding='utf-8').read(), AUTO_S, AUTO_E)
+    auto.sort(key=lambda x: x['date'])
+    unchanged = ('var AUTO_SERMONS = ' + json.dumps(auto, ensure_ascii=False).replace('</', '<\\/') + ';') == auto_before
+    if not added and not enriched and embed is not None and unchanged and html == open(HTML, encoding='utf-8').read():
         print('새 설교 없음')
         if ai_enrich.enrich.failed and not ai_enrich.enrich.quota_hit:
             sys.exit('AI 정리에 실패했습니다. 위 로그의 오류 내용을 확인하세요 (GEMINI_API_KEY 등).')
