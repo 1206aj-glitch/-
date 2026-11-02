@@ -303,6 +303,11 @@ def backfill(channel, auto, existing, dates, slots):
         except ai_enrich.DailyQuotaExceeded:
             print('  오늘 무료 한도에 도달 — 지난 설교는 다음 실행에서 이어서 추가합니다')
             ai_enrich.enrich.quota_hit = True
+            ai_enrich.mark_quota_used_up()
+            break
+        except ai_enrich.ServiceBusy as ex:
+            print('  Gemini 서버 혼잡 — 이번 회차는 여기까지 |', str(ex)[:200])
+            ai_enrich.enrich.busy = True
             break
         except Exception as ex:
             print('  지난 설교 정리 실패:', item['date'], item['title'], '|', str(ex)[:300])
@@ -372,23 +377,27 @@ def main():
     # 올해 설교 정리가 다 끝났고 한도가 남았으면 → 지난 설교(2025년 이전)를 과거 방향으로 채움
     pending_now = [a for a in auto if ai_enrich.waiting(a)]   # 올해(최신) 설교가 항상 먼저, 그다음 지난 설교
     slots = ai_enrich.MAX_PER_RUN - enriched - ai_enrich.enrich.failed
-    if BACKFILL and API_KEY and ai_enrich.GEMINI_KEY and not pending_now and not ai_enrich.enrich.quota_hit and slots > 0:
+    if (BACKFILL and API_KEY and ai_enrich.GEMINI_KEY and not pending_now and slots > 0
+            and not ai_enrich.enrich.quota_hit and not ai_enrich.enrich.busy and not ai_enrich.quota_used_up()):
         n, left = backfill(channel, auto, existing, set(dates), slots)
         enriched += n
         if n:
             print('  지난 설교 %d편 추가' % n)
-        more = more or (left and not ai_enrich.enrich.quota_hit and n > 0)
+        more = more or (left and not ai_enrich.enrich.quota_hit and not ai_enrich.enrich.busy and n > 0)
 
-    if more and os.environ.get('GITHUB_OUTPUT'):
+    if os.environ.get('GITHUB_OUTPUT'):
         with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
-            f.write('more=true\n')
+            if more:
+                f.write('more=true\n')
+            elif ai_enrich.enrich.busy:
+                f.write('busy=true\n')   # 서버 혼잡 → 20분 뒤 다시
 
     auto_before = read_block(open(HTML, encoding='utf-8').read(), AUTO_S, AUTO_E)
     auto.sort(key=lambda x: x['date'])
     unchanged = ('var AUTO_SERMONS = ' + json.dumps(auto, ensure_ascii=False).replace('</', '<\\/') + ';') == auto_before
     if not added and not enriched and embed is not None and unchanged and html == open(HTML, encoding='utf-8').read():
         print('새 설교 없음')
-        if ai_enrich.enrich.failed and not ai_enrich.enrich.quota_hit:
+        if ai_enrich.enrich.failed and not ai_enrich.enrich.quota_hit and not ai_enrich.enrich.busy:
             sys.exit('AI 정리에 실패했습니다. 위 로그의 오류 내용을 확인하세요 (GEMINI_API_KEY 등).')
         return
 
@@ -398,7 +407,7 @@ def main():
     html = html.replace(old_block, AUTO_S + 'var AUTO_SERMONS = ' + data + ';' + AUTO_E)
     open(HTML, 'w', encoding='utf-8').write(html)
     print('완료: 새 설교 %d편 추가, AI 정리 %d편' % (len(added), enriched))
-    if ai_enrich.enrich.failed and not enriched and not ai_enrich.enrich.quota_hit:
+    if ai_enrich.enrich.failed and not enriched and not ai_enrich.enrich.quota_hit and not ai_enrich.enrich.busy:
         sys.exit('AI 정리에 실패했습니다. 위 로그의 오류 내용을 확인하세요 (GEMINI_API_KEY 등).')
 
 

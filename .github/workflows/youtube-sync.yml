@@ -2,15 +2,19 @@ name: 유튜브 새 설교 자동 업데이트
 
 on:
   schedule:
-    # 3시간마다 확인 — 새 설교 추가 + 아직 AI 정리 안 된 설교를 이어서 정리 (할 일이 없으면 30초 안에 끝남)
-    - cron: '17 */3 * * *'
-    # 무료 한도가 초기화되는 시각(한국 17시) 직후에 한 번 더
-    - cron: '23 8 * * *'
+    # 매시간 확인 — GitHub 예약 실행은 자주 늦거나 건너뛰므로 촘촘하게.
+    # 오늘 한도를 이미 다 썼으면 요청 없이 몇 초 만에 끝남
+    - cron: '41 * * * *'
   workflow_dispatch: {}   # Actions 탭에서 'Run workflow'로 즉시 실행 가능
 
 permissions:
   contents: write
   actions: write     # 남은 설교가 있으면 다음 회차를 스스로 이어서 실행
+
+# 동시에 두 개가 돌지 않도록 (앞 회차가 끝나면 다음 회차 실행)
+concurrency:
+  group: youtube-sync
+  cancel-in-progress: false
 
 jobs:
   sync:
@@ -50,7 +54,7 @@ jobs:
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add index.html scripts/backfill_skip.json
+          git add index.html scripts/backfill_skip.json scripts/ai_state.json
           git commit -m "유튜브 새 설교 자동 추가 / AI 정리"
           git pull --rebase
           git push
@@ -58,5 +62,13 @@ jobs:
       - name: 남은 설교가 있으면 다음 회차 바로 실행
         if: steps.sync.outputs.more == 'true'
         run: gh workflow run youtube-sync.yml --ref main
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: 구글 서버 혼잡이면 20분 뒤 다시 실행
+        if: steps.sync.outputs.busy == 'true'
+        run: |
+          sleep 1200
+          gh workflow run youtube-sync.yml --ref main
         env:
           GH_TOKEN: ${{ github.token }}

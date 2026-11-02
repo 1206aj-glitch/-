@@ -56,6 +56,31 @@ class DailyQuotaExceeded(Exception):
     pass
 
 
+class ServiceBusy(Exception):
+    pass
+
+
+STATE_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'scripts', 'ai_state.json')
+
+
+def _state():
+    try:
+        return json.load(open(STATE_FILE, encoding='utf-8'))
+    except Exception:
+        return {}
+
+
+def quota_used_up():
+    """오늘(한도일) 이미 하루 한도에 걸렸으면 True → 요청을 보내지 않고 바로 끝냄 (헛 요청 방지)"""
+    return _state().get('quota_day') == quota_day()
+
+
+def mark_quota_used_up():
+    st = _state()
+    st['quota_day'] = quota_day()
+    json.dump(st, open(STATE_FILE, 'w', encoding='utf-8'), ensure_ascii=False)
+
+
 def _post(url, body):
     req = urllib.request.Request(url, data=json.dumps(body).encode('utf-8'), method='POST',
                                  headers={'Content-Type': 'application/json', 'x-goog-api-key': GEMINI_KEY})
@@ -103,7 +128,8 @@ def ask_gemini(title, date, vid):
                ('interactions', lambda m: _call_interactions(m, prompt, url))]
     for model in MODELS:
         for name, caller in callers:
-            for attempt in range(4):
+            busy = 0
+            while True:
                 try:
                     return _parse(caller(model)), model
                 except urllib.error.HTTPError as ex:
@@ -116,15 +142,23 @@ def ask_gemini(title, date, vid):
                     if ex.code == 429:
                         if re.search(r'per ?day|PerDay|daily', full, re.I):
                             raise DailyQuotaExceeded(detail)   # 하루 한도 → 오늘은 여기까지, 다음 실행에서 이어서
-                        time.sleep(75)                         # 분당 한도 → 잠시 쉬고 재시도
+                        time.sleep(75)                         # 분당 한도 → 잠시 쉬고 재시도 (요청 수에 안 잡힘)
                         continue
-                    if ex.code in (500, 503, 504):
-                        time.sleep(30)
+                    if ex.code >= 500:
+                        # 구글 서버 혼잡 — 실패한 요청도 하루 20회 한도에 포함되므로 한 번만 더 해보고 이번 회차는 접음
+                        busy += 1
+                        if busy >= 2:
+                            raise ServiceBusy(detail)
+                        time.sleep(90)
                         continue
-                    break                                      # 400/404 등 → 다음 방식으로
+                    if ex.code == 400:
+                        break                                  # 요청 형식 문제 → 다른 방식으로
+                    raise RuntimeError(' || '.join(errors[-2:]))
+                except (DailyQuotaExceeded, ServiceBusy, RuntimeError):
+                    raise
                 except Exception as ex:
                     errors.append('%s/%s: %s' % (model, name, ex))
-                    break
+                    raise RuntimeError(' || '.join(errors[-2:]))
     raise RuntimeError(' || '.join(errors[-4:]))
 
 
@@ -180,7 +214,15 @@ def enrich(auto):
     # 항상 가장 최근 설교부터 (월요일엔 전날 주일 설교가 맨 먼저).
     # 권한 오류가 난 영상(생방송 직후 처리 중 등)은 같은 '한도일'에는 다시 시도하지 않고 다음 날 다시 맨 앞에서 시도
     todo = [a for a in sorted(auto, key=lambda x: x['date'], reverse=True) if waiting(a)]
+    enrich.quota_hit = False
+    enrich.busy = False
+    enrich.failed = 0
+    enrich.more = False
     if not todo:
+        return 0
+    if quota_used_up():
+        print('  오늘 무료 한도를 이미 다 썼음 — 한도 초기화(한국 오후 5시) 후 이어서 정리합니다 (대기 %d편)' % len(todo))
+        enrich.quota_hit = True
         return 0
     print('  AI 정리 대기 %d편 → 이번에 최대 %d편 처리' % (len(todo), MAX_PER_RUN))
     done = 0
@@ -203,6 +245,11 @@ def enrich(auto):
             print('  오늘 무료 한도에 도달 — 남은 설교는 다음 실행에서 이어서 정리합니다')
             quota_hit = True
             enrich.quota_hit = True
+            mark_quota_used_up()
+            break
+        except ServiceBusy as ex:
+            print('  Gemini 서버 혼잡 — 이번 회차는 여기까지, 잠시 후 다시 시도합니다 |', str(ex)[:200])
+            enrich.busy = True
             break
         except Exception as ex:
             enrich.failed += 1
@@ -220,10 +267,11 @@ def enrich(auto):
             continue
         perm_fail = 0
     # 이번에 처리 못 한 설교가 남았고 한도에도 안 걸렸으면 → 워크플로가 곧바로 다음 회차를 실행
-    enrich.more = bool(done) and not quota_hit and len(todo) > MAX_PER_RUN
+    enrich.more = bool(done) and not quota_hit and not enrich.busy and len(todo) > MAX_PER_RUN
     return done
 
 
 enrich.failed = 0
 enrich.more = False
 enrich.quota_hit = False
+enrich.busy = False
