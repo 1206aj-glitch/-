@@ -65,20 +65,74 @@ STATE_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file
 
 def _state():
     try:
-        return json.load(open(STATE_FILE, encoding='utf-8'))
+        st = json.load(open(STATE_FILE, encoding='utf-8'))
     except Exception:
-        return {}
+        st = {}
+    if st.get('day') != quota_day():          # 한도일이 바뀌면 소진 기록 초기화
+        st = {'day': quota_day(), 'exhausted': []}
+    return st
+
+
+def _save_state(st):
+    json.dump(st, open(STATE_FILE, 'w', encoding='utf-8'), ensure_ascii=False)
+
+
+_MODELS_CACHE = []
+
+
+def models():
+    """사용할 모델 목록. 무료 한도는 '모델별'로 따로 있으므로 여러 모델을 돌려 쓰면 하루 처리량이 늘고,
+    한 모델이 혼잡(503)할 때 다른 모델로 넘어갈 수 있음. 목록은 API에서 자동으로 확인 (조회는 한도에 안 잡힘)."""
+    if _MODELS_CACHE:
+        return _MODELS_CACHE
+    found = []
+    try:
+        req = urllib.request.Request('https://generativelanguage.googleapis.com/v1beta/models?pageSize=1000',
+                                     headers={'x-goog-api-key': GEMINI_KEY})
+        with urllib.request.urlopen(req, timeout=60) as r:
+            for m in json.loads(r.read().decode('utf-8')).get('models', []):
+                name = m.get('name', '').replace('models/', '')
+                if 'generateContent' not in (m.get('supportedGenerationMethods') or []):
+                    continue
+                if not re.match(r'^gemini-\d+(\.\d+)?-(flash|pro)', name):
+                    continue
+                if re.search(r'image|tts|audio|live|embed|robotics|computer|exp|customtools|\d{3}$', name):
+                    continue
+                found.append(name)
+    except Exception as ex:
+        print('  모델 목록 조회 실패(기본 모델만 사용):', ex)
+
+    def rank(n):
+        v = re.match(r'^gemini-(\d+(?:\.\d+)?)', n)
+        ver = float(v.group(1)) if v else 0
+        kind = 0 if '-flash' in n and 'lite' not in n else (1 if '-pro' in n else 2)   # flash → pro → flash-lite
+        return (kind, -ver, 'preview' in n, n)
+    for n in MODELS + sorted([n for n in found if n not in MODELS], key=rank)[:5]:
+        if n not in _MODELS_CACHE:
+            _MODELS_CACHE.append(n)
+    print('  사용 모델 순서:', ', '.join(_MODELS_CACHE))
+    return _MODELS_CACHE
 
 
 def quota_used_up():
-    """오늘(한도일) 이미 하루 한도에 걸렸으면 True → 요청을 보내지 않고 바로 끝냄 (헛 요청 방지)"""
-    return _state().get('quota_day') == quota_day()
+    """오늘(한도일) 모든 모델의 하루 한도를 다 썼으면 True → 요청을 보내지 않고 바로 끝냄"""
+    st = _state()
+    if st.get('all'):
+        return True
+    return False
 
 
 def mark_quota_used_up():
     st = _state()
-    st['quota_day'] = quota_day()
-    json.dump(st, open(STATE_FILE, 'w', encoding='utf-8'), ensure_ascii=False)
+    st['all'] = True
+    _save_state(st)
+
+
+def _mark_model_exhausted(model):
+    st = _state()
+    if model not in st['exhausted']:
+        st['exhausted'].append(model)
+    _save_state(st)
 
 
 def _post(url, body):
@@ -126,9 +180,12 @@ def ask_gemini(title, date, vid):
     callers = [('generate', lambda m: _call_generate(m, prompt, url, True)),
                ('generate(기본설정)', lambda m: _call_generate(m, prompt, url, False)),
                ('interactions', lambda m: _call_interactions(m, prompt, url))]
-    for model in MODELS:
+    any_busy = False
+    for model in models():
+        if model in _state()['exhausted'] or model in ask_gemini.busy_models:
+            continue
         for name, caller in callers:
-            busy = 0
+            busy, next_model = 0, False
             while True:
                 try:
                     return _parse(caller(model)), model
@@ -136,30 +193,49 @@ def ask_gemini(title, date, vid):
                     full = ex.read().decode('utf-8', 'replace')
                     detail = full[:400]
                     errors.append('%s/%s %s: %s' % (model, name, ex.code, detail))
-                    if ex.code == 403:
-                        # 영상 접근 권한 문제 → 다른 방식으로 다시 보내도 같은 결과, 하루 요청 수만 낭비하므로 바로 포기
+                    if ex.code == 403 and ('PERMISSION_DENIED' in full or 'permission' in full):
+                        # 영상 접근 권한 문제 → 다른 모델로 보내도 같은 결과
                         raise RuntimeError(' || '.join(errors[-2:]))
                     if ex.code == 429:
-                        if re.search(r'per ?day|PerDay|daily', full, re.I):
-                            raise DailyQuotaExceeded(detail)   # 하루 한도 → 오늘은 여기까지, 다음 실행에서 이어서
+                        if re.search(r'per ?day|PerDay|daily', full, re.I) or re.search(r'limit:\s*0\b', full):
+                            print('    %s: 오늘 무료 한도 소진 → 다음 모델로' % model)
+                            _mark_model_exhausted(model)
+                            next_model = True
+                            break
                         time.sleep(75)                         # 분당 한도 → 잠시 쉬고 재시도 (요청 수에 안 잡힘)
                         continue
                     if ex.code >= 500:
-                        # 구글 서버 혼잡 — 실패한 요청도 하루 20회 한도에 포함되므로 한 번만 더 해보고 이번 회차는 접음
+                        # 서버 혼잡 — 실패한 요청도 하루 한도에 포함되므로 한 번만 더 해보고 다른 모델로
                         busy += 1
                         if busy >= 2:
-                            raise ServiceBusy(detail)
-                        time.sleep(90)
+                            print('    %s: 서버 혼잡 → 다음 모델로' % model)
+                            ask_gemini.busy_models.add(model)
+                            any_busy = True
+                            next_model = True
+                            break
+                        time.sleep(60)
                         continue
-                    if ex.code == 400:
+                    if ex.code in (400, 404):
+                        if ex.code == 404:
+                            next_model = True                  # 없는 모델 → 다음 모델
                         break                                  # 요청 형식 문제 → 다른 방식으로
                     raise RuntimeError(' || '.join(errors[-2:]))
-                except (DailyQuotaExceeded, ServiceBusy, RuntimeError):
+                except RuntimeError:
                     raise
                 except Exception as ex:
                     errors.append('%s/%s: %s' % (model, name, ex))
                     raise RuntimeError(' || '.join(errors[-2:]))
+            if next_model:
+                break
+    remaining = [m for m in models() if m not in _state()['exhausted']]
+    if not remaining:
+        raise DailyQuotaExceeded(' || '.join(errors[-2:]))
+    if any_busy or all(m in ask_gemini.busy_models for m in remaining):
+        raise ServiceBusy(' || '.join(errors[-2:]))
     raise RuntimeError(' || '.join(errors[-4:]))
+
+
+ask_gemini.busy_models = set()
 
 
 def _to_item(item, res):
