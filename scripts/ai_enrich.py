@@ -96,7 +96,7 @@ def models():
                     continue
                 if not re.match(r'^gemini-\d+(\.\d+)?-(flash|pro)', name):
                     continue
-                if re.search(r'image|tts|audio|live|embed|robotics|computer|exp|customtools|\d{3}$', name):
+                if re.search(r'lite|image|tts|audio|live|embed|robotics|computer|exp|customtools|\d{3}$', name):   # Flash-Lite는 품질 문제로 제외
                     continue
                 found.append(name)
     except Exception as ex:
@@ -105,7 +105,7 @@ def models():
     def rank(n):
         v = re.match(r'^gemini-(\d+(?:\.\d+)?)', n)
         ver = float(v.group(1)) if v else 0
-        kind = 0 if '-flash' in n and 'lite' not in n else (1 if '-pro' in n else 2)   # flash → pro → flash-lite
+        kind = 0 if '-flash' in n else 1   # flash → pro
         return (kind, -ver, 'preview' in n, n)
     for n in MODELS + sorted([n for n in found if n not in MODELS], key=rank)[:5]:
         if n not in _MODELS_CACHE:
