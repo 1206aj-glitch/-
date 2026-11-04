@@ -792,7 +792,33 @@ function classify(t, s, n) {
 // 핵심: iframe src에 origin 파라미터를 넣지 않음
 //        → 오류 153 완전 해결
 // ────────────────────────────────────────────────
+// ── 밴드 영상(구글 드라이브) ──
+function driveThumb(fid) { return 'https://drive.google.com/thumbnail?id=' + fid + '&sz=w800'; }
+function showDriveThumb(fid) {
+  var box = document.getElementById('playerBox');
+  box.innerHTML =
+    '<img class="thumb-bg" src="' + driveThumb(fid) + '" onerror="this.style.display=\'none\'">' +
+    '<div class="thumb-overlay" onclick="openInYouTube(0)">' +
+      '<div class="play-ring"><svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg></div>' +
+      '<span class="play-label">▶ 영상 재생하기 (밴드 영상)</span>' +
+    '</div>';
+}
+function playDrive(startSec) {
+  var fid = activeItem.drive, sec = parseInt(startSec) || 0;
+  var box = document.getElementById('playerBox');
+  box.innerHTML = '<iframe src="https://drive.google.com/file/d/' + fid + '/preview' + (sec > 0 ? '?t=' + sec : '') +
+    '" style="position:absolute;inset:0;width:100%;height:100%;border:0" allow="autoplay; fullscreen" allowfullscreen></iframe>';
+  playStartWall = Date.now();
+  playStartSec  = sec;
+  startProgress();
+  updateYtLink(sec);
+  if (sec > 0) ytToast('밴드 영상은 바로 이동이 안 될 수 있어요 — 재생 막대를 ' + fmtSecs(sec) + ' 지점으로 옮겨 주세요');
+}
+function fmtSecs(s) { var h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), x = s % 60;
+  return (h ? h + ':' + String(m).padStart(2, '0') : m) + ':' + String(x).padStart(2, '0'); }
+
 function showThumb(videoId) {
+  if (activeItem && activeItem.drive) return showDriveThumb(activeItem.drive);
   const box = document.getElementById('playerBox');
   const thumbUrl = 'https://i.ytimg.com/vi/' + videoId + '/hqdefault.jpg';
   box.innerHTML =
@@ -822,6 +848,7 @@ function isIOS() {
 // PC   : 새 탭으로 열기
 function openInYouTube(startSec) {
   if (!activeItem) return;
+  if (activeItem.drive) return playDrive(startSec);
   var vid = activeItem.id;
   var sec = parseInt(startSec) || 0;
 
@@ -908,6 +935,12 @@ function stopProgress() {
 
 function updateYtLink(sec) {
   if (!activeItem) return;
+  if (activeItem.drive) {
+    var da = document.getElementById('ytLink'), dt = document.getElementById('ytLinkText');
+    if (da) da.href = 'https://drive.google.com/file/d/' + activeItem.drive + '/view';
+    if (dt) dt.textContent = '드라이브에서 보기';
+    return;
+  }
   const url = 'https://www.youtube.com/watch?v=' + activeItem.id + (sec > 0 ? '&t=' + sec + 's' : '');
   const a = document.getElementById('ytLink');
   const t = document.getElementById('ytLinkText');

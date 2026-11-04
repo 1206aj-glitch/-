@@ -142,8 +142,10 @@ def _post(url, body):
         return json.loads(r.read().decode('utf-8'))
 
 
-def _call_generate(model, prompt, video_url, light=True):
+def _call_generate(model, prompt, video_url, light=True, mime=None):
     video = {'file_data': {'file_uri': video_url}}
+    if mime:
+        video['file_data']['mime_type'] = mime
     cfg = {'responseMimeType': 'application/json', 'temperature': 0.3}
     if light:
         # 설교는 음성이 핵심 → 화면은 5초에 1장, 저해상도로 보내 토큰을 크게 줄임 (무료 분당 한도 대응)
@@ -167,19 +169,60 @@ def _call_interactions(model, prompt, video_url):
     return ''.join(out)
 
 
+def upload_file(path, mime, name=''):
+    """영상 파일을 Gemini File API에 올리고 처리가 끝날 때까지 기다림 → (file_uri, file_name). 업로드는 하루 한도에 안 잡힘"""
+    size = os.path.getsize(path)
+    req = urllib.request.Request('https://generativelanguage.googleapis.com/upload/v1beta/files', method='POST',
+                                 data=json.dumps({'file': {'display_name': name[:100] or os.path.basename(path)}}).encode('utf-8'),
+                                 headers={'x-goog-api-key': GEMINI_KEY, 'Content-Type': 'application/json',
+                                          'X-Goog-Upload-Protocol': 'resumable', 'X-Goog-Upload-Command': 'start',
+                                          'X-Goog-Upload-Header-Content-Length': str(size),
+                                          'X-Goog-Upload-Header-Content-Type': mime})
+    with urllib.request.urlopen(req, timeout=120) as r:
+        up_url = r.headers.get('X-Goog-Upload-URL') or r.headers.get('x-goog-upload-url')
+    with open(path, 'rb') as f:
+        req = urllib.request.Request(up_url, data=f, method='POST',
+                                     headers={'Content-Length': str(size), 'X-Goog-Upload-Offset': '0',
+                                              'X-Goog-Upload-Command': 'upload, finalize'})
+        with urllib.request.urlopen(req, timeout=3600) as r:
+            info = json.loads(r.read().decode('utf-8'))['file']
+    for _ in range(120):                      # 영상 처리(최대 약 20분) 대기
+        if info.get('state') == 'ACTIVE':
+            return info['uri'], info['name']
+        if info.get('state') == 'FAILED':
+            raise RuntimeError('Gemini 영상 처리 실패: %s' % info)
+        time.sleep(10)
+        req = urllib.request.Request('https://generativelanguage.googleapis.com/v1beta/' + info['name'],
+                                     headers={'x-goog-api-key': GEMINI_KEY})
+        with urllib.request.urlopen(req, timeout=60) as r:
+            info = json.loads(r.read().decode('utf-8'))
+    raise RuntimeError('Gemini 영상 처리 시간 초과')
+
+
+def delete_file(name):
+    try:
+        req = urllib.request.Request('https://generativelanguage.googleapis.com/v1beta/' + name, method='DELETE',
+                                     headers={'x-goog-api-key': GEMINI_KEY})
+        urllib.request.urlopen(req, timeout=60).close()
+    except Exception:
+        pass
+
+
 def _parse(text):
     text = text.strip()
     m = re.search(r'\{[\s\S]*\}', text)
     return json.loads(m.group(0) if m else text)
 
 
-def ask_gemini(title, date, vid):
+def ask_gemini(title, date, vid, file_uri=None, mime=None):
+    """vid: 유튜브 영상 ID. file_uri/mime: Gemini에 직접 올린 영상 파일(밴드 영상 등)"""
     prompt = PROMPT.format(title=title, date=date, situations=', '.join(SITUATIONS), categories=', '.join(CATEGORIES))
-    url = 'https://www.youtube.com/watch?v=' + vid
+    url = file_uri or ('https://www.youtube.com/watch?v=' + vid)
     errors = []
-    callers = [('generate', lambda m: _call_generate(m, prompt, url, True)),
-               ('generate(기본설정)', lambda m: _call_generate(m, prompt, url, False)),
-               ('interactions', lambda m: _call_interactions(m, prompt, url))]
+    callers = [('generate', lambda m: _call_generate(m, prompt, url, True, mime)),
+               ('generate(기본설정)', lambda m: _call_generate(m, prompt, url, False, mime))]
+    if not file_uri:
+        callers.append(('interactions', lambda m: _call_interactions(m, prompt, url)))
     any_busy = False
     for model in models():
         if model in _state()['exhausted'] or model in ask_gemini.busy_models:

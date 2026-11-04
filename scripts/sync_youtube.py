@@ -11,6 +11,7 @@ import json, os, re, sys, time, urllib.parse, urllib.request
 import xml.etree.ElementTree as ET
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import ai_enrich
+import drive_ingest
 from datetime import datetime, timedelta, timezone
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -377,9 +378,26 @@ def main():
     # 올해 설교 정리가 다 끝났고 한도가 남았으면 → 지난 설교(2025년 이전)를 과거 방향으로 채움
     pending_now = [a for a in auto if ai_enrich.waiting(a)]   # 올해(최신) 설교가 항상 먼저, 그다음 지난 설교
     slots = ai_enrich.MAX_PER_RUN - enriched - ai_enrich.enrich.failed
+    dset = set(dates) | {a['date'] for a in auto}
+
+    # 밴드 영상(구글 드라이브 폴더) — 올해 유튜브 설교 다음, 지난 유튜브 설교보다 먼저.
+    # 같은 설교가 유튜브 채널에 있으면(같은 날짜) 유튜브 쪽을 쓰므로 건너뜀
+    if (drive_ingest.FOLDER and not pending_now and slots > 0 and not ai_enrich.enrich.quota_hit
+            and not ai_enrich.enrich.busy and not ai_enrich.quota_used_up()):
+        yt_dates = set()
+        if API_KEY:
+            kw = re.compile(KEYWORD) if KEYWORD else None
+            for ent in all_uploads(channel):
+                if not kw or kw.search(ent['title']):
+                    yt_dates.add(build_item(ent['vid'], ent['title'], ent['published'], ent['desc'])['date'])
+        n, left = drive_ingest.ingest(auto, dset | yt_dates, min(slots, 2))
+        enriched += n
+        slots -= n
+        more = more or (left and not ai_enrich.enrich.quota_hit and not ai_enrich.enrich.busy and n > 0)
+
     if (BACKFILL and API_KEY and ai_enrich.GEMINI_KEY and not pending_now and slots > 0
             and not ai_enrich.enrich.quota_hit and not ai_enrich.enrich.busy and not ai_enrich.quota_used_up()):
-        n, left = backfill(channel, auto, existing, set(dates), slots)
+        n, left = backfill(channel, auto, existing, dset, slots)
         enriched += n
         if n:
             print('  지난 설교 %d편 추가' % n)

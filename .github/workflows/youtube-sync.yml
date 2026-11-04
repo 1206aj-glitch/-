@@ -19,7 +19,7 @@ concurrency:
 jobs:
   sync:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 150
     steps:
       - uses: actions/checkout@v4
 
@@ -45,6 +45,8 @@ jobs:
           BACKFILL: 'on'
           # 지난 설교를 몇 년도까지 거슬러 올라갈지
           BACKFILL_FROM_YEAR: '2017'
+          # 밴드 설교 영상을 모아두는 구글 드라이브 폴더 ID (저장소 Settings > Variables 의 DRIVE_FOLDER_ID)
+          DRIVE_FOLDER_ID: ${{ vars.DRIVE_FOLDER_ID }}
 
       - name: 변경 사항 저장
         run: |
@@ -54,7 +56,7 @@ jobs:
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add index.html scripts/backfill_skip.json scripts/ai_state.json
+          git add index.html scripts/backfill_skip.json scripts/ai_state.json scripts/drive_skip.json
           git commit -m "유튜브 새 설교 자동 추가 / AI 정리"
           git pull --rebase
           git push
