@@ -831,14 +831,25 @@ function showDriveThumb(fid) {
 function playDrive(startSec) {
   var fid = activeItem.drive, sec = parseInt(startSec) || 0;
   var box = document.getElementById('playerBox');
-  box.innerHTML = '<iframe src="https://drive.google.com/file/d/' + fid + '/preview' + (sec > 0 ? '?t=' + sec : '') +
-    '" style="position:absolute;inset:0;width:100%;height:100%;border:0" allow="autoplay; fullscreen" allowfullscreen></iframe>';
+  // 드라이브 플레이어는 폭이 좁으면(휴대폰) 영상을 확대·잘라서 보여줌 → 640x360 크기로 띄우고 화면 폭에 맞게 축소
+  box.innerHTML = '<iframe id="driveFrame" src="https://drive.google.com/file/d/' + fid + '/preview' + (sec > 0 ? '?t=' + sec : '') +
+    '" style="position:absolute;left:0;top:0;width:640px;height:360px;border:0;transform-origin:0 0" allow="autoplay; fullscreen" allowfullscreen></iframe>';
+  fitDriveFrame(); setTimeout(fitDriveFrame, 300);
   playStartWall = Date.now();
   playStartSec  = sec;
   startProgress();
   updateYtLink(sec);
   if (sec > 0) ytToast('밴드 영상은 바로 이동이 안 될 수 있어요 — 재생 막대를 ' + fmtSecs(sec) + ' 지점으로 옮겨 주세요');
 }
+function fitDriveFrame() {
+  var f = document.getElementById('driveFrame'), box = document.getElementById('playerBox');
+  if (!f || !box || !box.clientWidth) return;
+  var s = box.clientWidth / 640;
+  f.style.transform = 'scale(' + s + ')';
+  f.style.height = Math.round(box.clientHeight / s) + 'px';
+}
+window.addEventListener('resize', fitDriveFrame);
+window.addEventListener('orientationchange', function () { setTimeout(fitDriveFrame, 300); });
 function fmtSecs(s) { var h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), x = s % 60;
   return (h ? h + ':' + String(m).padStart(2, '0') : m) + ':' + String(x).padStart(2, '0'); }
 
