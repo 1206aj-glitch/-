@@ -260,7 +260,11 @@ def ask_gemini(title, date, vid, file_uri=None, mime=None):
                         continue
                     if ex.code in (400, 404):
                         if ex.code == 404:
-                            next_model = True                  # 없는 모델 → 다음 모델
+                            if re.search(r'no longer available|models/[\w.\-]+ is not found', full, re.I):
+                                # 없는/더 이상 제공되지 않는 모델 → 오늘은 이 모델 제외(다시 요청해 한도 낭비하지 않게)
+                                print('    %s: 사용할 수 없는 모델(404) → 오늘 제외' % model)
+                                _mark_model_exhausted(model)
+                            next_model = True
                         break                                  # 요청 형식 문제 → 다른 방식으로
                     raise RuntimeError(' || '.join(errors[-2:]))
                 except RuntimeError:

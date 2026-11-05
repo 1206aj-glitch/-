@@ -123,6 +123,11 @@ body.dark-mode main { color:#e2e8f0; }
         <svg style="width:13px;height:13px;fill:currentColor;flex-shrink:0" viewBox="0 0 448 512"><path d="M96 0C43 0 0 43 0 96V416c0 53 43 96 96 96H384h32c17.7 0 32-14.3 32-32s-14.3-32-32-32V384c17.7 0 32-14.3 32-32V32c0-17.7-14.3-32-32-32H384 96zm0 384H352v64H96c-17.7 0-32-14.3-32-32s14.3-32 32-32zm32-240c0-8.8 7.2-16 16-16H336c8.8 0 16 7.2 16 16s-7.2 16-16 16H144c-8.8 0-16-7.2-16-16zm16 48H336c8.8 0 16 7.2 16 16s-7.2 16-16 16H144c-8.8 0-16-7.2-16-16s7.2-16 16-16z"/></svg>
         <span class="hidden sm:inline">책갈피</span>
       </button>
+      <!-- 성도 전용 (밴드 영상 보기) -->
+      <button id="memberBtn" onclick="toggleMemberMode()" title="성도 전용" class="flex items-center justify-center gap-1 rounded-xl transition shadow-md bg-emerald-700 hover:bg-emerald-600 text-white font-bold" style="height:38px;padding:0 10px;font-size:12px;border:none;cursor:pointer;white-space:nowrap;flex-shrink:0">
+        <span id="memberBtnIcon">🔒</span>
+        <span class="hidden sm:inline" id="memberBtnText">성도 전용</span>
+      </button>
       <!-- 관리자 -->
       <button onclick="openAdminLogin()" title="관리자" class="flex items-center justify-center gap-1 rounded-xl transition shadow-md bg-slate-700 hover:bg-slate-600 text-white font-bold" style="height:38px;padding:0 10px;font-size:12px;border:none;cursor:pointer;white-space:nowrap;flex-shrink:0">
         <svg style="width:12px;height:12px;fill:currentColor;flex-shrink:0" viewBox="0 0 512 512"><path d="M256 0c4.6 0 9.2 1 13.4 2.9L457.7 82.8c22 9.3 38.4 31 38.3 57.2c-.5 99.2-41.3 280.7-213.6 363.2c-16.7 8-36.1 8-52.8 0C57.3 420.7 16.5 239.2 16 140c-.1-26.2 16.3-47.9 38.3-57.2L242.7 2.9C246.8 1 251.4 0 256 0z"/></svg>
@@ -417,6 +422,26 @@ body.dark-mode main { color:#e2e8f0; }
 <!-- ══════════════════════════════════════════════════
      관리자 로그인 모달
 ══════════════════════════════════════════════════ -->
+<div id="memberLoginModal" class="fixed inset-0 z-[60] hidden bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl w-full max-w-sm p-8 shadow-2xl border border-slate-200 text-center space-y-5">
+    <div class="w-14 h-14 bg-emerald-700 rounded-2xl flex items-center justify-center mx-auto shadow-lg text-2xl">🔒</div>
+    <div>
+      <h3 class="text-lg font-bold text-slate-900 serif">성도 전용 모드</h3>
+      <p class="text-xs text-slate-500 mt-1">비밀번호를 입력하면 밴드 예배 영상도 함께 보입니다</p>
+    </div>
+    <input type="password" id="memberPwInput" placeholder="비밀번호" inputmode="numeric"
+      class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-emerald-500 text-center tracking-widest font-bold"
+      onkeydown="if(event.key==='Enter') checkMemberLogin()">
+    <div class="flex gap-2">
+      <button onclick="document.getElementById('memberLoginModal').classList.add('hidden')"
+        class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-sm py-2.5 rounded-xl transition">취소</button>
+      <button onclick="checkMemberLogin()"
+        class="flex-1 bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-sm py-2.5 rounded-xl transition shadow-md">입장</button>
+    </div>
+    <p id="memberLoginErr" class="text-xs text-red-500 font-bold hidden">비밀번호가 올바르지 않습니다</p>
+  </div>
+</div>
+
 <div id="adminLoginModal" class="fixed inset-0 z-[60] hidden bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
   <div class="bg-white rounded-2xl w-full max-w-sm p-8 shadow-2xl border border-slate-200 text-center space-y-5">
     <div class="w-14 h-14 bg-slate-900 rounded-2xl flex items-center justify-center mx-auto shadow-lg">
@@ -1046,10 +1071,44 @@ function renderCards(data) {
   document.getElementById('counter').innerHTML = '<span class="mr-2 text-indigo-500"><svg class="fa-icon" viewBox="0 0 448 512"><path d="M448 80v48c0 44.2-100.3 80-224 80S0 172.2 0 128V80C0 35.8 100.3 0 224 0S448 35.8 448 80zM393.2 214.7c20.8-7.4 39.9-16.9 54.8-28.6V288c0 44.2-100.3 80-224 80S0 332.2 0 288V186.1c14.9 11.8 34 21.2 54.8 28.6C99.7 230.7 159.5 240 224 240s124.3-9.3 169.2-25.3zM0 346.1c14.9 11.8 34 21.2 54.8 28.6C99.7 390.7 159.5 400 224 400s124.3-9.3 169.2-25.3c20.8-7.4 39.9-16.9 54.8-28.6V432c0 44.2-100.3 80-224 80S0 476.2 0 432V346.1z"/></svg></span>검색 결과: <b>' + data.length + '개</b>';
 }
 
+// ── 성도 전용 모드: 켜져 있을 때만 밴드(드라이브) 영상 표시 ──
+function isMemberMode() { try { return lsGet('hs_member') === '1'; } catch(e) { return false; } }
+function isBandItem(item) { return !!(item && (item.drive || item.source === 'band')); }
+function visibleDb() { var m = isMemberMode(); return db.filter(function(it){ return m || !isBandItem(it); }); }
+function updateMemberBtn() {
+  var on = isMemberMode();
+  var b = document.getElementById('memberBtn'); if (!b) return;
+  document.getElementById('memberBtnIcon').textContent = on ? '🔓' : '🔒';
+  document.getElementById('memberBtnText').textContent = on ? '성도 모드 끄기' : '성도 전용';
+  b.title = on ? '성도 전용 모드 끄기' : '성도 전용';
+}
+function toggleMemberMode() {
+  if (isMemberMode()) {
+    try { lsDel('hs_member'); } catch(e) {}
+    updateMemberBtn(); buildMonthTabs(); filterCards();
+    return;
+  }
+  document.getElementById('memberPwInput').value = '';
+  document.getElementById('memberLoginErr').classList.add('hidden');
+  document.getElementById('memberLoginModal').classList.remove('hidden');
+  setTimeout(function(){ document.getElementById('memberPwInput').focus(); }, 100);
+}
+function checkMemberLogin() {
+  if (document.getElementById('memberPwInput').value === '1234') {
+    try { lsSet('hs_member', '1'); } catch(e) {}
+    document.getElementById('memberLoginModal').classList.add('hidden');
+    updateMemberBtn(); buildMonthTabs(); filterCards();
+  } else {
+    document.getElementById('memberLoginErr').classList.remove('hidden');
+    document.getElementById('memberPwInput').value = '';
+    document.getElementById('memberPwInput').focus();
+  }
+}
+
 function filterCards() {
   const q = document.getElementById('searchInput').value.toLowerCase().trim();
   const yr = document.getElementById('yearFilter').value;
-  const filtered = db.filter(function(item) {
+  const filtered = visibleDb().filter(function(item) {
     return (yr === 'all' || item.year === yr) &&
            (curMonth === 'all' || item.month === curMonth) &&
            (curSit === 'all' || item.situation === curSit) &&
@@ -1094,7 +1153,7 @@ function buildYearOptions() {
   if (!sel) return;
   var cur = sel.value || 'all';
   var years = [];
-  db.forEach(function(d){ if (d.year && years.indexOf(d.year) === -1) years.push(d.year); });
+  visibleDb().forEach(function(d){ if (d.year && years.indexOf(d.year) === -1) years.push(d.year); });
   years.sort().reverse();
   sel.innerHTML = '<option value="all">전체</option>' + years.map(function(y){ return '<option value="' + y + '">' + y + '년</option>'; }).join('');
   sel.value = years.indexOf(cur) !== -1 ? cur : 'all';
@@ -1104,7 +1163,7 @@ function buildMonthTabs() {
   buildYearOptions();
   const wrap = document.getElementById('monthTabs');
   wrap.innerHTML = '';
-  const months = [...new Set(db.map(function(d){return d.month;}))].sort(function(a,b){return parseInt(a)-parseInt(b);});
+  const months = [...new Set(visibleDb().map(function(d){return d.month;}))].sort(function(a,b){return parseInt(a)-parseInt(b);});
   [['all','전체보기'],...months.map(function(m){return [m,m];})].forEach(function(pair) {
     const btn = document.createElement('button');
     btn.className = 'tab-month px-3 py-1.5 rounded-lg text-xs font-semibold transition ' + (pair[0]==='all'?'active-btn':'bg-slate-100 text-slate-600 hover:bg-slate-200');
@@ -1645,6 +1704,7 @@ function init() {
   }
   mergeAutoSermons();
   try { var so = lsGet('hs_sort'); if (so) document.getElementById('sortOrder').value = so; } catch(e) {}
+  try { updateMemberBtn(); } catch(e) {}
   buildMonthTabs();
   filterCards();
   restoreSettings();
