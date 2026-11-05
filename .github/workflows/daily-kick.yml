@@ -1,0 +1,51 @@
+name: 매일 오후 5시 정리 시작 (예약 보조)
+
+# GitHub의 예약 실행(cron)은 자주 늦거나 통째로 건너뛰어서,
+# 한도가 초기화되는 한국 오후 5시 직후에 '설교 자동 업데이트'를 확실히 시작시키는 보조 장치.
+# 스스로 기다렸다가(최대 5시간 반씩) 시간이 되면 실행하고, 다음 날을 위해 자신을 다시 실행합니다.
+on:
+  workflow_dispatch: {}
+  push:
+    branches: [main]
+    paths: ['.github/workflows/daily-kick.yml']
+  schedule:
+    - cron: '23 3 * * *'     # 혹시 고리가 끊겼을 때 다시 잇기 위한 예비 (늦어도 상관없음)
+
+permissions:
+  actions: write
+  contents: read
+
+concurrency:
+  group: daily-kick
+  cancel-in-progress: true   # 항상 하나만 대기
+
+jobs:
+  wait-and-kick:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    steps:
+      - name: 처음 설치했을 때는 지금 바로 한 번 실행
+        if: github.event_name == 'push'
+        run: gh workflow run youtube-sync.yml --ref main
+
+      - name: 한국 오후 5시 7분(08:07 UTC)까지 기다렸다가 실행
+        run: |
+          now=$(date -u +%s)
+          target=$(date -u -d "today 08:07" +%s)
+          if [ "$now" -ge "$target" ]; then target=$(date -u -d "tomorrow 08:07" +%s); fi
+          wait=$((target - now))
+          echo "다음 실행까지 $((wait / 60))분"
+          if [ "$wait" -gt 19800 ]; then
+            sleep 19800
+            echo "아직 시간이 남음 → 이어서 기다리는 회차 실행"
+            gh workflow run daily-kick.yml --ref main
+            exit 0
+          fi
+          sleep "$wait"
+          gh workflow run youtube-sync.yml --ref main
+          echo "설교 자동 업데이트 실행함"
+          sleep 60
+          gh workflow run daily-kick.yml --ref main
