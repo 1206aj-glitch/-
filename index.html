@@ -95,17 +95,17 @@ body.dark-mode main { color:#e2e8f0; }
 
 <!-- ══ HEADER ══ -->
 <header class="bg-white/90 backdrop-blur-md border-b border-slate-200 sticky top-0 z-40 shadow-sm">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-    <div class="flex items-center space-x-4">
-      <div class="bg-indigo-950 text-amber-400 p-2.5 rounded-xl shadow-md">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2 sm:py-0 sm:h-20 flex flex-wrap sm:flex-nowrap items-center justify-between gap-2">
+    <div class="flex items-center space-x-3 sm:space-x-4 min-w-0">
+      <div class="bg-indigo-950 text-amber-400 p-2.5 rounded-xl shadow-md flex-shrink-0">
         <span class="text-2xl"><svg class="fa-icon" viewBox="0 0 640 512"><path d="M528 96c0-17.7-14.3-32-32-32s-32 14.3-32 32v16H448V96c0-17.7-14.3-32-32-32s-32 14.3-32 32v16H320V80c0-8.8-7.2-16-16-16H272V48h16c8.8 0 16-7.2 16-16V16c0-8.8-7.2-16-16-16H208c-8.8 0-16 7.2-16 16v16c0 8.8 7.2 16 16 16h16v16H176c-8.8 0-16 7.2-16 16v32H64C28.7 160 0 188.7 0 224V448c0 17.7 14.3 32 32 32H608c17.7 0 32-14.3 32-32V224c0-35.3-28.7-64-64-64H528V96zM256 320a64 64 0 1 1 128 0 64 64 0 1 1 -128 0zM512 288h32c17.7 0 32 14.3 32 32v32c0 17.7-14.3 32-32 32H512c-17.7 0-32-14.3-32-32V320c0-17.7 14.3-32 32-32zM80 320c0-17.7 14.3-32 32-32h32c17.7 0 32 14.3 32 32v32c0 17.7-14.3 32-32 32H112c-17.7 0-32-14.3-32-32V320z"/></svg></span>
       </div>
-      <div>
-        <h1 class="text-xl font-bold text-slate-900 tracking-wide serif">하늘스크린교회</h1>
-        <p class="text-xs text-indigo-600 font-bold">AI 상황별 말씀 매칭 &amp; 타임 싱크로 아카이브</p>
+      <div class="min-w-0">
+        <h1 class="text-xl font-bold text-slate-900 tracking-wide serif whitespace-nowrap">하늘스크린교회</h1>
+        <p class="text-xs text-indigo-600 font-bold truncate">AI 상황별 말씀 매칭 &amp; 타임 싱크로 아카이브</p>
       </div>
     </div>
-    <div class="flex items-center gap-1.5">
+    <div class="flex items-center gap-1.5 w-full sm:w-auto justify-between sm:justify-end">
       <!-- 야간모드 버튼 (1) -->
       <button onclick="toggleDarkMode()" id="darkModeBtn" title="야간/주간 모드" class="flex items-center justify-center rounded-xl transition shadow-md" style="width:38px;height:38px;background:#334155;border:none;cursor:pointer;flex-shrink:0">
         <span id="darkModeIcon" style="font-size:16px">🌙</span>
@@ -124,9 +124,9 @@ body.dark-mode main { color:#e2e8f0; }
         <span class="hidden sm:inline">책갈피</span>
       </button>
       <!-- 성도 전용 (밴드 영상 보기) -->
-      <button id="memberBtn" onclick="toggleMemberMode()" title="성도 전용" class="flex items-center justify-center gap-1 rounded-xl transition shadow-md bg-emerald-700 hover:bg-emerald-600 text-white font-bold" style="height:38px;padding:0 10px;font-size:12px;border:none;cursor:pointer;white-space:nowrap;flex-shrink:0">
+      <button id="memberBtn" onclick="toggleMemberMode()" title="성도 전용" class="flex items-center justify-center gap-1 rounded-xl transition shadow-md text-white font-bold" style="height:38px;padding:0 10px;font-size:12px;border:none;cursor:pointer;white-space:nowrap;flex-shrink:0;background:#475569">
         <span id="memberBtnIcon">🔒</span>
-        <span class="hidden sm:inline" id="memberBtnText">성도 전용</span>
+        <span id="memberBtnText">성도 전용</span>
       </button>
       <!-- 관리자 -->
       <button onclick="openAdminLogin()" title="관리자" class="flex items-center justify-center gap-1 rounded-xl transition shadow-md bg-slate-700 hover:bg-slate-600 text-white font-bold" style="height:38px;padding:0 10px;font-size:12px;border:none;cursor:pointer;white-space:nowrap;flex-shrink:0">
@@ -134,6 +134,10 @@ body.dark-mode main { color:#e2e8f0; }
         <span class="hidden sm:inline">관리자</span>
       </button>
     </div>
+  </div>
+  <div id="memberBanner" class="hidden" style="background:#059669;color:#fff;font-size:13px;font-weight:700;text-align:center;padding:6px 12px">
+    🔓 성도 모드 사용 중 — 밴드 예배 영상도 함께 보입니다
+    <button onclick="toggleMemberMode()" style="margin-left:8px;background:rgba(255,255,255,.2);border:none;color:#fff;border-radius:8px;padding:2px 10px;font-weight:700;cursor:pointer">끄기</button>
   </div>
 </header>
 
@@ -1090,8 +1094,12 @@ function updateMemberBtn() {
   var on = isMemberMode();
   var b = document.getElementById('memberBtn'); if (!b) return;
   document.getElementById('memberBtnIcon').textContent = on ? '🔓' : '🔒';
-  document.getElementById('memberBtnText').textContent = on ? '성도 모드 끄기' : '성도 전용';
-  b.title = on ? '성도 전용 모드 끄기' : '성도 전용';
+  document.getElementById('memberBtnText').textContent = on ? '성도 모드' : '성도 전용';
+  b.title = on ? '성도 모드 사용 중 (누르면 끄기)' : '성도 전용 (비밀번호)';
+  b.style.background = on ? '#059669' : '#475569';
+  b.style.boxShadow = on ? '0 0 0 3px #6ee7b7' : '';
+  var bn = document.getElementById('memberBanner');
+  if (bn) bn.classList.toggle('hidden', !on);
 }
 function toggleMemberMode() {
   if (isMemberMode()) {
