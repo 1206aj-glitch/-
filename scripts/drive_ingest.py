@@ -15,6 +15,21 @@ FOLDER = os.environ.get('DRIVE_FOLDER_ID', '').strip()
 KEY = os.environ.get('YT_API_KEY', '').strip()
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SKIP_FILE = os.path.join(ROOT, 'scripts', 'drive_skip.json')
+# Gemini 앱 등에서 미리 정리한 결과: [{"file": "드라이브 파일 이름.mp4", "summary": ..., "timeline": [...], ...}]
+MANUAL_FILE = os.path.join(ROOT, 'scripts', 'band_manual.json')
+
+
+def _manual():
+    try:
+        return {m['file'].strip(): m for m in json.load(open(MANUAL_FILE, encoding='utf-8')) if m.get('file')}
+    except Exception:
+        return {}
+
+
+def _new_item(f, date, title):
+    return {'year': date[:4], 'id': 'drive_' + f['id'], 'drive': f['id'], 'title': title, 'date': date,
+            'month': '%d월' % int(date[5:7]), 'categoryKo': '통합설교', 'scripture': '', 'summary': '',
+            'notes': '', 'timeline': [], 'source': 'band'}
 
 
 def _get(url):
@@ -62,7 +77,7 @@ def download(fid, path):
 
 def ingest(auto, dates, slots):
     """드라이브 폴더의 새 영상을 최신순으로 slots 편까지. 반환: (추가 편수, 남은 영상이 있는지)"""
-    if not (FOLDER and KEY and ai_enrich.GEMINI_KEY) or slots <= 0:
+    if not (FOLDER and KEY):
         return 0, False
     try:
         skip = set(json.load(open(SKIP_FILE, encoding='utf-8')))
@@ -85,8 +100,32 @@ def ingest(auto, dates, slots):
             continue
         todo.append((date, title, f))
     todo.sort(key=lambda x: x[0], reverse=True)
+
+    # 1) 미리 정리해 둔 결과가 있는 영상은 Gemini 요청 없이 바로 추가
+    manual, rest, added = _manual(), [], 0
+    for date, title, f in todo:
+        res = manual.get(f['name'].strip())
+        if not res:
+            rest.append((date, title, f))
+            continue
+        item = _new_item(f, date, title)
+        ai_enrich._to_item(item, res)
+        if not item.get('summary') or len(item.get('timeline') or []) < 3:   # 빈 설교는 올리지 않음
+            print('  밴드 영상 미리 정리 결과가 부족해 건너뜀:', f['name'])
+            rest.append((date, title, f))
+            continue
+        auto.append(item)
+        dates.add(date)
+        added += 1
+        print('  밴드 영상 추가 (미리 정리한 결과): %s %s · 타임라인 %d개 · %s' % (
+            date, title, len(item['timeline']), item.get('scripture', '')))
+    todo = rest
+
+    if not ai_enrich.GEMINI_KEY or slots <= 0:
+        json.dump(sorted(skip), open(SKIP_FILE, 'w', encoding='utf-8'), ensure_ascii=False, indent=0)
+        return added, False
     print('  밴드 영상: 새 영상 %d편 → 이번에 최대 %d편' % (len(todo), slots))
-    added, tried = 0, 0
+    tried = 0
     for date, title, f in todo[:slots]:
         if ai_enrich.quota_used_up():
             break
@@ -114,9 +153,7 @@ def ingest(auto, dates, slots):
                 ai_enrich.delete_file(fname)
             if os.path.exists(tmp):
                 os.remove(tmp)
-        item = {'year': date[:4], 'id': 'drive_' + f['id'], 'drive': f['id'], 'title': title, 'date': date,
-                'month': '%d월' % int(date[5:7]), 'categoryKo': '통합설교', 'scripture': '', 'summary': '',
-                'notes': '', 'timeline': [], 'source': 'band'}
+        item = _new_item(f, date, title)
         ai_enrich._to_item(item, res)
         auto.append(item)
         dates.add(date)

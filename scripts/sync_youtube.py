@@ -382,17 +382,19 @@ def main():
 
     # 밴드 영상(구글 드라이브 폴더) — 올해 유튜브 설교 다음, 지난 유튜브 설교보다 먼저.
     # 같은 설교가 유튜브 채널에 있으면(같은 날짜) 유튜브 쪽을 쓰므로 건너뜀
-    if (drive_ingest.FOLDER and not pending_now and slots > 0 and not ai_enrich.enrich.quota_hit
-            and not ai_enrich.enrich.busy and not ai_enrich.quota_used_up()):
+    # Gemini 앱으로 미리 정리해 둔 결과(scripts/band_manual.json)는 한도와 상관없이 매번 반영
+    if drive_ingest.FOLDER and not pending_now:
+        ai_ok = (slots > 0 and not ai_enrich.enrich.quota_hit
+                 and not ai_enrich.enrich.busy and not ai_enrich.quota_used_up())
         yt_dates = set()
         if API_KEY:
             kw = re.compile(KEYWORD) if KEYWORD else None
             for ent in all_uploads(channel):
                 if not kw or kw.search(ent['title']):
                     yt_dates.add(build_item(ent['vid'], ent['title'], ent['published'], ent['desc'])['date'])
-        n, left = drive_ingest.ingest(auto, dset | yt_dates, min(slots, 2))
+        n, left = drive_ingest.ingest(auto, dset | yt_dates, min(slots, 2) if ai_ok else 0)
         enriched += n
-        slots -= n
+        slots = max(0, slots - n)
         more = more or (left and not ai_enrich.enrich.quota_hit and not ai_enrich.enrich.busy and n > 0)
 
     if (BACKFILL and API_KEY and ai_enrich.GEMINI_KEY and not pending_now and slots > 0
