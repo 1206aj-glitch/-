@@ -52,6 +52,18 @@ def waiting(a):
     return a.get('ai_denied_on') != quota_day()
 
 
+def progress():
+    """한 편 정리될 때마다 호출 → 사이트에 바로 저장 (sync_youtube 가 연결)"""
+    if progress.hook:
+        try:
+            progress.hook()
+        except Exception as ex:
+            print('  (중간 저장 실패, 회차 끝에 저장합니다):', ex)
+
+
+progress.hook = None
+
+
 class DailyQuotaExceeded(Exception):
     pass
 
@@ -362,6 +374,7 @@ def enrich(auto):
             item.pop('ai_denied', None)
             item.pop('ai_denied_on', None)
             done += 1
+            progress()
             print('  AI 정리 완료 (%s): %s %s · 타임라인 %d개 · %s' % (
                 model, item['date'], item['title'], len(item['timeline']), item.get('scripture', '')))
         except DailyQuotaExceeded:

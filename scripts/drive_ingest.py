@@ -117,6 +117,7 @@ def ingest(auto, dates, slots):
         auto.append(item)
         dates.add(date)
         added += 1
+        ai_enrich.progress()
         print('  밴드 영상 추가 (미리 정리한 결과): %s %s · 타임라인 %d개 · %s' % (
             date, title, len(item['timeline']), item.get('scripture', '')))
     todo = rest
@@ -158,6 +159,7 @@ def ingest(auto, dates, slots):
         auto.append(item)
         dates.add(date)
         added += 1
+        ai_enrich.progress()
         print('  밴드 영상 추가 (%s): %s %s · 타임라인 %d개 · %s' % (
             model, date, title, len(item['timeline']), item.get('scripture', '')))
     json.dump(sorted(skip), open(SKIP_FILE, 'w', encoding='utf-8'), ensure_ascii=False, indent=0)

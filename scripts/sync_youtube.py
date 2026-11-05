@@ -320,10 +320,46 @@ def backfill(channel, auto, existing, dates, slots):
         existing.add(item['id'])
         dates.add(item['date'])
         added += 1
+        ai_enrich.progress()
         print('  지난 설교 추가 (%s): %s %s · 타임라인 %d개 · %s' % (
             model, item['date'], item['title'], len(item['timeline']), item.get('scripture', '')))
     json.dump(sorted(skip), open(SKIP_FILE, 'w', encoding='utf-8'), ensure_ascii=False, indent=0)
     return added, len(cands) > tried
+
+
+def save_auto(auto):
+    """현재 AUTO_SERMONS 를 index.html 에 기록"""
+    html = open(HTML, encoding='utf-8').read()
+    auto.sort(key=lambda x: x['date'])
+    data = json.dumps(auto, ensure_ascii=False).replace('</', '<\\/')
+    old_block = AUTO_S + read_block(html, AUTO_S, AUTO_E) + AUTO_E
+    open(HTML, 'w', encoding='utf-8').write(html.replace(old_block, AUTO_S + 'var AUTO_SERMONS = ' + data + ';' + AUTO_E))
+
+
+def checkpoint(auto):
+    """GitHub Actions 안에서: 한 편 정리될 때마다 바로 커밋·푸시 → 회차가 끝나기 전에도 사이트에 반영"""
+    import subprocess
+    save_auto(auto)
+    if os.environ.get('GITHUB_ACTIONS') != 'true':
+        return
+    files = ['index.html'] + [f for f in ('scripts/backfill_skip.json', 'scripts/ai_state.json', 'scripts/drive_skip.json')
+                              if os.path.exists(os.path.join(ROOT, f))]
+    run = lambda *a: subprocess.run(list(a), cwd=ROOT, check=True, capture_output=True, text=True)
+    run('git', 'config', 'user.name', 'github-actions[bot]')
+    run('git', 'config', 'user.email', '41898282+github-actions[bot]@users.noreply.github.com')
+    run('git', 'add', *files)
+    if subprocess.run(['git', 'diff', '--cached', '--quiet'], cwd=ROOT).returncode == 0:
+        return
+    run('git', 'commit', '-m', '유튜브 새 설교 자동 추가 / AI 정리 (진행 중 저장)')
+    for _ in range(3):
+        try:
+            run('git', 'pull', '--rebase', '-X', 'theirs')
+            run('git', 'push')
+            print('  → 사이트에 바로 저장함')
+            return
+        except subprocess.CalledProcessError as ex:
+            print('  (푸시 재시도)', (ex.stderr or '')[:200])
+            time.sleep(5)
 
 
 def main():
@@ -332,6 +368,7 @@ def main():
         sys.exit('index.html 에 자동 등록 영역(AUTO_SERMONS)이 없습니다.')
 
     auto = json.loads(read_block(html, AUTO_S, AUTO_E).strip().removeprefix('var AUTO_SERMONS =').rstrip(';').strip() or '[]')
+    ai_enrich.progress.hook = lambda: checkpoint(auto)   # 한 편씩 바로 사이트에 저장
     existing = set(re.findall(r'\bid\s*:\s*"([\w-]{11})"', html)) | set(re.findall(r'"id"\s*:\s*"([\w-]{11})"', html))
 
     dates = re.findall(r'date\s*:\s*"(\d{4}-\d{2}-\d{2})"', html) + re.findall(r'"date"\s*:\s*"(\d{4}-\d{2}-\d{2})"', html)
@@ -421,11 +458,13 @@ def main():
             sys.exit('AI 정리에 실패했습니다. 위 로그의 오류 내용을 확인하세요 (GEMINI_API_KEY 등).')
         return
 
-    auto.sort(key=lambda x: x['date'])
-    data = json.dumps(auto, ensure_ascii=False).replace('</', '<\\/')
-    old_block = AUTO_S + read_block(html, AUTO_S, AUTO_E) + AUTO_E
-    html = html.replace(old_block, AUTO_S + 'var AUTO_SERMONS = ' + data + ';' + AUTO_E)
-    open(HTML, 'w', encoding='utf-8').write(html)
+    # 중간 저장(checkpoint)으로 파일이 갱신됐을 수 있으므로 디스크의 최신 파일 기준으로 저장
+    fresh = open(HTML, encoding='utf-8').read()
+    e2 = read_block(fresh, EMBED_S, EMBED_E)
+    if e2 is not None and '"channel":""' in e2:
+        fresh = fresh.replace(EMBED_S + e2 + EMBED_E, EMBED_S + e2.replace('"channel":""', '"channel":"%s"' % channel) + EMBED_E)
+        open(HTML, 'w', encoding='utf-8').write(fresh)
+    save_auto(auto)
     print('완료: 새 설교 %d편 추가, AI 정리 %d편' % (len(added), enriched))
     if ai_enrich.enrich.failed and not enriched and not ai_enrich.enrich.quota_hit and not ai_enrich.enrich.busy:
         sys.exit('AI 정리에 실패했습니다. 위 로그의 오류 내용을 확인하세요 (GEMINI_API_KEY 등).')
