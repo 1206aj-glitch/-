@@ -2421,7 +2421,22 @@ function buildBookSermonIndex() {
       }
     });
   });
+  // 각 책 안에서는 날짜가 아니라 성경 구절 순서(장 → 절)로 정렬
+  Object.keys(index).forEach(function(book) {
+    index[book].sort(function(a, b) {
+      var ka = scriptureKey(a.scripture, book), kb = scriptureKey(b.scripture, book);
+      return (ka[0] - kb[0]) || (ka[1] - kb[1]) || String(b.date).localeCompare(String(a.date));
+    });
+  });
   return index;
+}
+
+// "요한복음 3장 16절", "시편 23편 1~3절", "요 3:16" → [장, 절] (없으면 맨 뒤로)
+function scriptureKey(ref, book) {
+  var rest = String(ref || '').slice(book.length);
+  var m = rest.match(/(\d+)\s*(?:장|편|:)\s*(\d+)?/);
+  if (!m) { var n = rest.match(/(\d+)/); return n ? [parseInt(n[1]), 0] : [9999, 9999]; }
+  return [parseInt(m[1]), m[2] ? parseInt(m[2]) : 0];
 }
 
 // ── 탭 전환 ──
