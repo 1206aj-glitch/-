@@ -1858,6 +1858,30 @@ var bibleVerses = {
 };
 
 var currentBibleRef = '';
+var bibleVerseFailed = {};
+
+// "창세기 3장 15절", "시편 121편 1~2절", "요한복음 3:16-18" → 해당 장을 받아 절 범위만 반환 [{v,t}]
+function fetchRefVerses(ref) {
+  var r = String(ref || '').trim();
+  var books = BR_BOOKS.map(function(b, i) { return {n: b.n, num: i + 1}; })
+                      .sort(function(a, b) { return b.n.length - a.n.length; });
+  var bk = books.filter(function(b) { return r.indexOf(b.n) === 0; })[0];
+  if (!bk) return Promise.reject(new Error('책 이름 인식 실패'));
+  var rest = r.slice(bk.n.length);
+  var m = rest.match(/(\d+)\s*(?:장|편|:)\s*(?:(\d+)\s*(?:절)?\s*(?:[~\-–,]\s*(\d+))?)?/);
+  if (!m) return Promise.reject(new Error('장 인식 실패'));
+  var chap = parseInt(m[1]), from = m[2] ? parseInt(m[2]) : 0, to = m[3] ? parseInt(m[3]) : from;
+  return brFetchVerses(bk.num, chap).then(function(all) {
+    var out = all.filter(function(v) {
+      var n = parseInt(v.verse);
+      return !from || (n >= from && n <= to);
+    }).map(function(v) {
+      return {v: String(v.verse), t: String(v.text || '').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim()};
+    });
+    if (!out.length) throw new Error('해당 절 없음');
+    return out;
+  });
+}
 
 function openBibleModal(ref) {
   currentBibleRef = ref;
@@ -1878,10 +1902,29 @@ function filterBibleVerses() {
   var list = document.getElementById('bibleVerseList');
   var countEl = document.getElementById('bibleVerseCount');
 
-  if (!verses || verses.length === 0) {
+  if ((!verses || verses.length === 0) && !bibleVerseFailed[ref]) {
+    // 미리 넣어둔 구절이 없으면 성경 API에서 바로 불러옴 (자동 추가된 설교들)
     list.innerHTML = '<div style="text-align:center;padding:40px 20px;color:#94a3b8;">' +
       '<p style="font-size:32px;margin-bottom:8px">📖</p>' +
-      '<p style="font-size:14px;font-weight:600;">구절 데이터가 준비 중입니다</p>' +
+      '<p style="font-size:14px;font-weight:600;">말씀을 불러오는 중…</p>' +
+      '<p style="font-size:12px;margin-top:4px;">' + ref + '</p></div>';
+    countEl.textContent = '';
+    fetchRefVerses(ref).then(function(vs) {
+      bibleVerses[ref] = vs;
+    }).catch(function(e) {
+      console.warn('[구절] 불러오기 실패:', ref, e && e.message);
+      bibleVerseFailed[ref] = true;
+    }).then(function() {
+      if (currentBibleRef === ref) filterBibleVerses();
+    });
+    return;
+  }
+
+  if (!verses || verses.length === 0) {
+    delete bibleVerseFailed[ref];   // 다음에 열면 다시 시도
+    list.innerHTML = '<div style="text-align:center;padding:40px 20px;color:#94a3b8;">' +
+      '<p style="font-size:32px;margin-bottom:8px">📖</p>' +
+      '<p style="font-size:14px;font-weight:600;">말씀을 불러오지 못했습니다 (인터넷 연결 확인 후 다시 열어 주세요)</p>' +
       '<p style="font-size:12px;margin-top:4px;">' + ref + '</p></div>';
     countEl.textContent = '';
     return;
