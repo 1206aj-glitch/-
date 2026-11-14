@@ -417,6 +417,8 @@ def main():
     slots = ai_enrich.MAX_PER_RUN - enriched - ai_enrich.enrich.failed
     dset = set(dates) | {a['date'] for a in auto}
 
+    if drive_ingest.FOLDER and (ai_enrich.quota_used_up() or ai_enrich.enrich.quota_hit):
+        print('  밴드 영상: 오늘 AI 무료 한도를 다 써서 대기 — 한국 오후 5시 한도 초기화 후 가장 먼저 정리합니다')
     # 밴드 영상(구글 드라이브 폴더) — 올해 유튜브 설교 다음, 지난 유튜브 설교보다 먼저.
     # 같은 설교가 유튜브 채널에 있으면(같은 날짜) 유튜브 쪽을 쓰므로 건너뜀
     # Gemini 앱으로 미리 정리해 둔 결과(scripts/band_manual.json)는 한도와 상관없이 매번 반영
