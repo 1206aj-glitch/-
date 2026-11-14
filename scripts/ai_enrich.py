@@ -328,6 +328,7 @@ def _to_item(item, res):
     if lines:
         item['notes'] = '\n'.join(lines)
     sc = str(res.get('scripture', '')).strip()
+    sc = re.sub(r'(\d+)\s*~\s*\1(?!\d)', r'\1', sc)   # "2~2절" → "2절"
     if re.search(r'\d+\s*(장|편)', sc):
         item['scripture'] = sc
     if len(tl) >= 3 and (len(tl) >= len(item.get('timeline') or [])):
